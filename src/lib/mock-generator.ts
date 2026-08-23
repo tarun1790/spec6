@@ -1,73 +1,220 @@
 import { TechStackPreferences } from "./types";
 
-interface DomainContext {
+export interface DomainContext {
   title: string;
   shortName: string;
+  category: string;
   primaryEntities: string[];
   primaryActions: string[];
   services: string[];
+  apiPrefix: string;
+  personas: { role: string; description: string; coreNeed: string; painPoint: string }[];
+  p0Requirements: { title: string; desc: string; acceptance: string }[];
+  p1Requirements: { title: string; desc: string; acceptance: string }[];
 }
 
-function extractDomainContext(prompt: string): DomainContext {
+function cleanPascalCase(str: string): string {
+  return str
+    .replace(/[^a-zA-Z0-9 ]/g, "")
+    .split(" ")
+    .filter(Boolean)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+    .join("");
+}
+
+export function extractDomainContext(prompt: string): DomainContext {
   const p = prompt.toLowerCase();
-  
-  if (p.includes("commerce") || p.includes("shop") || p.includes("store") || p.includes("cart") || p.includes("product")) {
+
+  // 1. Travel / Flight / Hotel
+  if (p.includes("flight") || p.includes("travel") || p.includes("hotel") || p.includes("ticket") || p.includes("booking") || p.includes("airline")) {
     return {
-      title: "Omnichannel Commerce & Order Orchestration Engine",
-      shortName: "CommerceCore",
-      primaryEntities: ["User", "Product", "Cart", "Order", "OrderItem", "PaymentTransaction", "InventoryItem"],
-      primaryActions: ["Browse Catalog", "Checkout Cart", "Process Payment", "Fulfill Order", "Query Inventory"],
-      services: ["Catalog Service", "Cart & Inventory Service", "Payment Orchestrator", "Order Fulfillment Service", "Notification Engine"]
+      title: "Global Travel & Flight Reservation Platform",
+      shortName: "AeroReserve",
+      category: "Travel & Hospitality Tech",
+      primaryEntities: ["Passenger", "FlightSchedule", "SeatBooking", "AirportTerminal", "TicketReceipt", "BaggageTag", "PaymentRecord"],
+      primaryActions: ["Search Flights", "Reserve Cabin Seat", "Process Ticket Payment", "Issue Digital Boarding Pass", "Track Baggage Barcode"],
+      services: ["Flight Search Service", "Seat Allocation Engine", "Ticketing & Payments Service", "Airport Integration Gateway", "Notification Dispatcher"],
+      apiPrefix: "/api/v1/flights",
+      personas: [
+        { role: "Frequent Traveler", description: "Business traveler booking last-minute flights with seat selection.", coreNeed: "Sub-second flight search and instant boarding pass generation.", painPoint: "Slow checkout and seat conflict errors." },
+        { role: "Airline Operations Lead", description: "Monitors seat availability, flight delays, and gate changes.", coreNeed: "Real-time dispatch dashboard with telemetry feeds.", painPoint: "Stale data synchronization across airport terminals." },
+        { role: "Customer Support Agent", description: "Handles booking modifications, cancellations, and refunds.", coreNeed: "Fast booking lookup and 1-click refund workflow.", painPoint: "Complex multi-system reconciliation." },
+        { role: "System Administrator", description: "Manages GDS (Global Distribution System) API integrations.", coreNeed: "High availability, zero rate-limit drops, and SLA observability.", painPoint: "Third-party airline API latency spikes." }
+      ],
+      p0Requirements: [
+        { title: "Real-Time Flight Search", desc: "Filter by departure, arrival, date, cabin class, and price with sub-200ms p95 latency.", acceptance: "Returns sorted multi-carrier itineraries with live seat counts." },
+        { title: "Seat Reservation & Lock", desc: "Distributed lock mechanism holding seat selection for 10 minutes during checkout.", acceptance: "Guarantees zero double-booking under 5,000 req/sec concurrency." },
+        { title: "Payment & Boarding Pass Issuance", desc: "PCI-compliant payment capture with instant signed PDF and Apple Wallet PKPass.", acceptance: "Emits encrypted PKPass barcode within 800ms of payment authorization." }
+      ],
+      p1Requirements: [
+        { title: "Automated Flight Delay Alerts", desc: "Push notification and SMS webhook dispatch on gate changes and delays.", acceptance: "Delivers notifications within 5 seconds of airport feed update." },
+        { title: "Frequent Flyer Rewards Engine", desc: "Calculates tier points and miles accrued per segment.", acceptance: "Accrues points immediately upon ticket issuance." }
+      ]
     };
   }
 
-  if (p.includes("chat") || p.includes("collab") || p.includes("whiteboard") || p.includes("message") || p.includes("notion")) {
+  // 2. Food Delivery / Restaurant
+  if (p.includes("food") || p.includes("restaurant") || p.includes("meal") || p.includes("delivery") || p.includes("menu") || p.includes("grocer")) {
     return {
-      title: "Real-Time Collaborative Workspace & Mesh Messenger",
-      shortName: "CollabMesh",
-      primaryEntities: ["Workspace", "Channel", "User", "Message", "Attachment", "PresenceSession", "CanvasDocument"],
-      primaryActions: ["Join Channel", "Send Live Message", "Broadcast Typing Presence", "Collaborate on Canvas", "Transcode Media"],
-      services: ["Gateway & Auth Service", "WebSocket Real-Time Cluster", "Document Collaboration Service", "Media Processing Worker", "Search & Indexing Engine"]
+      title: "On-Demand Food Delivery & Kitchen Dispatch Platform",
+      shortName: "QuickBite",
+      category: "Food & Logistics Tech",
+      primaryEntities: ["Customer", "Restaurant", "MenuItem", "OrderDelivery", "CourierDriver", "KitchenTicket", "PaymentReceipt"],
+      primaryActions: ["Browse Restaurant Menu", "Customize Meal Item", "Dispatch Courier", "Track GPS Location", "Rate Delivery Experience"],
+      services: ["Catalog & Menu Service", "Order Dispatch Engine", "Driver Geolocation Cluster", "Payment Gateway Orchestrator", "Push Notification Service"],
+      apiPrefix: "/api/v1/orders",
+      personas: [
+        { role: "Hungry Customer", description: "Orders meals from nearby restaurants with real-time tracking.", coreNeed: "Fast menu browsing and live GPS courier map.", painPoint: "Inaccurate ETA and missing order items." },
+        { role: "Restaurant Manager", description: "Manages kitchen prep queue and 86'd out-of-stock items.", coreNeed: "Real-time POS kitchen display system (KDS).", painPoint: "Order surges overwhelming kitchen capacity." },
+        { role: "Delivery Courier", description: "Accepts delivery requests and navigates route turn-by-turn.", coreNeed: "Optimized route batching and quick payouts.", painPoint: "Battery drain from continuous GPS pings." },
+        { role: "Platform Operations Lead", description: "Monitors city-wide supply/demand balance and surge pricing.", coreNeed: "Heatmap analytics and automated dispatch rules.", painPoint: "Driver shortages during peak dinner hours." }
+      ],
+      p0Requirements: [
+        { title: "Real-Time Menu & Cart Customizer", desc: "Dynamic item modifiers, dietary tags, and live kitchen inventory status.", acceptance: "Cart updates in under 50ms with instant price recalculation." },
+        { title: "Live GPS Courier Dispatch", desc: "WebSocket streaming of courier coordinates every 3 seconds to customer map.", acceptance: "Maintains smooth map marker animation with sub-100ms WebSocket latency." },
+        { title: "Split Settlement & Payouts", desc: "Splits order gross value into restaurant payout, courier fee, and platform commission.", acceptance: "Executes atomic double-entry ledger postings per order." }
+      ],
+      p1Requirements: [
+        { title: "Dynamic Surge Pricing", desc: "Calculates multiplier based on weather, active couriers, and order velocity.", acceptance: "Updates zone multipliers every 60 seconds." },
+        { title: "Scheduled Meal Pre-Orders", desc: "Allows advance ordering with automated kitchen release timers.", acceptance: "Injects order into kitchen queue exactly N minutes before target delivery." }
+      ]
     };
   }
 
-  if (p.includes("health") || p.includes("telemed") || p.includes("doctor") || p.includes("patient") || p.includes("clinic")) {
+  // 3. Streaming / Music / Video / Podcasts
+  if (p.includes("music") || p.includes("stream") || p.includes("video") || p.includes("podcast") || p.includes("spotify") || p.includes("netflix") || p.includes("audio")) {
     return {
-      title: "HIPAA-Compliant Telehealth & Clinical EHR Platform",
-      shortName: "TeleHealthOS",
-      primaryEntities: ["Patient", "Practitioner", "Appointment", "ClinicalConsultation", "MedicalRecord", "Prescription", "AuditLog"],
-      primaryActions: ["Schedule Consultation", "Initiate Encrypted WebRTC Session", "Issue e-Prescription", "Access PHI Record", "Log Audit Trail"],
-      services: ["Patient Gateway", "Consultation WebRTC Service", "Clinical EHR Service", "E-Prescription Integrator", "HIPAA Audit Logger"]
+      title: "Adaptive Bitrate Media Streaming & Discovery Platform",
+      shortName: "StreamFlow",
+      category: "Media & Entertainment Tech",
+      primaryEntities: ["User", "MediaTrack", "Playlist", "PlaybackSession", "ArtistCreator", "SubscriptionPlan", "StreamMetrics"],
+      primaryActions: ["Stream HLS Media", "Create Playlist", "Recommend Similar Tracks", "Download Offline Chunk", "Track Playback Telemetry"],
+      services: ["Media Ingestion & Transcoding Service", "Adaptive HLS/DASH Streaming Edge", "Discovery & Recommendation Engine", "Subscription Billing Service", "Telemetry Aggregator"],
+      apiPrefix: "/api/v1/media",
+      personas: [
+        { role: "Active Listener", description: "Streams high-res audio and video across mobile and desktop devices.", coreNeed: "Instant bufferless playback and personalized mix playlists.", painPoint: "Audio stutter and slow search indexing." },
+        { role: "Content Creator / Artist", description: "Uploads raw media stems, manages release schedules, and views royalty analytics.", coreNeed: "Lossless transcoding and transparent listener metrics.", painPoint: "Delayed revenue reporting and copyright friction." },
+        { role: "Curator", description: "Builds public editorial playlists and discovers trending tracks.", coreNeed: "Fast batch playlist editing and collaborative curation.", painPoint: "Lack of granular track sequencing tools." },
+        { role: "Infrastructure SRE", description: "Monitors CDN edge cache hit ratios and origin egress bandwidth.", coreNeed: ">95% CDN cache hit ratio and sub-50ms Time-To-First-Byte (TTFB).", painPoint: "High cloud egress bandwidth costs." }
+      ],
+      p0Requirements: [
+        { title: "Adaptive Bitrate Streaming (HLS/DASH)", desc: "Transcodes media into multi-bitrate chunks (64k to 320k audio / 1080p60 video).", acceptance: "Starts audio/video playback with <250ms initial buffering." },
+        { title: "Real-Time Telemetry & Progress Sync", desc: "Persists playback position across devices every 5 seconds.", acceptance: "Allows seamless device handoff with 0 second timestamp discrepancy." },
+        { title: "Granular DRM & Token Authorization", desc: "Signs ephemeral playback tokens with 15-minute expiration.", acceptance: "Blocks unauthorized hotlinking and stream scraping." }
+      ],
+      p1Requirements: [
+        { title: "Vector-Based Recommendation Feed", desc: "Generates collaborative filtering and audio embedding similarities.", acceptance: "Computes personalized 50-track mix in <150ms." },
+        { title: "Offline Storage Encrypted Cache", desc: "Encrypts downloaded chunks on device using AES-128.", acceptance: "Plays offline without network connectivity." }
+      ]
     };
   }
 
-  if (p.includes("agent") || p.includes("ai") || p.includes("workflow") || p.includes("dag") || p.includes("llm")) {
+  // 4. Social Media / Community / Feed
+  if (p.includes("social") || p.includes("feed") || p.includes("twitter") || p.includes("instagram") || p.includes("community") || p.includes("post") || p.includes("follow")) {
     return {
-      title: "Autonomous Multi-Agent Workflow & Knowledge Engine",
-      shortName: "AgentFlowAI",
-      primaryEntities: ["WorkflowDefinition", "WorkflowRun", "AgentNode", "ExecutionTask", "MemoryVector", "ToolCall", "AuditTrail"],
-      primaryActions: ["Compile Workflow DAG", "Dispatch Agent Task", "Query Vector Memory", "Execute Sandboxed Tool", "Stream Reasoning Step"],
-      services: ["Workflow Orchestration Engine", "Agent Runtime Service", "Vector & Semantic Memory Service", "Tool Execution Sandbox", "Telemetry & Cost Guardrail"]
+      title: "Real-Time Social Graph & Algorithmic Feed Platform",
+      shortName: "PulseNet",
+      category: "Social & Community Tech",
+      primaryEntities: ["UserProfile", "SocialPost", "ReactionLike", "FollowRelationship", "CommentThread", "ActivityFeed", "NotificationEvent"],
+      primaryActions: ["Publish Media Post", "Follow User", "Query Ranked Feed", "React & Comment", "Broadcast Live Activity"],
+      services: ["Social Graph Service", "Fan-out Feed Aggregator", "Content Moderation AI", "Real-Time Notification Worker", "Media Upload Service"],
+      apiPrefix: "/api/v1/posts",
+      personas: [
+        { role: "Content Consumer", description: "Scrolls infinite chronological and algorithmic feeds.", coreNeed: "Fast, jitter-free feed loading with instant optimistic likes.", painPoint: "Repetitive content and laggy video autoplay." },
+        { role: "Verified Creator", description: "Publishes rich text, images, and short clips to followers.", coreNeed: "Detailed audience reach graphs and comment moderation.", painPoint: "Trolling, spam bots, and delayed notifications." },
+        { role: "Community Moderator", description: "Reviews reported content against safety guidelines.", coreNeed: "Automated toxicity scoring and 1-click ban actions.", painPoint: "High volume of manual review tickets." },
+        { role: "Data Engineer", description: "Tunes fan-out on write vs fan-out on read feed algorithms.", coreNeed: "Efficient Redis Sorted Set memory usage for high-follower accounts.", painPoint: "Write amplification when mega-influencers post." }
+      ],
+      p0Requirements: [
+        { title: "Hybrid Fan-Out Feed Architecture", desc: "Fan-out on write for standard users (<5,000 followers) and fan-out on read for celebrity accounts.", acceptance: "Delivers new posts to follower timelines in <500ms." },
+        { title: "Optimistic Interaction UI", desc: "Instantly updates like counts and bookmark states on client with background retry.", acceptance: "Zero UI flicker on network latency spikes." },
+        { title: "Automated Safety & Text Moderation", desc: "Scans uploaded text and media for prohibited content before public indexation.", acceptance: "Completes toxicity classification within 120ms." }
+      ],
+      p1Requirements: [
+        { title: "Full-Text Hashtag & Mention Indexing", desc: "Elasticsearch indexing of hashtags and username tags.", acceptance: "Autocompletes search queries in <40ms." },
+        { title: "Direct Messaging End-to-End Encryption", desc: "Signal protocol Double Ratchet ratchet for private DMs.", acceptance: "Guarantees zero plaintext stored on servers." }
+      ]
     };
   }
 
-  if (p.includes("fintech") || p.includes("ledger") || p.includes("bank") || p.includes("payment") || p.includes("money")) {
+  // 5. Crypto / Web3 / Fintech
+  if (p.includes("crypto") || p.includes("wallet") || p.includes("fintech") || p.includes("ledger") || p.includes("bank") || p.includes("payment") || p.includes("token")) {
     return {
-      title: "Double-Entry Multi-Currency Ledger & Settlement Engine",
+      title: "Institutional Multi-Asset Ledger & Settlement Engine",
       shortName: "LedgerNexus",
-      primaryEntities: ["Account", "Wallet", "JournalEntry", "LedgerPosting", "FXRate", "PaymentIntent", "FraudScore"],
+      category: "Fintech & Web3 Infrastructure",
+      primaryEntities: ["Account", "Wallet", "JournalEntry", "LedgerPosting", "FXRate", "PaymentIntent", "AuditProof"],
       primaryActions: ["Post Double-Entry Transaction", "Exchange FX Currency", "Hold Escrow Balance", "Evaluate Fraud Velocity", "Reconcile Settlement"],
-      services: ["Ledger Core Service", "Settlement & FX Engine", "Payment Gateway Orchestrator", "Real-Time Fraud Engine", "Compliance & Vault Service"]
+      services: ["Ledger Core Service", "Settlement & FX Engine", "Payment Gateway Orchestrator", "Real-Time Fraud Engine", "Compliance & Vault Service"],
+      apiPrefix: "/api/v1/ledger",
+      personas: [
+        { role: "Treasury Manager", description: "Oversees multi-currency liquidity and settlement balances.", coreNeed: "Real-time gross settlement (RTGS) reconciliation.", painPoint: "Manual spreadsheets and currency slippage." },
+        { role: "Compliance Officer", description: "Monitors AML/KYC thresholds and suspicious transaction velocity.", coreNeed: "Automated SAR (Suspicious Activity Report) flagging.", painPoint: "High false-positive fraud alerts." },
+        { role: "API Developer", description: "Integrates programmatic wallet transfers and payments.", coreNeed: "Idempotent payment APIs with strict signature verification.", painPoint: "Duplicate payment processing on network retries." },
+        { role: "Security Auditor", description: "Verifies cryptographic proof-of-reserves and key custody.", coreNeed: "Immutable append-only audit trail.", painPoint: "Untracked database schema migrations." }
+      ],
+      p0Requirements: [
+        { title: "Strict Double-Entry Ledger Invariant", desc: "Every transaction requires balanced debits and credits: `SUM(debits) - SUM(credits) === 0`.", acceptance: "Enforces database-level constraint preventing negative balances." },
+        { title: "Idempotent Payment Intents", desc: "Requires unique `Idempotency-Key` header with 24-hour deduplication cache in Redis.", acceptance: "Repeated API calls return identical original response without re-executing transfer." },
+        { title: "Hardware Security Module (HSM) Vault", desc: "Encrypts private keys with AES-256-GCM using multi-sig authorization.", acceptance: "Zero plaintext private keys exist in application memory." }
+      ],
+      p1Requirements: [
+        { title: "Real-Time FX Rate Stream", desc: "Connects to institutional liquidity feeds for sub-second currency conversion.", acceptance: "Locks quoted exchange rate for 30 seconds." },
+        { title: "Automated Fraud Velocity Rules", desc: "Blocks accounts exceeding >3 transactions per second or velocity anomalies.", acceptance: "Evaluates fraud rule engine in <15ms." }
+      ]
     };
   }
 
-  // Default / general enterprise SaaS
+  // 6. Generic Intelligent NLP Fallback (Extracts entities directly from prompt)
+  const words = prompt
+    .replace(/[^a-zA-Z0-9 ]/g, "")
+    .split(" ")
+    .filter((w) => w.length > 3);
+
+  const rawShortName = words[0] ? cleanPascalCase(words[0]) : "SystemCore";
+  const title = prompt.length > 5 && prompt.length < 60 ? prompt : `${rawShortName} Enterprise Platform`;
+  const shortName = rawShortName || "AppPlatform";
+
+  // Formulate dynamic entities from words in prompt
+  const baseEntities = ["User", "Workspace", "ActivityLog", "AuditRecord", "SubscriptionPlan"];
+  const dynamicEntities = words.slice(0, 4).map((w) => cleanPascalCase(w));
+  const primaryEntities = Array.from(new Set([...dynamicEntities, ...baseEntities])).slice(0, 7);
+
   return {
-    title: "High-Performance Cloud Enterprise Service Platform",
-    shortName: "EnterpriseCore",
-    primaryEntities: ["Tenant", "User", "Project", "ResourceEntity", "ActivityLog", "Subscription", "IntegrationWebhook"],
-    primaryActions: ["Provision Tenant", "Authenticate User", "Manage Resource Lifecycle", "Process Real-time Events", "Deliver Webhooks"],
-    services: ["API Gateway & Auth", "Core Domain Service", "Event Ingestion Engine", "Notification & Webhook Dispatcher", "Analytics Aggregator"]
+    title,
+    shortName,
+    category: "Cloud Native Software System",
+    primaryEntities,
+    primaryActions: [
+      `Create ${primaryEntities[0]}`,
+      `Update ${primaryEntities[1] || "Record"}`,
+      `Query ${primaryEntities[0]} List`,
+      "Authenticate User Session",
+      "Export Data Analytics"
+    ],
+    services: [
+      `${primaryEntities[0]} Core Service`,
+      "Identity & Access Management (IAM)",
+      "Async Event Processing Worker",
+      "Real-Time WebSocket Gateway",
+      "Telemetry & Analytics Aggregator"
+    ],
+    apiPrefix: `/api/v1/${primaryEntities[0].toLowerCase()}s`,
+    personas: [
+      { role: "Primary End User", description: "Interacts with the web and mobile applications daily.", coreNeed: "Fast, intuitive user experience and reliable data sync.", painPoint: "Complicated workflows and slow page loads." },
+      { role: "Operations Lead", description: "Manages day-to-day organizational workflows and resources.", coreNeed: "Comprehensive administrative dashboard and audit logs.", painPoint: "Lack of centralized reporting tools." },
+      { role: "Integration Developer", description: "Connects external services and automated scripts via REST/GraphQL APIs.", coreNeed: "Well-documented OpenAPI specs, webhook reliability, and SDKs.", painPoint: "Undocumented breaking changes and rate limits." },
+      { role: "Security & DevOps Engineer", description: "Maintains infrastructure security, compliance, and uptime SLAs.", coreNeed: "99.99% uptime, automated CI/CD pipelines, and zero CVEs.", painPoint: "Manual server provisioning and configuration drift." }
+    ],
+    p0Requirements: [
+      { title: `Core ${primaryEntities[0]} Management`, desc: `Full CRUD lifecycle management for ${primaryEntities[0]} with input validation.`, acceptance: "Validates request payloads against strict Zod/Pydantic schemas with <100ms response." },
+      { title: "Zero-Trust Role-Based Access Control (RBAC)", desc: "Enforces granular permission checks on every API endpoint and data access layer.", acceptance: "Blocks unauthorized requests with HTTP 403 Forbidden." },
+      { title: "Real-Time Event Notification", desc: `Publishes domain events to message bus upon state changes of ${primaryEntities[0]}.`, acceptance: "Delivers event payloads to subscribers in <50ms." }
+    ],
+    p1Requirements: [
+      { title: "Comprehensive Audit Trail Logging", desc: "Logs all administrative changes with actor ID, timestamp, and before/after diff.", acceptance: "Writes immutable audit entries with 100% durability." },
+      { title: "High-Throughput Batch Export", desc: "Asynchronously exports data in CSV, JSON, and Parquet formats.", acceptance: "Generates downloadable signed URL within 10 seconds for 100,000 records." }
+    ]
   };
 }
 
@@ -78,7 +225,7 @@ export function generateMockStageContent(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   accumulatedContext: Record<string, string>
 ): string {
-  const domain = extractDomainContext(userPrompt);
+  const domain = extractDomainContext(userPrompt || "Enterprise Cloud System");
 
   switch (stageIndex) {
     case 0:
@@ -98,131 +245,85 @@ export function generateMockStageContent(
   }
 }
 
+// Stage 0: 00_PROJECT_BRIEF.md
 function generateProjectBrief(prompt: string, stack: TechStackPreferences, d: DomainContext): string {
-  return `# 00_PROJECT_BRIEF.md: Product Scope & Requirements
+  return `# 00_PROJECT_BRIEF.md: Requirements Scope & Persona Matrix
 
-## 1. Executive Summary & Problem Statement
-
-### 1.1 Business Objective & Value Proposition
-**${d.title} (${d.shortName})** is architected to address modern distributed demands with ultra-low latency, strict fault tolerance, and comprehensive developer ergonomics. The system modernizes legacy bottlenecks by providing a cloud-native, reactive infrastructure with real-time feedback loops and strict operational guarantees.
-
-- **Primary Goal:** Deliver high-concurrency, resilient execution for ${d.primaryActions.slice(0, 3).join(", ")}.
-- **Target Performance Baseline:** Sub-50ms p95 API response times, 99.99% service availability, and zero data-loss consistency.
-- **Architectural Paradigm:** ${stack.architecture} powered by ${stack.backend} and ${stack.database}.
-
-### 1.2 Core Problem Definition & Current Inefficiencies
-Current industry implementations suffer from:
-1. **Monolithic Lock-in & Scalability Bottlenecks:** Tight coupling between data access and presentation layers causes cascading latency degradation under traffic spikes.
-2. **State Inconsistency & Race Conditions:** Concurrent operations across distributed nodes lead to race conditions without robust distributed locking or transaction boundary segregation.
-3. **Fragmented Observability & Compliance Gaps:** Inability to provide deterministic audit trails and real-time telemetry across business-critical events.
+## Project Title
+**${d.title}**
 
 ---
 
-## 2. Target User Personas & Key Journeys
+## 1. Executive Summary & Objective
+This specification suite defines the end-to-end architecture, implementation roadmap, quality assurance strategy, security posture, and deployment configuration for **${d.title}** (${d.shortName}).
 
-### 2.1 Persona Definitions
+The primary objective is to deliver a cloud-native, high-throughput software system engineered with **${stack.architecture}**, leveraging **${stack.frontend}** for the client interface, **${stack.backend}** for business logic execution, **${stack.database}** for transactional integrity, and **${stack.caching}** for distributed performance.
 
-| Persona | Role & Focus | Primary Goals | Key Pain Points | Access Level |
-| :--- | :--- | :--- | :--- | :--- |
-| **P-1: Primary Operator** | Core End-User / Specialist | Execute ${d.primaryActions[0]} with immediate feedback and deterministic guarantees. | Latency lag, unexpected UI state drift, multi-step friction. | Role: \`OPERATOR\` / \`MEMBER\` |
-| **P-2: Platform Administrator** | Operations & DevOps Lead | Monitor cluster health, manage tenant boundaries, audit system activity, and configure integrations. | Missing granular telemetry, slow incident remediation, complex RBAC. | Role: \`PLATFORM_ADMIN\` |
-| **P-3: API Integrator** | External Developer / Partner | Consume REST/GraphQL endpoints and webhook events to build third-party automations. | Undocumented schemas, inconsistent error codes, lack of idempotency keys. | Role: \`INTEGRATION_SVC\` |
-
-### 2.2 Core User Workflows & Journeys
-
-#### Workflow 1: Primary Lifecycle Execution (${d.primaryActions[0]})
-1. **Initiation:** User triggers action via ${stack.frontend} UI or authenticated API request.
-2. **Validation & Rate Limit Check:** API Gateway verifies JWT bearer token, checks tenant rate limits via ${stack.caching}, and deserializes payload against Zod/Pydantic schema.
-3. **Execution & State Commit:** Domain service acquires distributed mutex (if applicable), executes business logic, and commits state transactionally to ${stack.database}.
-4. **Asynchronous Broadcast:** State transition event is emitted to event bus for downstream telemetry and real-time WebSocket subscriber updates.
-5. **Confirmation:** Client receives HTTP 201 Created with JSON envelope and deterministic entity identifier.
-
-#### Workflow 2: Administrative Governance & Audit Reporting
-1. Admin logs in with MFA/SSO (${stack.auth}).
-2. Admin queries filtered activity logs over specified time window.
-3. Query executes with partition pruning and returns aggregated telemetry with p99 metrics.
+### Core User Prompt
+> "${prompt.trim() || "Design an enterprise-grade high-performance cloud platform."}"
 
 ---
 
-## 3. Functional Requirements Matrix
+## 2. User Persona Matrix
 
-| Requirement ID | Module / Area | Feature Description | Priority | Acceptance Criteria |
-| :--- | :--- | :--- | :---: | :--- |
-| **FR-101** | Identity & Auth | Multi-tenant authentication with JWT access tokens, refresh token rotation, and RBAC enforcement. | **P0** | Access token expires in 15 mins; refresh token rotation invalidates compromised tokens upon reuse. |
-| **FR-102** | Core Domain | ${d.primaryActions[0]} with distributed idempotency validation. | **P0** | Duplicate requests with identical \`Idempotency-Key\` return cached response within 10ms without double execution. |
-| **FR-103** | Data Model | Full persistence for ${d.primaryEntities.slice(0, 4).join(", ")} entities with foreign key constraints. | **P0** | Zero orphaned records; foreign key cascades or soft-deletes strictly enforced. |
-| **FR-104** | Real-Time Sync | Live status updates pushed to connected clients via WebSockets / SSE. | **P0** | Client UI updates within <100ms of backend event publish. |
-| **FR-105** | Search & Indexing | Sub-string and faceted search across active domain entities. | **P1** | Search query p95 latency <45ms over 1,000,000 indexed records. |
-| **FR-106** | Bulk Operations | Batch creation and updates for up to 500 items per request. | **P1** | Atomic execution: entire batch succeeds or rolls back completely with explicit item-level error reporting. |
-| **FR-107** | Export Engine | Export data snapshots to encrypted JSON, CSV, and zipped archive formats. | **P1** | Exports completed asynchronously in background worker; download link signed with 1-hour expiration. |
-| **FR-108** | Audit Trail | Immutable audit logging for all mutating administrative and data modifications. | **P1** | Log record captures Actor ID, IP Address, Timestamp, Before/After Diff, and Request ID. |
-| **FR-109** | Webhook Dispatch | Outbound webhook notification system with exponential backoff retries. | **P2** | Failed webhook deliveries retried up to 5 times (1m, 5m, 15m, 1h, 6h) with HMAC-SHA256 signature header. |
-| **FR-110** | Custom Dashboards | Configurable dashboard widgets and saved analytical query views. | **P2** | User can save, edit, and share custom visualization tiles per workspace. |
+| Persona Role | Target Audience Profile | Core Functional Need | Critical Pain Point Mitigated |
+| :--- | :--- | :--- | :--- |
+${d.personas.map((p) => `| **${p.role}** | ${p.description} | ${p.coreNeed} | ${p.painPoint} |`).join("\n")}
+
+---
+
+## 3. Functional Requirements Matrix (P0 / P1 / P2)
+
+### 3.1 P0 (Must Have - MVP Critical Path)
+| ID | Requirement Name | Description | Acceptance Criteria |
+| :--- | :--- | :--- | :--- |
+${d.p0Requirements.map((r, i) => `| **REQ-P0-0${i + 1}** | **${r.title}** | ${r.desc} | ${r.acceptance} |`).join("\n")}
+| **REQ-P0-04** | **Identity & RBAC Access** | Secure authentication supporting ${stack.auth} with refresh token rotation. | Issues signed JWT tokens with 15-minute expiration and automated refresh. |
+
+### 3.2 P1 (High Priority - Production Hardening)
+| ID | Requirement Name | Description | Acceptance Criteria |
+| :--- | :--- | :--- | :--- |
+${d.p1Requirements.map((r, i) => `| **REQ-P1-0${i + 1}** | **${r.title}** | ${r.desc} | ${r.acceptance} |`).join("\n")}
+
+### 3.3 P2 (Nice-to-Have - Future Milestones)
+| ID | Requirement Name | Description | Acceptance Criteria |
+| :--- | :--- | :--- | :--- |
+| **REQ-P2-01** | **Advanced AI Copilot** | Natural language query interface for analytics and automated workflows. | Generates accurate SQL/JSON queries with human-in-the-loop review. |
+| **REQ-P2-02** | **Multi-Region Active-Active** | Cross-region data replication for global disaster recovery. | Failover completes in <30 seconds with zero data loss (RPO=0). |
 
 ---
 
 ## 4. Non-Functional Requirements & SLA Commitments
 
-### 4.1 Latency & Performance Targets
-- **Read Latency:** p50 < 15ms, p95 < 50ms, p99 < 120ms (cached read endpoints).
-- **Write / Mutate Latency:** p95 < 150ms for transactional database commits.
-- **Throughput Capacity:** Scalable from 1,000 RPS baseline to 25,000 RPS peak during surge load.
-- **Frontend Core Web Vitals:** Largest Contentful Paint (LCP) < 1.2s, Cumulative Layout Shift (CLS) < 0.05, Interaction to Next Paint (INP) < 100ms.
-
-### 4.2 Availability & Resilience (99.99% SLA)
-- **Uptime Commitment:** 99.99% availability (maximum allowable unplanned downtime: ~4.38 minutes/month).
-- **Recovery Point Objective (RPO):** < 1 minute (continuous WAL replication to secondary cloud region).
-- **Recovery Time Objective (RTO):** < 5 minutes (automated container failover and DNS health routing).
-- **Circuit Breakers:** Upstream service integrations wrapped with circuit breakers (50% failure threshold trips breaker for 30s).
-
-### 4.3 Data Sovereignty, Privacy & Compliance
-- **Data Encryption:** TLS 1.3 enforced for all ingress and inter-service communication; AES-256-GCM for storage at rest.
-- **Regulatory Frameworks:** Compliant with SOC 2 Type II, GDPR Article 32, and CCPA privacy standards.
-- **Data Retention Policy:** Hot operational data retained for 90 days; cold historical partitions moved to encrypted object storage for 7 years.
-
----
-
-## 5. Scope Boundaries
-
-### 5.1 Explicitly In-Scope for Phase 1 / MVP
-- Complete core backend services for ${d.primaryEntities.slice(0, 4).join(", ")}.
-- Responsive frontend interface built with ${stack.frontend}.
-- Standard JWT and RBAC authentication system with secure session handling.
-- Real-time event streaming and live UI status updates.
-- Automated CI/CD pipeline, containerization, and local development harness.
-
-### 5.2 Explicitly Out-of-Scope (Deferred to Phase 2+)
-- Multi-region active-active database clustering (Phase 1 uses Primary + Read Replica).
-- Native iOS and Android mobile applications (Phase 1 delivers mobile-optimized PWA).
-- Custom AI-driven anomaly detection models (Phase 1 utilizes threshold-based heuristics).
-- Legacy on-premises enterprise mainframe connectors.
-
-### 5.3 Technical Assumptions & External Dependencies
-- Modern evergreen browser support (Chrome 110+, Safari 16+, Firefox 115+, Edge).
-- Cloud hosting platform supporting managed container orchestration (${stack.deployment}).
-- External DNS and CDN edge terminating TLS certificates with automated Let's Encrypt / ACM renewal.`;
+| SLA Vector | Target Metric | Engineering Enforcement Mechanism |
+| :--- | :--- | :--- |
+| **Availability** | **99.99% Uptime** | Multi-AZ Kubernetes pod replica spreads, health checks, and automated pod restarts. |
+| **API Latency** | **p95 < 120ms** | Multi-tier Redis caching, connection pooling, and indexed SQL query optimization. |
+| **Concurrency** | **10,000+ RPS** | Horizontal Pod Autoscaling (HPA) triggered at >70% CPU/Memory utilization. |
+| **Security** | **OWASP Top 10 Defenses** | WAF filtering, parameterized SQL, strict CSP headers, and RBAC token middleware. |
+| **Disaster Recovery** | **RTO < 5 min, RPO = 0** | Continuous WAL archiving to S3, automated point-in-time recovery (PITR). |
+`;
 }
 
+// Stage 1: 01_SYSTEM_ARCHITECTURE.md
 function generateSystemArchitecture(prompt: string, stack: TechStackPreferences, d: DomainContext): string {
-  const e1 = d.primaryEntities[0] || "User";
-  const e2 = d.primaryEntities[1] || "Workspace";
-  const e3 = d.primaryEntities[2] || "Project";
-  const e4 = d.primaryEntities[3] || "Task";
-  const e5 = d.primaryEntities[4] || "AuditLog";
+  const e1 = cleanPascalCase(d.primaryEntities[0] || "User");
+  const e2 = cleanPascalCase(d.primaryEntities[1] || "Record");
+  const e3 = cleanPascalCase(d.primaryEntities[2] || "Project");
+  const e4 = cleanPascalCase(d.primaryEntities[3] || "Task");
+  const e5 = cleanPascalCase(d.primaryEntities[4] || "Payment");
 
-  return `# 01_SYSTEM_ARCHITECTURE.md: System Design & Contracts
+  return `# 01_SYSTEM_ARCHITECTURE.md: Topology & Schema Blueprint
 
-## 1. Technology Stack Selection & Architectural Rationale
+## 1. Architectural Overview & Design Rationales
 
-| Layer | Chosen Technology | Architectural Rationale & Justification |
+| Layer | Selected Technology | Rationale & Architectural Trade-offs |
 | :--- | :--- | :--- |
-| **Frontend Tier** | ${stack.frontend} | Server-Side Rendering (SSR) for optimal initial load, atomic component architecture, and high-performance reactive state. |
-| **Backend Tier** | ${stack.backend} | High async concurrency, strict type enforcement, built-in validation schemas, and enterprise maintainability. |
-| **Database Tier** | ${stack.database} | ACID compliance for transactional data integrity, JSONB support for semi-structured metadata, and robust indexing. |
-| **Caching & State** | ${stack.caching} | Sub-millisecond latency for session caching, distributed locks, rate limiting, and ephemeral pub/sub subscriptions. |
-| **Architecture Style** | ${stack.architecture} | Domain boundary isolation, independent service scalability, and fault containment. |
-| **Deployment Target** | ${stack.deployment} | Infrastructure-as-code automation, zero-downtime rolling deploys, and horizontal auto-scaling based on CPU/RAM metrics. |
-| **Authentication** | ${stack.auth} | Secure identity token verification, OAuth2/OIDC interoperability, and granular RBAC claims. |
+| **Frontend** | ${stack.frontend} | Server Components minimize client bundle size; App Router enables streaming hydration. |
+| **Backend** | ${stack.backend} | High async I/O concurrency, strict type enforcement, built-in validation schemas. |
+| **Database** | ${stack.database} | ACID compliance for transactional data integrity; robust B-Tree indexing. |
+| **Caching** | ${stack.caching} | Sub-millisecond latency for session caching, distributed locks, and pub/sub. |
+| **Deployment** | ${stack.deployment} | Infrastructure-as-Code automation, zero-downtime rolling deploys, auto-scaling. |
 
 ---
 
@@ -230,67 +331,48 @@ function generateSystemArchitecture(prompt: string, stack: TechStackPreferences,
 
 \`\`\`mermaid
 flowchart TD
-    subgraph Clients ["Client Applications"]
-        WebClient["Desktop & Mobile Web (SPA / SSR)"]
-        MobileApp["Mobile Client App"]
-        CLIClient["Developer CLI & SDK"]
+    subgraph Clients ["Client Layer"]
+        WebClient["Desktop & Mobile Web App"]
+        MobileClient["Mobile Native App"]
     end
 
-    subgraph Edge ["Edge & Ingress Layer"]
-        CDN["Cloud Edge CDN / Cloudflare"]
-        WAF["Web Application Firewall (WAF)"]
-        LoadBalancer["Application Load Balancer (ALB / NGINX)"]
+    subgraph Ingress ["Edge & Ingress Layer"]
+        CDN["Cloud CDN / Edge Cache"]
+        WAF["Web Application Firewall"]
+        LoadBalancer["Application Load Balancer"]
     end
 
-    subgraph Gateway ["API Gateway & Security"]
-        APIGateway["API Gateway & Reverse Proxy"]
-        AuthMiddleware["JWT / RBAC Auth Middleware"]
-        RateLimiter["Token Bucket Rate Limiter"]
+    subgraph AppGateway ["API Gateway & Security"]
+        Gateway["API Gateway Proxy"]
+        AuthMid["JWT / RBAC Middleware"]
+        RateLim["Distributed Rate Limiter"]
     end
 
-    subgraph CoreServices ["Microservices / Application Services"]
-        AuthService["Auth & Identity Service"]
-        DomainService["Core Domain Service"]
-        WorkerService["Background Async Worker"]
-        RealtimeGateway["WebSocket / SSE Push Service"]
+    subgraph Services ["Core Microservices"]
+        S1["${d.services[0]}"]
+        S2["${d.services[1] || "Core Service"}"]
+        S3["${d.services[2] || "Worker Service"}"]
     end
 
     subgraph DataTier ["Data & Caching Tier"]
-        PrimaryDB[("Primary Database (PostgreSQL)")]
-        ReadReplica[("Read Replica Database")]
-        RedisCache[("Redis Distributed Cache & Locks")]
-        MessageBroker["Message Broker (Kafka / Redis Streams)"]
-    end
-
-    subgraph ExternalTier ["Third-Party & External Services"]
-        StorageBucket["S3 / Blob Storage (Encrypted)"]
-        NotificationAPI["Push / Email / SMS Gateway"]
-        PaymentProcessor["Payment / Billing Gateway"]
+        DB[("${stack.database}")]
+        Cache[("${stack.caching}")]
     end
 
     WebClient --> CDN
-    MobileApp --> CDN
-    CLIClient --> CDN
+    MobileClient --> CDN
     CDN --> WAF
     WAF --> LoadBalancer
-    LoadBalancer --> APIGateway
-
-    APIGateway --> AuthMiddleware
-    AuthMiddleware --> RateLimiter
-    RateLimiter --> AuthService
-    RateLimiter --> DomainService
-    RateLimiter --> RealtimeGateway
-
-    DomainService --> PrimaryDB
-    DomainService --> ReadReplica
-    DomainService --> RedisCache
-    DomainService --> MessageBroker
-
-    RealtimeGateway --> RedisCache
-    MessageBroker --> WorkerService
-    WorkerService --> StorageBucket
-    WorkerService --> NotificationAPI
-    DomainService --> PaymentProcessor
+    LoadBalancer --> Gateway
+    Gateway --> AuthMid
+    AuthMid --> RateLim
+    RateLim --> S1
+    RateLim --> S2
+    RateLim --> S3
+    S1 --> DB
+    S2 --> DB
+    S1 --> Cache
+    S2 --> Cache
 \`\`\`
 
 ---
@@ -299,862 +381,350 @@ flowchart TD
 
 \`\`\`mermaid
 erDiagram
-    ${e1} ||--o{ ${e2} : owns
+    ${e1} ||--o{ ${e2} : manages
     ${e2} ||--o{ ${e3} : contains
-    ${e3} ||--o{ ${e4} : manages
-    ${e1} ||--o{ ${e5} : generates
+    ${e3} ||--o{ ${e4} : tracks
+    ${e1} ||--o{ ${e5} : records
 
     ${e1} {
         uuid id PK
         string email UK
-        string password_hash
         string full_name
         string role
         boolean is_active
-        jsonb metadata
         timestamp created_at
-        timestamp updated_at
     }
 
     ${e2} {
         uuid id PK
         uuid owner_id FK
         string name
-        string slug UK
-        string tier
-        boolean is_suspended
+        string status
         timestamp created_at
-        timestamp updated_at
     }
 
     ${e3} {
         uuid id PK
-        uuid workspace_id FK
+        uuid parent_id FK
         string title
-        string status
-        decimal budget
-        jsonb config
+        decimal value
         timestamp created_at
-        timestamp updated_at
     }
 
     ${e4} {
         uuid id PK
-        uuid project_id FK
-        uuid assignee_id FK
-        string name
-        string priority
+        uuid item_id FK
         string state
-        timestamp due_date
-        timestamp created_at
+        timestamp updated_at
     }
 
     ${e5} {
         uuid id PK
-        uuid actor_id FK
-        string action
-        string target_resource
-        string ip_address
-        jsonb diff_payload
+        uuid user_id FK
+        decimal amount
+        string status
         timestamp created_at
     }
 \`\`\`
 
-### 3.1 Relational Data Tables Specification
-
-#### Table: \`users\` (Identity & Core Account)
-- **\`id\`**: \`UUID\` (Primary Key, default: \`gen_random_uuid()\`)
-- **\`email\`**: \`VARCHAR(255)\` (NOT NULL, UNIQUE, Indexed via B-Tree)
-- **\`password_hash\`**: \`VARCHAR(255)\` (NOT NULL, Argon2id)
-- **\`role\`**: \`VARCHAR(50)\` (NOT NULL, default: \`'MEMBER'\`)
-- **\`created_at\`**: \`TIMESTAMPTZ\` (NOT NULL, default: \`CURRENT_TIMESTAMP\`)
-
-#### Table: \`workspaces\` (Multi-Tenant Isolation)
-- **\`id\`**: \`UUID\` (Primary Key)
-- **\`owner_id\`**: \`UUID\` (NOT NULL, Foreign Key -> \`users.id\` ON DELETE RESTRICT)
-- **\`name\`**: \`VARCHAR(100)\` (NOT NULL)
-- **\`slug\`**: \`VARCHAR(100)\` (NOT NULL, UNIQUE, Indexed)
-- **\`tier\`**: \`VARCHAR(30)\` (default: \`'STARTER'\`)
-
 ---
 
-## 4. RESTful & Real-time API Contracts
+## 4. RESTful API Contracts (OpenAPI 3.1)
 
-### 4.1 Endpoint: User Authentication
+### 4.1 Create ${e1}
 \`\`\`http
-POST /api/v1/auth/login
+POST ${d.apiPrefix}
 Content-Type: application/json
-\`\`\`
+Authorization: Bearer <jwt_token>
 
-#### Request Payload:
-\`\`\`json
 {
-  "email": "developer@enterprise.io",
-  "password": "SecurePassword123!",
-  "device_id": "dev-node-99a"
-}
-\`\`\`
-
-#### Success Response (\`200 OK\`):
-\`\`\`json
-{
-  "status": "success",
-  "data": {
-    "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-    "token_type": "Bearer",
-    "expires_in": 900,
-    "refresh_token": "d8f37a1c-9b4e-4f21-86a0-2f94b4e31102",
-    "user": {
-      "id": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
-      "email": "developer@enterprise.io",
-      "role": "ADMIN"
-    }
-  }
-}
-\`\`\`
-
-### 4.2 Endpoint: Create Domain Resource (${d.primaryEntities[2]})
-\`\`\`http
-POST /api/v1/workspaces/{workspace_id}/resources
-Authorization: Bearer <access_token>
-Idempotency-Key: 7b84c2a1-062e-4cb8-bdf1-3e4b77f98e10
-Content-Type: application/json
-\`\`\`
-
-#### Request Payload:
-\`\`\`json
-{
-  "title": "Production Deployment Pipeline",
-  "priority": "HIGH",
-  "tags": ["cloud", "automation", "core"],
+  "name": "${d.shortName} Master Record",
+  "status": "active",
   "metadata": {
-    "auto_retry": true,
-    "timeout_seconds": 3600
+    "tier": "enterprise"
   }
 }
 \`\`\`
 
-#### Success Response (\`201 Created\`):
+**Response (201 Created):**
 \`\`\`json
 {
   "status": "success",
   "data": {
-    "id": "c1f7b84e-3d2a-4f51-9e12-88b0a1d99432",
-    "workspace_id": "e4d3c2b1-0000-4000-8000-000000000001",
-    "title": "Production Deployment Pipeline",
-    "priority": "HIGH",
-    "state": "INITIALIZED",
-    "created_at": "2026-08-23T21:20:00.000Z"
+    "id": "e4b2d3c1-7a8f-4f9e-9d2a-1b2c3d4e5f6a",
+    "name": "${d.shortName} Master Record",
+    "status": "active",
+    "created_at": "2026-08-23T20:00:00Z"
   }
 }
 \`\`\`
 
----
+### 4.2 Query ${e1} List
+\`\`\`http
+GET ${d.apiPrefix}?limit=20&cursor=eyJpZCI6MTAwfQ==
+Authorization: Bearer <jwt_token>
+\`\`\`
 
-## 5. Data Flow & Event Bus Architecture
-
-\`\`\`mermaid
-sequenceDiagram
-    autonumber
-    actor Client as Web/Mobile Client
-    participant GW as API Gateway & Auth
-    participant Core as Core Domain Service
-    participant Cache as Redis Cache
-    participant DB as Primary PostgreSQL
-    participant EventBus as Message Broker (Kafka)
-    participant Worker as Background Worker
-
-    Client->>GW: POST /api/v1/resources (with JWT & Idempotency-Key)
-    GW->>GW: Validate JWT signature & Rate Limit
-    GW->>Core: Forward verified request
-    Core->>Cache: Check Idempotency-Key
-    alt Key already exists (Duplicate Request)
-        Cache-->>Core: Return cached JSON payload
-        Core-->>Client: HTTP 200 (Replay cached response)
-    else Key does not exist (New Request)
-        Core->>DB: BEGIN TRANSACTION
-        Core->>DB: INSERT INTO resources ...
-        Core->>DB: COMMIT TRANSACTION
-        Core->>Cache: SET Idempotency-Key (TTL = 24h)
-        Core->>EventBus: PUBLISH "resource.created" event
-        Core-->>Client: HTTP 201 Created (JSON payload)
-        EventBus->>Worker: Consume "resource.created" event
-        Worker->>Worker: Execute asynchronous task & audit log
-    end
-\`\`\``;
+**Response (200 OK):**
+\`\`\`json
+{
+  "status": "success",
+  "data": [],
+  "pagination": {
+    "has_more": false,
+    "next_cursor": null,
+    "total_count": 0
+  }
+}
+\`\`\`
+`;
 }
 
+// Stage 2: 02_IMPLEMENTATION_PLAN.md
 function generateImplementationPlan(prompt: string, stack: TechStackPreferences, d: DomainContext): string {
-  return `# 02_IMPLEMENTATION_PLAN.md: Engineering Breakdown
+  return `# 02_IMPLEMENTATION_PLAN.md: Engineering Roadmap & Milestones
 
-## 1. Repository Directory Tree Structure
+## 1. Production Repository Directory Structure
 
 \`\`\`text
 ${d.shortName.toLowerCase()}-monorepo/
 ├── .github/
-│   ├── workflows/
-│   │   ├── ci.yml                 # Lint, unit test, build matrix
-│   │   ├── deploy.yml             # Container build, security scan, deployment
-│   │   └── security-audit.yml     # Weekly Trivy & dependency scanning
-├── apps/
-│   ├── web/                       # ${stack.frontend} application
-│   │   ├── public/
-│   │   ├── src/
-│   │   │   ├── app/               # Routes, pages, layouts
-│   │   │   ├── components/        # UI design system & layout components
-│   │   │   ├── hooks/             # Custom state & WebSocket hooks
-│   │   │   ├── lib/               # API clients, auth utilities, types
-│   │   │   └── styles/            # Tailwind CSS globals
-│   │   ├── package.json
-│   │   └── tsconfig.json
-│   └── api/                       # ${stack.backend} service
-│       ├── src/
-│       │   ├── domain/            # Domain entities, business logic, aggregates
-│       │   ├── application/       # Use cases, DTOs, service orchestrators
-│       │   ├── infrastructure/    # DB repositories, cache clients, external APIs
-│       │   ├── presentation/      # HTTP controllers, route handlers, middleware
-│       │   └── main.py / server.ts
-│       ├── tests/
-│       │   ├── unit/
-│       │   ├── integration/
-│       │   └── e2e/
-│       └── Dockerfile
-├── packages/
-│   ├── types/                     # Shared TypeScript data models & Zod schemas
-│   ├── config/                    # Shared ESLint, Prettier, Tailwind presets
-│   └── logger/                    # Structured JSON logging library
-├── infrastructure/
-│   ├── terraform/
-│   │   ├── main.tf                # VPC, Cloud cluster, RDS database, S3
-│   │   ├── variables.tf
-│   │   └── outputs.tf
-│   └── docker/
-│       ├── docker-compose.yml     # Local multi-container development environment
-│       └── docker-compose.prod.yml
-├── .env.example
-├── Makefile                       # Unified developer CLI commands
-├── package.json
-└── README.md
+│   └── workflows/
+│       ├── ci.yml                 # Lint, TypeCheck, Unit Tests
+│       └── deploy.yml             # Container build and EKS deployment
+├── docker/
+│   ├── Dockerfile.production      # Multi-stage production container
+│   └── docker-compose.yml         # Local orchestration (DB, Redis, App)
+├── src/
+│   ├── app/                       # Next.js 14 App Router (Layouts & Pages)
+│   │   ├── api/                   # Route handlers & REST API endpoints
+│   │   │   └── v1/
+│   │   │       ├── auth/          # Authentication & Token routes
+│   │   │       └── ${d.primaryEntities[0].toLowerCase()}s/      # ${d.primaryEntities[0]} domain controllers
+│   │   └── layout.tsx             # Root layout & providers
+│   ├── components/                # Reusable UI component library
+│   │   ├── ui/                    # Base design system primitives
+│   │   └── domain/                # ${d.shortName} business components
+│   ├── lib/
+│   │   ├── db.ts                  # Database client pool
+│   │   ├── redis.ts               # Redis cache & distributed locks
+│   │   └── auth.ts                # JWT verification & RBAC guards
+│   └── types/
+│       └── index.ts               # Domain TypeScript interfaces
+├── prisma/
+│   └── schema.prisma              # PostgreSQL ORM schema definitions
+├── tests/
+│   ├── unit/                      # Vitest unit test suites
+│   ├── integration/               # API route integration tests
+│   └── e2e/                       # Playwright end-to-end master specs
+└── package.json
 \`\`\`
 
 ---
 
-## 2. Sequential Milestone Breakdown
+## 2. Phased Engineering Milestones
 
-\`\`\`mermaid
-gantt
-    title 4-Phase Implementation Timeline
-    dateFormat  YYYY-MM-DD
-    section Phase 1: Foundation
-    Scaffolding & Tooling          :p1_1, 2026-09-01, 7d
-    DB Migrations & Schemas        :p1_2, after p1_1, 7d
-    section Phase 2: Core Domain
-    Domain Logic & Repositories    :p2_1, after p1_2, 10d
-    Auth, RBAC & API Gateway       :p2_2, after p2_1, 8d
-    section Phase 3: Integration & UI
-    Frontend UI Components         :p3_1, after p2_2, 10d
-    Real-Time Sockets & Events     :p3_2, after p3_1, 7d
-    section Phase 4: Hardening
-    E2E Testing & Security Audit   :p4_1, after p3_2, 7d
-    Load Testing & Production Go-Live :p4_2, after p4_1, 5d
-\`\`\`
+### Milestone 1: Data Modeling, Auth & Core API (Weeks 1 - 2)
+- [ ] Initialize repository with TypeScript, Tailwind CSS, and ESLint configs.
+- [ ] Provision PostgreSQL 16 and apply initial Prisma migrations for \`${d.primaryEntities.join(", ")}\`.
+- [ ] Implement JWT/OAuth2 authentication middleware with refresh token rotation.
+- [ ] Build CRUD REST endpoints under \`${d.apiPrefix}\` with Zod input validation schemas.
 
----
+### Milestone 2: Business Logic & Real-time Integration (Weeks 3 - 4)
+- [ ] Implement core business logic for **${d.primaryActions[0]}** and **${d.primaryActions[1] || "Processing"}**.
+- [ ] Integrate Redis cache-aside patterns and distributed locks on critical mutations.
+- [ ] Establish WebSocket / SSE streaming cluster for live user updates.
+- [ ] Implement rate limiting (100 req/min per IP) via token bucket algorithm.
 
-## 3. Granular Task Checklist with Dependency Chains
+### Milestone 3: Testing, Quality Assurance & Security Hardening (Weeks 5 - 6)
+- [ ] Author unit tests achieving >80% code coverage across domain services.
+- [ ] Implement integration tests verifying all HTTP error codes (\`400\`, \`401\`, \`403\`, \`404\`, \`422\`, \`500\`).
+- [ ] Configure Playwright E2E test suites for primary user journeys.
+- [ ] Run OWASP ZAP vulnerability scan and fix all high/medium security issues.
 
-### Phase 1: Foundation & Base Tooling
-- [ ] **TASK-101**: Initialize repository monorepo with strict TypeScript, ESLint, Prettier, and Git pre-commit hooks. [Depends on: None] [Owner: DevOps]
-- [ ] **TASK-102**: Configure database migrations for primary tables (\`users\`, \`workspaces\`, \`${d.primaryEntities[0].toLowerCase()}\`, \`${d.primaryEntities[1].toLowerCase()}\`). [Depends on: TASK-101] [Owner: Backend]
-- [ ] **TASK-103**: Setup Docker Compose harness with PostgreSQL 16, Redis 7, and LocalStack/MinIO. [Depends on: TASK-101] [Owner: DevOps]
-- [ ] **TASK-104**: Create base database connection pooling, retry logic, and health check probes. [Depends on: TASK-102] [Owner: Backend]
-
-### Phase 2: Core Domain Services & Data Access
-- [ ] **TASK-201**: Implement JWT authentication module with Argon2id password hashing and refresh token rotation. [Depends on: TASK-104] [Owner: Security/Backend]
-- [ ] **TASK-202**: Implement RBAC middleware with permission checking for Operator, Admin, and Integrator roles. [Depends on: TASK-201] [Owner: Backend]
-- [ ] **TASK-203**: Develop domain CRUD repositories with distributed idempotency checking via Redis. [Depends on: TASK-104] [Owner: Backend]
-- [ ] **TASK-204**: Build core business logic engine for ${d.primaryActions[0]}. [Depends on: TASK-203] [Owner: Backend]
-- [ ] **TASK-205**: Implement event publisher publishing messages to Redis Streams/Kafka. [Depends on: TASK-204] [Owner: Backend]
-
-### Phase 3: Integration, Real-Time Gateway & UI
-- [ ] **TASK-301**: Scaffold ${stack.frontend} application with layout, navigation, and theme provider. [Depends on: TASK-101] [Owner: Frontend]
-- [ ] **TASK-302**: Implement client API SDK with auto-refresh token interceptors and typed error handlers. [Depends on: TASK-201, TASK-301] [Owner: Frontend]
-- [ ] **TASK-303**: Build interactive workspace view and primary data management tables. [Depends on: TASK-302] [Owner: Frontend]
-- [ ] **TASK-304**: Implement WebSocket client for live state synchronization and notification popups. [Depends on: TASK-205, TASK-303] [Owner: Fullstack]
-- [ ] **TASK-305**: Build administrative dashboard with audit log viewer and tenant management. [Depends on: TASK-303] [Owner: Frontend]
-
-### Phase 4: Production Hardening & Launch
-- [ ] **TASK-401**: Write comprehensive unit test suite (>80% line and branch coverage). [Depends on: TASK-204] [Owner: QA/Backend]
-- [ ] **TASK-402**: Implement Playwright end-to-end test suite for critical user paths. [Depends on: TASK-304] [Owner: QA]
-- [ ] **TASK-403**: Execute k6 load testing to validate 10,000 RPS concurrency with sub-100ms latency. [Depends on: TASK-401] [Owner: DevOps]
-- [ ] **TASK-404**: Configure GitHub Actions CI/CD pipeline with Trivy container vulnerability scanning. [Depends on: TASK-403] [Owner: DevOps]
-- [ ] **TASK-405**: Execute pre-launch security penetration testing and secret rotation check. [Depends on: TASK-404] [Owner: Security]
-
----
-
-## 4. Local Development Setup & CLI Run Commands
-
-### 4.1 Prerequisites
-- Node.js \`>= 20.0.0\`
-- Docker & Docker Compose \`v2.20+\`
-- Make / Bash CLI environment
-
-### 4.2 Step-by-Step Setup Commands
-
-\`\`\`bash
-# 1. Clone repository
-git clone https://github.com/org/${d.shortName.toLowerCase()}.git
-cd ${d.shortName.toLowerCase()}
-
-# 2. Setup environment variables
-cp .env.example .env
-
-# 3. Install dependencies
-npm install
-
-# 4. Start local infrastructure services (PostgreSQL, Redis, Storage)
-docker compose up -d
-
-# 5. Run database migrations & seed initial demo data
-npm run db:migrate
-npm run db:seed
-
-# 6. Start fullstack application in development mode
-npm run dev
-\`\`\`
-
-### 4.3 Key Makefile CLI Targets
-\`\`\`makefile
-.PHONY: dev build test lint db-migrate clean
-
-dev:
-\t@npm run dev
-
-build:
-\t@npm run build
-
-test:
-\t@npm run test:unit && npm run test:e2e
-
-lint:
-\t@npm run lint && npm run format:check
-
-db-migrate:
-\t@npm run db:migrate:up
-
-clean:
-\t@docker compose down -v && rm -rf node_modules .next dist
-\`\`\``;
+### Milestone 4: CI/CD, Containerization & Production Launch (Weeks 7 - 8)
+- [ ] Author multi-stage Dockerfile with non-root security context.
+- [ ] Configure GitHub Actions CI/CD pipeline deploying to Kubernetes (EKS).
+- [ ] Implement Prometheus metrics endpoint (\`/metrics\`) and OpenTelemetry tracing.
+- [ ] Execute load testing at 10,000 RPS and verify SLA latency commitments.
+`;
 }
 
+// Stage 3: 03_TESTING_STRATEGY.md
 function generateTestingStrategy(prompt: string, stack: TechStackPreferences, d: DomainContext): string {
-  return `# 03_TESTING_STRATEGY.md: Quality Assurance Matrix
+  return `# 03_TESTING_STRATEGY.md: Quality Assurance & Test Automation Matrix
 
-## 1. Unit Testing Matrix (>80% Target Coverage)
+## 1. Testing Pyramid & Target Coverage Commitments
 
-### 1.1 Scope & Mocking Boundaries
-All core business domain modules must enforce strict >80% line and branch test coverage. External dependencies (Databases, Redis, HTTP third parties, and Message Brokers) must be isolated using test doubles and mocks.
-
-| Module Layer | Testing Objective | Mocking Strategy | Target Coverage |
-| :--- | :--- | :--- | :---: |
-| **Domain Entities & Aggregates** | Pure business rules, invariant validations, and state transitions. | Zero mocks (pure functions). | **95%** |
-| **Application Services & Use Cases** | Orchestration, authorization checks, and transaction boundaries. | Mock repositories & event publishers. | **90%** |
-| **Data Repositories** | Query syntax, schema constraints, and mapping functions. | In-memory SQLite / pg-mem or test container. | **85%** |
-| **HTTP Controllers & Middleware** | Request validation, status codes, and error formatting. | Supertest / Mock HTTP Request context. | **85%** |
-
-### 1.2 Example Unit Test Code (Domain Invariant Verification)
-
-\`\`\`typescript
-import { describe, it, expect, beforeEach, vi } from "vitest";
-import { CreateResourceUseCase } from "@/domain/use-cases/create-resource";
-import { IResourceRepository } from "@/domain/interfaces/resource-repo";
-
-describe("CreateResourceUseCase", () => {
-  let mockRepo: IResourceRepository;
-  let useCase: CreateResourceUseCase;
-
-  beforeEach(() => {
-    mockRepo = {
-      create: vi.fn().mockResolvedValue({ id: "res-123", title: "Test Resource", status: "ACTIVE" }),
-      findByTitle: vi.fn().mockResolvedValue(null),
-    };
-    useCase = new CreateResourceUseCase(mockRepo);
-  });
-
-  it("should successfully create a new resource with valid parameters", async () => {
-    const result = await useCase.execute({
-      title: "Production Cluster",
-      workspaceId: "ws-99",
-      priority: "HIGH"
-    });
-
-    expect(result.success).toBe(true);
-    expect(result.data?.id).toBe("res-123");
-    expect(mockRepo.create).toHaveBeenCalledTimes(1);
-  });
-
-  it("should throw validation error when title is empty", async () => {
-    await expect(
-      useCase.execute({ title: "", workspaceId: "ws-99", priority: "HIGH" })
-    ).rejects.toThrowError("Resource title cannot be empty");
-    expect(mockRepo.create).not.toHaveBeenCalled();
-  });
-});
-\`\`\`
+| Test Tier | Scope & Focus | Target Coverage | Framework & Tooling |
+| :--- | :--- | :---: | :--- |
+| **Unit Tests** | Pure business logic, entity helpers, validation schemas. | **> 85%** | Vitest / Jest |
+| **Integration Tests** | API route handlers, SQL transactions, Redis lock mechanics. | **> 80%** | Supertest / Vitest |
+| **End-to-End (E2E)** | Critical user journeys, authentication flows, checkout/booking. | **100% Core** | Playwright (Headless Chrome) |
+| **Load / Performance** | Concurrency bottlenecks, DB connection pooling, rate limits. | **10,000 RPS** | k6 / Artillery |
 
 ---
 
-## 2. API & Integration Test Suites
-
-### 2.1 API Endpoint Test Matrix
-
-| Test ID | Endpoint | Method | Scenario Description | Expected HTTP Status | Expected JSON Body Match |
-| :--- | :--- | :---: | :--- | :---: | :--- |
-| **API-01** | \`/api/v1/auth/login\` | POST | Valid credentials login | \`200 OK\` | \`{"status": "success", "data": {"access_token": /.+/}}\` |
-| **API-02** | \`/api/v1/auth/login\` | POST | Invalid password attempt | \`401 Unauthorized\` | \`{"status": "error", "code": "INVALID_CREDENTIALS"}\` |
-| **API-03** | \`/api/v1/resources\` | POST | Create resource with missing required field | \`422 Unprocessable\` | \`{"status": "fail", "errors": [{"field": "title"}]}\` |
-| **API-04** | \`/api/v1/resources\` | POST | Duplicate request with identical Idempotency-Key | \`200 OK\` | \`{"status": "success", "idempotent_replay": true}\` |
-| **API-05** | \`/api/v1/resources/:id\` | GET | Fetch non-existent entity ID | \`404 Not Found\` | \`{"status": "error", "code": "ENTITY_NOT_FOUND"}\` |
-
----
-
-## 3. End-to-End (E2E) Test User Flows
-
-### 3.1 Playwright Critical Path Test Specification
+## 2. Playwright End-to-End (E2E) Master Test Suite
 
 \`\`\`typescript
 import { test, expect } from "@playwright/test";
 
-test.describe("Critical User Journey: Authentication & Lifecycle Execution", () => {
-  test("User logs in, creates a new resource, and verifies real-time UI synchronization", async ({ page }) => {
-    // 1. Navigate to login page
-    await page.goto("/login");
-    await page.fill('input[name="email"]', "lead-engineer@enterprise.io");
-    await page.fill('input[name="password"]', "SuperSecret2026!");
-    await page.click('button[type="submit"]');
+test.describe("${d.title} - Critical Path User Journey", () => {
+  test.beforeEach(async ({ page }) => {
+    // Navigate to application base URL
+    await page.goto("/");
+  });
 
-    // 2. Verify redirect to main dashboard
-    await expect(page).toHaveURL("/dashboard");
-    await expect(page.locator("h1")).toContainText("Dashboard");
+  test("TC-01: Successfully authenticate and access dashboard", async ({ page }) => {
+    // Click Sign In
+    await page.click('[data-testid="btn-login"]');
+    
+    // Fill credentials
+    await page.fill('[data-testid="input-email"]', "test.user@${d.shortName.toLowerCase()}.io");
+    await page.fill('[data-testid="input-password"]', "SecurePassword123!");
+    await page.click('[data-testid="btn-submit-login"]');
 
-    // 3. Open Create Modal
-    await page.click('[data-testid="btn-create-resource"]');
-    await page.fill('input[name="title"]', "Automated E2E Test Cluster");
-    await page.selectOption('select[name="priority"]', "HIGH");
-    await page.click('[data-testid="btn-submit-create"]');
+    // Verify successful redirection to workspace
+    await expect(page).toHaveURL(/.*dashboard/);
+    await expect(page.locator('[data-testid="user-greeting"]')).toBeVisible();
+  });
 
-    // 4. Verify toast notification and table entry
-    const toast = page.locator('[data-testid="toast-success"]');
-    await expect(toast).toBeVisible();
-    await expect(toast).toContainText("Resource created successfully");
+  test("TC-02: Execute primary action (${d.primaryActions[0]})", async ({ page }) => {
+    await page.goto("/dashboard");
 
-    const tableRow = page.locator('tr:has-text("Automated E2E Test Cluster")');
-    await expect(tableRow).toBeVisible();
-    await expect(tableRow.locator(".badge-status")).toContainText("ACTIVE");
+    // Trigger primary creation workflow
+    await page.click('[data-testid="btn-primary-action"]');
+    await page.fill('[data-testid="input-name"]', "Automated E2E Test Record");
+    await page.click('[data-testid="btn-confirm-save"]');
 
-    // 5. Cleanup session
-    await page.click('[data-testid="btn-user-avatar"]');
-    await page.click('[data-testid="btn-logout"]');
-    await expect(page).toHaveURL("/login");
+    // Verify toast notification and table update
+    await expect(page.locator('[data-testid="toast-success"]')).toContainText("Successfully saved");
+    await expect(page.locator('[data-testid="record-table"]')).toContainText("Automated E2E Test Record");
   });
 });
 \`\`\`
-
----
-
-## 4. Edge-Case Inventory & Boundary Failure Tests
-
-| Category | Edge Scenario | Potential Failure Mode | Mitigation & Test Assertion |
-| :--- | :--- | :--- | :--- |
-| **Concurrency** | 50 simultaneous requests attempting to update the same single record. | Lost updates, race condition state corruption. | Optimistic concurrency control using \`version\` column; exactly 1 update succeeds, 49 return 409 Conflict. |
-| **Network Degradation** | Upstream database latency spikes to 10 seconds. | Connection pool exhaustion causing cascading thread death. | Connection timeout capped at 3s; fast-fail circuit breaker trips and serves cached fallback. |
-| **Malicious Input** | 10MB nested JSON payload submitted to API. | Memory spike / Node.js event loop block (ReDoS). | Strict body parser payload limit (512KB max) and Zod schema recursion depth cap. |
-| **Rate Limit Surge** | Single IP sends 2,000 requests/sec. | Resource starvation for legitimate tenants. | Token bucket rate limiter returns HTTP 429 with \`Retry-After: 60\` header within <2ms. |
-| **Boundary Values** | Unicode zero-width spaces or SQL escape sequences in entity names. | Rendering glitches or database query syntax breaking. | Input sanitization pipeline strips illegal control characters and parameterizes all SQL queries. |`;
+`;
 }
 
+// Stage 4: 04_SECURITY_COMPLIANCE.md
 function generateSecurityCompliance(prompt: string, stack: TechStackPreferences, d: DomainContext): string {
-  return `# 04_SECURITY_COMPLIANCE.md: Security & Compliance Blueprint
+  return `# 04_SECURITY_COMPLIANCE.md: Security Architecture & OWASP Matrix
 
-## 1. Identity, Authentication & RBAC Permission Matrix
+## 1. Role-Based Access Control (RBAC) Permission Matrix
 
-### 1.1 Authentication Framework
-- **Token Format:** RFC 7519 JSON Web Tokens (JWT) signed with asymmetric \`RS256\` (RSA 4096-bit) or \`EdDSA\` keys.
-- **Access Token Lifetime:** 15 minutes (ephemeral).
-- **Refresh Token Lifetime:** 7 days stored in \`HttpOnly\`, \`Secure\`, \`SameSite=Strict\` cookie with automatic one-time rotation.
-- **Revocation:** Token Blacklist maintained in ${stack.caching} using JWT \`jti\` claim with TTL matching remaining token lifetime.
-
-### 1.2 Granular RBAC / ABAC Permission Table
-
-| Role | Target Resource | Create | Read | Update | Delete | Admin / Config | Attribute Constraints |
-| :--- | :--- | :---: | :---: | :---: | :---: | :---: | :--- |
-| **PLATFORM_ADMIN** | All System Entities | Yes | Yes | Yes | Yes | Yes | Unrestricted across all tenants. |
-| **WORKSPACE_OWNER** | Workspace & Resources | Yes | Yes | Yes | Yes | Yes | Limited to owned \`workspace_id\`. |
-| **MEMBER / OPERATOR** | Domain Resources | Yes | Yes | Yes | No | No | Must belong to active team project. |
-| **READONLY_AUDITOR** | Reports & Logs | No | Yes | No | No | No | Read-only access; PII fields masked. |
-| **INTEGRATION_BOT** | Webhooks & API Keys | Yes | Yes | Yes | No | No | Scoped strictly to provisioned API permissions. |
+| Role | Scope | Permissions Granted |
+| :--- | :--- | :--- |
+| **Super Admin** | Global Tenant | \`*:*\` (Full system configuration, user provisioning, billing, audit logs) |
+| **Organization Manager** | Tenant Boundary | \`${d.shortName.toLowerCase()}:write\`, \`${d.shortName.toLowerCase()}:read\`, \`users:invite\`, \`reports:export\` |
+| **Standard User** | Own Resources | \`${d.shortName.toLowerCase()}:read\`, \`${d.shortName.toLowerCase()}:create\`, \`profile:update\` |
+| **Read-Only Auditor** | Tenant Boundary | \`*:read\` (Zero mutation permissions, audit logs read-only) |
 
 ---
 
 ## 2. OWASP Top 10 Mitigation Blueprint
 
-\`\`\`mermaid
-flowchart LR
-    Threat["OWASP Threat Vector"] --> Defense["Defense-in-Depth Layer"] --> Outcome["Verified Security Posture"]
-
-    A["A01: Broken Access Control"] --> M1["RBAC Middleware & UUID Validation"] --> R1["Zero IDOR Vulnerabilities"]
-    B["A02: Cryptographic Failures"] --> M2["TLS 1.3 & AES-256-GCM Encryption"] --> R2["Encrypted Data-in-Transit & At-Rest"]
-    C["A03: Injection (SQL / XSS)"] --> M3["Parameterized Queries & Strict CSP"] --> R3["Zero Query or Script Injection"]
-    D["A04: Insecure Design"] --> M4["Threat Modeling & Rate Limiting"] --> R4["DoS & Abuse Prevention"]
-    E["A05: Security Misconfig"] --> M5["Hardened Docker & Non-Root User"] --> R5["Minimal Attack Surface"]
-\`\`\`
-
-### 2.1 Specific Technical Countermeasures
-1. **A01 Broken Access Control (IDOR):** Every data access query enforces compound WHERE clauses incorporating the authenticated tenant ID: \`WHERE id = :id AND tenant_id = :auth_tenant_id\`.
-2. **A02 Cryptographic Failures:** Passwords hashed with Argon2id (\`time_cost=3, memory_cost=65536, parallelism=4\`). Sensitive credentials encrypted via AES-256-GCM with unique initialization vectors (IV).
-3. **A03 Injection:** 100% of database interactions leverage typed ORMs or parameterized query templates. Direct string concatenation in SQL queries is strictly prohibited by CI linter rules.
-4. **A05 Security Misconfiguration:** Production HTTP security headers enforced via reverse proxy:
-   - \`Content-Security-Policy: default-src 'self'; script-src 'self'; object-src 'none';\`
-   - \`Strict-Transport-Security: max-age=63072000; includeSubDomains; preload\`
-   - \`X-Frame-Options: DENY\`
-   - \`X-Content-Type-Options: nosniff\`
-   - \`Referrer-Policy: strict-origin-when-cross-origin\`
+| OWASP Vulnerability | Technical Countermeasure & Defense-in-Depth |
+| :--- | :--- |
+| **A01: Broken Access Control** | Enforce compound tenant queries (\`WHERE id = :id AND tenant_id = :auth_tenant\`). Strict RBAC token verification. |
+| **A02: Cryptographic Failures** | TLS 1.3 enforced in transit. AES-256-GCM encryption at rest via AWS KMS. Passwords hashed with Argon2id. |
+| **A03: Injection (SQL / XSS)** | Parameterized queries via typed ORM. DOMPurify sanitization. Strict Content Security Policy (CSP). |
+| **A04: Insecure Design** | Threat modeling per service. Distributed token-bucket rate limiting (100 req/min). |
+| **A05: Security Misconfiguration** | Hardened multi-stage Docker container running as non-root user (\`appuser:10001\`). |
 
 ---
 
-## 3. Cryptographic Standards & Secret Rotation Policy
+## 3. Environment Variable Dictionary
 
-### 3.1 Standards Summary
-- **In-Transit Security:** TLS 1.3 enforced. Minimum permitted protocol: TLS 1.2 with PFS (Perfect Forward Secrecy) cipher suites (\`ECDHE-ECDSA-AES256-GCM-SHA384\`).
-- **At-Rest Security:** AWS KMS / HashiCorp Vault managed customer-managed keys (CMK) with automated 90-day rotation.
-- **Application Secrets:** Zero plaintext secrets in code or git. Injected at container runtime via secure secret managers.
-
----
-
-## 4. Environment Variable Dictionary
-
-| Variable Name | Required In | Sensitivity | Example / Default Value | Description |
-| :--- | :--- | :---: | :--- | :--- |
-| \`NODE_ENV\` | All | Public | \`production\` | Runtime environment mode. |
-| \`PORT\` | All | Public | \`8080\` | Ingress HTTP listener port. |
-| \`DATABASE_URL\` | Staging / Prod | **Secret** | \`postgresql://app_usr:***@db.internal:5432/${d.shortName.toLowerCase()}\` | Primary PostgreSQL connection string with SSL mode \`require\`. |
-| \`REDIS_URL\` | Staging / Prod | **Secret** | \`rediss://:***@redis.internal:6379/0\` | Encrypted TLS Redis connection string. |
-| \`JWT_PRIVATE_KEY\` | Staging / Prod | **Secret** | \`-----BEGIN RSA PRIVATE KEY-----\\n...\` | 4096-bit RSA key for signing access tokens. |
-| \`JWT_PUBLIC_KEY\` | Staging / Prod | Public | \`-----BEGIN PUBLIC KEY-----\\n...\` | Public key for token verification across services. |
-| \`ENCRYPTION_KEY_AES256\` | Staging / Prod | **Secret** | \`64-hex-character-secret-key-string\` | 256-bit AES master key for field-level PII encryption. |
-| \`CORS_ALLOWED_ORIGINS\` | All | Public | \`https://app.${d.shortName.toLowerCase()}.com\` | Comma-separated list of allowed CORS origins. |
-| \`LOG_LEVEL\` | All | Public | \`info\` | Structured logging threshold (\`debug\`, \`info\`, \`warn\`, \`error\`). |`;
+| Variable Name | Sensitivity | Description |
+| :--- | :---: | :--- |
+| \`NODE_ENV\` | Public | Runtime environment mode (\`production\` / \`staging\`). |
+| \`DATABASE_URL\` | **Secret** | PostgreSQL connection string with SSL mode required. |
+| \`REDIS_URL\` | **Secret** | Redis cluster connection string with TLS enabled. |
+| \`JWT_SECRET_KEY\` | **Secret** | 256-bit secret key for signing authentication tokens. |
+| \`ENCRYPTION_KEY_AES256\` | **Secret** | 32-byte master key for AES-256-GCM database field encryption. |
+`;
 }
 
+// Stage 5: 05_DEPLOYMENT_DEVOPS.md
 function generateDeploymentDevops(prompt: string, stack: TechStackPreferences, d: DomainContext): string {
-  return `# 05_DEPLOYMENT_DEVOPS.md: Infrastructure & Operations
+  return `# 05_DEPLOYMENT_DEVOPS.md: Infrastructure, CI/CD & Operations Blueprint
 
-## 1. Production Multi-Stage Dockerfile & docker-compose.yml
+## 1. Multi-Stage Production Dockerfile
 
-### 1.1 Multi-Stage Dockerfile
 \`\`\`dockerfile
 # ----------------------------------------------------
-# Stage 1: Build & Dependency Resolution
+# Stage 1: Build & Dependencies
 # ----------------------------------------------------
 FROM node:20-alpine AS builder
 WORKDIR /app
 
-# Install build dependencies
 RUN apk add --no-cache libc6-compat
-
 COPY package*.json ./
-RUN npm ci --frozen-lockfile
+RUN npm ci --prefer-offline --no-audit
 
 COPY . .
-ENV NODE_ENV=production
 RUN npm run build
 
 # ----------------------------------------------------
-# Stage 2: Production Minimal Runtime
+# Stage 2: Minimal Production Runtime
 # ----------------------------------------------------
 FROM node:20-alpine AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
-ENV PORT=8080
+ENV PORT=3000
 
-# Create dedicated non-root user and group
+# Create non-root user for security hardening
 RUN addgroup --system --gid 1001 nodejs && \
-    adduser --system --uid 1001 apprunner
+    adduser --system --uid 1001 appuser
 
-# Copy artifacts from builder with correct permissions
-COPY --from=builder --chown=apprunner:nodejs /app/dist ./dist
-COPY --from=builder --chown=apprunner:nodejs /app/node_modules ./node_modules
-COPY --from=builder --chown=apprunner:nodejs /app/package.json ./package.json
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
 
-USER apprunner
+USER appuser
+EXPOSE 3000
 
-EXPOSE 8080
+HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:8080/healthz || exit 1
-
-CMD ["node", "dist/main.js"]
-\`\`\`
-
-### 1.2 Production-Grade \`docker-compose.yml\`
-\`\`\`yaml
-version: "3.9"
-
-services:
-  app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: ${d.shortName.toLowerCase()}-app
-    restart: unless-stopped
-    ports:
-      - "8080:8080"
-    environment:
-      - NODE_ENV=production
-      - PORT=8080
-      - DATABASE_URL=postgresql://app_user:SuperSecureSecret2026@postgres:5432/${d.shortName.toLowerCase()}?sslmode=disable
-      - REDIS_URL=redis://redis:6379/0
-      - LOG_LEVEL=info
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    networks:
-      - internal-mesh
-
-  postgres:
-    image: postgres:16-alpine
-    container_name: ${d.shortName.toLowerCase()}-postgres
-    restart: unless-stopped
-    environment:
-      POSTGRES_DB: ${d.shortName.toLowerCase()}
-      POSTGRES_USER: app_user
-      POSTGRES_PASSWORD: SuperSecureSecret2026
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U app_user -d ${d.shortName.toLowerCase()}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - internal-mesh
-
-  redis:
-    image: redis:7.2-alpine
-    container_name: ${d.shortName.toLowerCase()}-redis
-    restart: unless-stopped
-    command: redis-server --appendonly yes --requirepass RedisSecureAuth2026
-    volumes:
-      - redisdata:/data
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - internal-mesh
-
-networks:
-  internal-mesh:
-    driver: bridge
-
-volumes:
-  pgdata:
-  redisdata:
+CMD ["node", "server.js"]
 \`\`\`
 
 ---
 
-## 2. Production CI/CD Workflow (.github/workflows/deploy.yml)
+## 2. GitHub Actions CI/CD Workflow (\`.github/workflows/deploy.yml\`)
 
 \`\`\`yaml
 name: Production CI/CD Pipeline
 
 on:
   push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
-  lint-and-test:
-    name: Code Quality & Test Matrix
+  validate:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js Environment
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: 'npm'
-
-      - name: Install Dependencies
-        run: npm ci
-
-      - name: Run Linters & Type Checks
-        run: |
-          npm run lint
-          npm run typecheck
-
-      - name: Execute Unit & Integration Tests
-        run: npm run test:coverage
-
-      - name: Upload Test Coverage
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-report
-          path: coverage/
-
-  security-scan:
-    name: Container Security Scanning
-    needs: lint-and-test
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Build Local Image for Scan
-        run: docker build -t ${d.shortName.toLowerCase()}:test .
-
-      - name: Run Trivy Vulnerability Scanner
-        uses: aquasecurity/trivy-action@master
-        with:
-          image-ref: '${d.shortName.toLowerCase()}:test'
-          format: 'table'
-          exit-code: '1'
-          ignore-unfixed: true
-          severity: 'CRITICAL,HIGH'
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test
 
   build-and-deploy:
-    name: Build, Push & Deploy to Production
-    needs: [ lint-and-test, security-scan ]
-    if: github.ref == 'refs/heads/main'
+    needs: validate
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Configure Cloud Credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: \${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: \${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
-
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v2
-
-      - name: Build, Tag, and Push Docker Image
-        env:
-          ECR_REGISTRY: \${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: ${d.shortName.toLowerCase()}
-          IMAGE_TAG: \${{ github.sha }}
-        run: |
-          docker build -t \$ECR_REGISTRY/\$ECR_REPOSITORY:\$IMAGE_TAG -t \$ECR_REGISTRY/\$ECR_REPOSITORY:latest .
-          docker push \$ECR_REGISTRY/\$ECR_REPOSITORY:\$IMAGE_TAG
-          docker push \$ECR_REGISTRY/\$ECR_REPOSITORY:latest
-
-      - name: Deploy Amazon ECS Task Definition (Rolling Update)
-        run: |
-          aws ecs update-service --cluster ${d.shortName.toLowerCase()}-prod --service ${d.shortName.toLowerCase()}-service --force-new-deployment
+      - uses: actions/checkout@v4
+      - name: Build Docker Image
+        run: docker build -t ${d.shortName.toLowerCase()}:latest -f docker/Dockerfile.production .
+      - name: Deploy to Kubernetes Cluster
+        run: echo "Deployed ${d.shortName} to production cluster."
 \`\`\`
-
----
-
-## 3. Infrastructure-as-Code (Terraform Spec)
-
-\`\`\`hcl
-# main.tf: Cloud Infrastructure Definition
-terraform {
-  required_version = ">= 1.5.0"
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "~> 5.0"
-    }
-  }
-}
-
-provider "aws" {
-  region = var.aws_region
-}
-
-# 1. Dedicated VPC & Subnets
-resource "aws_vpc" "main" {
-  cidr_block           = "10.0.0.0/16"
-  enable_dns_hostnames = true
-  enable_dns_support   = true
-
-  tags = {
-    Name        = "${d.shortName.toLowerCase()}-vpc"
-    Environment = "production"
-  }
-}
-
-# 2. Managed PostgreSQL RDS Instance (Multi-AZ)
-resource "aws_db_instance" "postgres" {
-  identifier             = "${d.shortName.toLowerCase()}-db"
-  engine                 = "postgres"
-  engine_version         = "16.1"
-  instance_class         = "db.t4g.large"
-  allocated_storage      = 50
-  max_allocated_storage  = 500
-  storage_encrypted      = true
-  multi_az               = true
-  db_name                = "${d.shortName.toLowerCase()}"
-  username               = "app_admin"
-  password               = var.db_password
-  skip_final_snapshot    = false
-  final_snapshot_identifier = "${d.shortName.toLowerCase()}-final-snapshot"
-}
-
-# 3. ECS Fargate Cluster
-resource "aws_ecs_cluster" "cluster" {
-  name = "${d.shortName.toLowerCase()}-prod-cluster"
-
-  setting {
-    name  = "containerInsights"
-    value = "enabled"
-  }
-}
-\`\`\`
-
----
-
-## 4. Observability, Health Endpoints & Metrics
-
-### 4.1 Health Check Endpoints
-- **Liveness Probe (\`GET /healthz\`):** Returns HTTP 200 immediately if process event loop is active.
-- **Readiness Probe (\`GET /ready\`):** Queries PostgreSQL (\`SELECT 1\`) and Redis (\`PING\`). Returns HTTP 200 if all dependent storage engines are responsive; returns HTTP 503 Service Unavailable if any dependency fails.
-
-### 4.2 Structured JSON Logging Format
-\`\`\`json
-{
-  "timestamp": "2026-08-23T21:22:15.892Z",
-  "level": "info",
-  "service": "${d.shortName.toLowerCase()}-api",
-  "trace_id": "8f3e1a90c42b7d12",
-  "span_id": "04b12f6e",
-  "event": "http_request_completed",
-  "method": "POST",
-  "path": "/api/v1/resources",
-  "status_code": 201,
-  "duration_ms": 18.4,
-  "tenant_id": "ws-99a",
-  "user_id": "usr-01"
-}
-\`\`\`
-
-### 4.3 Prometheus Metric Hooks
-- \`http_requests_total{method="POST", status="201", handler="/api/v1/resources"}\`
-- \`http_request_duration_seconds_bucket{le="0.05"}\`
-- \`db_connection_pool_active_connections\`
-- \`redis_connected_clients\`
-- \`event_bus_lag_seconds\``;
+`;
 }

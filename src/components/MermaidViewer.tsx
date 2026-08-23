@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import { Maximize2, ZoomIn, ZoomOut, RotateCcw, Copy, Check, Download, AlertTriangle } from "lucide-react";
+import { Maximize2, ZoomIn, ZoomOut, RotateCcw, Copy, Check, Download } from "lucide-react";
 
 interface MermaidViewerProps {
   chart: string;
@@ -11,7 +11,7 @@ interface MermaidViewerProps {
 export const MermaidViewer: React.FC<MermaidViewerProps> = ({ chart, id }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [svgContent, setSvgContent] = useState<string>("");
-  const [error, setError] = useState<string | null>(null);
+  const [hasError, setHasError] = useState<boolean>(false);
   const [copied, setCopied] = useState(false);
   const [scale, setScale] = useState(1);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -24,7 +24,7 @@ export const MermaidViewer: React.FC<MermaidViewerProps> = ({ chart, id }) => {
       if (!chart.trim()) return;
 
       try {
-        setError(null);
+        setHasError(false);
         const mermaid = (await import("mermaid")).default;
         mermaid.initialize({
           startOnLoad: false,
@@ -51,10 +51,9 @@ export const MermaidViewer: React.FC<MermaidViewerProps> = ({ chart, id }) => {
         if (isMounted) {
           setSvgContent(svg);
         }
-      } catch (err) {
+      } catch {
         if (isMounted) {
-          console.warn("Mermaid rendering error:", err);
-          setError(err instanceof Error ? err.message : "Failed to compile Mermaid diagram");
+          setHasError(true);
         }
       }
     }
@@ -86,10 +85,10 @@ export const MermaidViewer: React.FC<MermaidViewerProps> = ({ chart, id }) => {
   return (
     <div className={`my-6 rounded-2xl border border-slate-200 bg-white overflow-hidden shadow-sm transition-all ${isFullscreen ? "fixed inset-4 z-50 flex flex-col bg-white/95 backdrop-blur-xl border-emerald-500 shadow-2xl" : ""}`}>
       {/* Diagram Toolbar Card */}
-      <div className="flex items-center justify-between px-4 py-2.5 bg-slate-50 border-b border-slate-200 text-xs text-slate-600">
+      <div className="flex items-center justify-between px-4 py-2 bg-slate-50 border-b border-slate-200 text-xs text-slate-600">
         <div className="flex items-center gap-2">
-          <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-          <span className="font-bold text-slate-800 uppercase tracking-wider text-[11px]">SDLC Visual Architecture Diagram</span>
+          <span className="h-2 w-2 rounded-full bg-emerald-500" />
+          <span className="font-bold text-slate-800 uppercase tracking-wider text-[11px]">System Architecture Diagram</span>
         </div>
 
         <div className="flex items-center gap-1">
@@ -118,17 +117,19 @@ export const MermaidViewer: React.FC<MermaidViewerProps> = ({ chart, id }) => {
           <button
             onClick={handleCopyCode}
             className="p-1.5 hover:bg-emerald-50 rounded-lg text-slate-600 hover:text-emerald-700 transition-colors"
-            title="Copy Mermaid Code"
+            title="Copy Diagram Code"
           >
             {copied ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
           </button>
-          <button
-            onClick={handleDownloadSvg}
-            className="p-1.5 hover:bg-emerald-50 rounded-lg text-slate-600 hover:text-emerald-700 transition-colors"
-            title="Download SVG"
-          >
-            <Download className="h-3.5 w-3.5" />
-          </button>
+          {svgContent && (
+            <button
+              onClick={handleDownloadSvg}
+              className="p-1.5 hover:bg-emerald-50 rounded-lg text-slate-600 hover:text-emerald-700 transition-colors"
+              title="Download SVG"
+            >
+              <Download className="h-3.5 w-3.5" />
+            </button>
+          )}
           <button
             onClick={() => setIsFullscreen(!isFullscreen)}
             className="p-1.5 hover:bg-slate-200 rounded-lg text-slate-600 hover:text-slate-900 transition-colors"
@@ -142,18 +143,12 @@ export const MermaidViewer: React.FC<MermaidViewerProps> = ({ chart, id }) => {
       {/* Render Area */}
       <div
         ref={containerRef}
-        className={`p-6 overflow-auto flex items-center justify-center min-h-[240px] bg-slate-50/50 ${isFullscreen ? "flex-1" : "max-h-[550px]"}`}
+        className={`p-6 overflow-auto flex items-center justify-center min-h-[220px] bg-slate-50/50 ${isFullscreen ? "flex-1" : "max-h-[550px]"}`}
       >
-        {error ? (
-          <div className="w-full text-left p-4 rounded-xl bg-red-50 border border-red-200 text-red-800 text-xs">
-            <div className="flex items-center gap-2 font-bold mb-2 text-red-700">
-              <AlertTriangle className="h-4 w-4" />
-              <span>Diagram Rendering Notice</span>
-            </div>
-            <p className="text-slate-600 mb-3 font-mono text-[11px]">{error}</p>
-            <div className="p-3 rounded-lg bg-white border border-red-200 font-mono text-[11px] overflow-x-auto text-slate-800">
-              <pre>{chart}</pre>
-            </div>
+        {hasError ? (
+          <div className="w-full text-left p-4 rounded-xl bg-slate-900 text-slate-100 font-mono text-xs overflow-x-auto">
+            <div className="text-emerald-400 font-bold mb-2">mermaid</div>
+            <pre className="text-slate-300">{chart}</pre>
           </div>
         ) : svgContent ? (
           <div
@@ -164,7 +159,7 @@ export const MermaidViewer: React.FC<MermaidViewerProps> = ({ chart, id }) => {
         ) : (
           <div className="flex items-center gap-2 text-xs text-slate-500">
             <div className="h-4 w-4 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
-            <span>Compiling Visual SDLC Diagram...</span>
+            <span>Rendering Diagram...</span>
           </div>
         )}
       </div>
