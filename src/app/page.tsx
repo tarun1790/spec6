@@ -22,30 +22,23 @@ const initialTechStack: TechStackPreferences = TEMPLATES[0].defaultTechStack || 
   caching: "Redis Cluster with Cache-Aside"
 };
 
-const defaultPrompt = TEMPLATES[0].prompt;
-
-const initialStages: StageState[] = STAGES.map((s) => {
-  const content = generateMockStageContent(s.index, defaultPrompt, initialTechStack, {});
-  return {
-    index: s.index,
-    fileName: s.fileName,
-    status: "completed",
-    content,
-    tokensGenerated: Math.round(content.length / 4),
-    durationMs: 1100
-  };
-});
+const initialStages: StageState[] = STAGES.map((s) => ({
+  index: s.index,
+  fileName: s.fileName,
+  status: "idle",
+  content: "",
+  tokensGenerated: 0,
+  durationMs: 0
+}));
 
 export default function DashboardPage() {
-  const [prompt, setPrompt] = useState<string>(TEMPLATES[0].prompt);
-  const [techStack, setTechStack] = useState<TechStackPreferences>(TEMPLATES[0].defaultTechStack || initialTechStack);
+  const [prompt, setPrompt] = useState<string>("");
+  const [techStack, setTechStack] = useState<TechStackPreferences>(initialTechStack);
   const [stages, setStages] = useState<StageState[]>(initialStages);
   const [activeStageIndex, setActiveStageIndex] = useState<number>(0);
   const [selectedStageIndex, setSelectedStageIndex] = useState<number>(0);
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
-  const [totalTokens, setTotalTokens] = useState<number>(() =>
-    initialStages.reduce((sum, s) => sum + s.tokensGenerated, 0)
-  );
+  const [totalTokens, setTotalTokens] = useState<number>(0);
 
   // Settings & Modals
   const [llmConfig, setLlmConfig] = useState<LLMConfig>({
