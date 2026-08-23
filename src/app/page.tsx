@@ -292,8 +292,8 @@ export default function DashboardPage() {
             onStartGeneration={() => handleStartGeneration()}
             onStopGeneration={handleStopGeneration}
             onReset={handleReset}
-            onRegenerateStage={(idx) => handleStartGeneration(idx)}
-            onSelectStageTab={(idx) => setSelectedStageIndex(idx)}
+            onRegenerateStage={(idx: number) => handleStartGeneration(idx)}
+            onSelectStageTab={(idx: number) => setSelectedStageIndex(idx)}
           />
         </div>
 
@@ -304,7 +304,7 @@ export default function DashboardPage() {
             selectedStageIndex={selectedStageIndex}
             onSelectStageIndex={setSelectedStageIndex}
             onUpdateStageContent={handleUpdateStageContent}
-            onOpenDiff={(fileName, orig, curr) => {
+            onOpenDiff={(fileName: string, orig: string, curr: string) => {
               setDiffModal({ isOpen: true, fileName, original: orig, current: curr });
             }}
             isGenerating={isGenerating}
