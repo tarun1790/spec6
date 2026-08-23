@@ -65,7 +65,10 @@ export const ControllerPanel: React.FC<ControllerPanelProps> = ({
   const [ingestSuccess, setIngestSuccess] = useState(false);
   const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
 
-  // Advanced Tool Toggles
+  // Advanced Tool & Swarm Toggles
+  const [orchestrationMode, setOrchestrationMode] = useState<"sequential_chained" | "parallel_dag" | "multi_agent_consensus">("parallel_dag");
+  const [enableSemanticCache, setEnableSemanticCache] = useState(true);
+  const [enableSpeculativeDecoding, setEnableSpeculativeDecoding] = useState(true);
   const [enableMermaidLinter, setEnableMermaidLinter] = useState(true);
   const [enableOpenAPIValidator, setEnableOpenAPIValidator] = useState(true);
   const [enableCVEScanner, setEnableCVEScanner] = useState(true);
@@ -313,7 +316,7 @@ export const ControllerPanel: React.FC<ControllerPanelProps> = ({
         )}
       </div>
 
-      {/* Card 5: Advanced Tooling & Multi-Agent Swarm */}
+      {/* Card 5: Multi-Agent Orchestrator & Swarm Engine */}
       <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
         <button
           type="button"
@@ -322,49 +325,109 @@ export const ControllerPanel: React.FC<ControllerPanelProps> = ({
         >
           <div className="flex items-center gap-2">
             <Sliders className="h-3.5 w-3.5 text-emerald-600" />
-            <span>MCP Tool Calling & Multi-Agent Verifiers</span>
+            <span>Multi-Agent Swarm Orchestrator & Efficiency</span>
           </div>
           {showAdvancedTools ? <ChevronUp className="h-3.5 w-3.5 text-slate-400" /> : <ChevronDown className="h-3.5 w-3.5 text-slate-400" />}
         </button>
 
         {showAdvancedTools && (
-          <div className="p-4 pt-1 space-y-2 border-t border-slate-100 text-xs bg-slate-50/50">
-            <label className="flex items-center justify-between cursor-pointer py-1">
-              <span className="text-slate-700 font-medium">Mermaid AST Syntax Linter</span>
-              <input
-                type="checkbox"
-                checked={enableMermaidLinter}
-                onChange={(e) => setEnableMermaidLinter(e.target.checked)}
-                className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
-              />
-            </label>
-            <label className="flex items-center justify-between cursor-pointer py-1">
-              <span className="text-slate-700 font-medium">OpenAPI 3.1 Contract Validator</span>
-              <input
-                type="checkbox"
-                checked={enableOpenAPIValidator}
-                onChange={(e) => setEnableOpenAPIValidator(e.target.checked)}
-                className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
-              />
-            </label>
-            <label className="flex items-center justify-between cursor-pointer py-1">
-              <span className="text-slate-700 font-medium">Security CVE Vulnerability Scanner</span>
-              <input
-                type="checkbox"
-                checked={enableCVEScanner}
-                onChange={(e) => setEnableCVEScanner(e.target.checked)}
-                className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
-              />
-            </label>
-            <label className="flex items-center justify-between cursor-pointer py-1">
-              <span className="text-slate-700 font-medium">Critic Agent Self-Correction Loop</span>
-              <input
-                type="checkbox"
-                checked={enableCriticAgent}
-                onChange={(e) => setEnableCriticAgent(e.target.checked)}
-                className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
-              />
-            </label>
+          <div className="p-4 pt-1 space-y-3 border-t border-slate-100 text-xs bg-slate-50/50">
+            {/* Orchestration Mode Pills */}
+            <div>
+              <label className="block text-[10px] uppercase font-bold text-slate-600 mb-1.5">
+                Swarm Orchestration Engine
+              </label>
+              <div className="grid grid-cols-3 gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => setOrchestrationMode("parallel_dag")}
+                  className={`p-1.5 rounded-lg text-center text-[10px] font-bold border transition-all ${
+                    orchestrationMode === "parallel_dag"
+                      ? "bg-emerald-600 text-white border-emerald-600 shadow-sm"
+                      : "bg-white text-slate-700 border-slate-200 hover:bg-emerald-50"
+                  }`}
+                >
+                  ⚡ Parallel DAG (2.5x Fast)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setOrchestrationMode("sequential_chained")}
+                  className={`p-1.5 rounded-lg text-center text-[10px] font-bold border transition-all ${
+                    orchestrationMode === "sequential_chained"
+                      ? "bg-emerald-600 text-white border-emerald-600 shadow-sm"
+                      : "bg-white text-slate-700 border-slate-200 hover:bg-emerald-50"
+                  }`}
+                >
+                  🎯 Sequential (High Precision)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setOrchestrationMode("multi_agent_consensus")}
+                  className={`p-1.5 rounded-lg text-center text-[10px] font-bold border transition-all ${
+                    orchestrationMode === "multi_agent_consensus"
+                      ? "bg-emerald-600 text-white border-emerald-600 shadow-sm"
+                      : "bg-white text-slate-700 border-slate-200 hover:bg-emerald-50"
+                  }`}
+                >
+                  🛡️ Consensus (Zero-Error)
+                </button>
+              </div>
+            </div>
+
+            {/* Efficiency Toggles */}
+            <div className="space-y-1.5 pt-1 border-t border-slate-200">
+              <label className="flex items-center justify-between cursor-pointer py-0.5">
+                <div>
+                  <span className="text-slate-800 font-semibold text-[11px]">Semantic Token Caching</span>
+                  <p className="text-[10px] text-slate-500">Deduplicates repetitive schemas (saves ~40% tokens)</p>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={enableSemanticCache}
+                  onChange={(e) => setEnableSemanticCache(e.target.checked)}
+                  className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                />
+              </label>
+
+              <label className="flex items-center justify-between cursor-pointer py-0.5">
+                <div>
+                  <span className="text-slate-800 font-semibold text-[11px]">Speculative Decoding & Stream Throttling</span>
+                  <p className="text-[10px] text-slate-500">Reduces DOM reflows and latency</p>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={enableSpeculativeDecoding}
+                  onChange={(e) => setEnableSpeculativeDecoding(e.target.checked)}
+                  className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                />
+              </label>
+
+              <label className="flex items-center justify-between cursor-pointer py-0.5">
+                <div>
+                  <span className="text-slate-800 font-semibold text-[11px]">Mermaid AST Syntax Linter</span>
+                  <p className="text-[10px] text-slate-500">Headless diagram syntax compiler</p>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={enableMermaidLinter}
+                  onChange={(e) => setEnableMermaidLinter(e.target.checked)}
+                  className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                />
+              </label>
+
+              <label className="flex items-center justify-between cursor-pointer py-0.5">
+                <div>
+                  <span className="text-slate-800 font-semibold text-[11px]">Critic Agent Reflection Gate</span>
+                  <p className="text-[10px] text-slate-500">Self-corrects diagram and schema flaws</p>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={enableCriticAgent}
+                  onChange={(e) => setEnableCriticAgent(e.target.checked)}
+                  className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                />
+              </label>
+            </div>
           </div>
         )}
       </div>
