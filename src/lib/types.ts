@@ -2,9 +2,11 @@ export interface StageInfo {
   index: number;
   fileName: string;
   title: string;
+  sdlcPhase: string;
   shortDescription: string;
   badge: string;
   iconName: string;
+  color: "emerald" | "red" | "indigo" | "teal" | "rose" | "emerald-dark";
   requiredSections: string[];
 }
 
@@ -12,10 +14,12 @@ export const STAGES: StageInfo[] = [
   {
     index: 0,
     fileName: "00_PROJECT_BRIEF.md",
-    title: "Project Brief & Requirements",
-    shortDescription: "Scope, user personas, P0/P1/P2 matrix, SLAs & boundaries",
-    badge: "Scope & Strategy",
+    title: "Project Scope & Requirements",
+    sdlcPhase: "SDLC Phase 1: Requirements Analysis",
+    shortDescription: "Scope boundaries, user personas, P0/P1/P2 matrix, SLAs & business value",
+    badge: "1. Requirements",
     iconName: "FileText",
+    color: "emerald",
     requiredSections: [
       "Executive Summary & Problem Statement",
       "Target User Personas & Key Journeys",
@@ -28,9 +32,11 @@ export const STAGES: StageInfo[] = [
     index: 1,
     fileName: "01_SYSTEM_ARCHITECTURE.md",
     title: "System Architecture & Contracts",
-    shortDescription: "Mermaid topology, ERD schemas, REST/GraphQL APIs & sequence flows",
-    badge: "Architecture & Design",
+    sdlcPhase: "SDLC Phase 2: System & Schema Design",
+    shortDescription: "Mermaid topology, ERD schemas, REST/GraphQL API contracts & sequence flows",
+    badge: "2. Architecture",
     iconName: "Layers",
+    color: "teal",
     requiredSections: [
       "Technology Stack Selection & Architectural Rationale",
       "Visual System Topology (Mermaid Flowchart)",
@@ -43,9 +49,11 @@ export const STAGES: StageInfo[] = [
     index: 2,
     fileName: "02_IMPLEMENTATION_PLAN.md",
     title: "Implementation Plan & Breakdown",
+    sdlcPhase: "SDLC Phase 3: Software Development",
     shortDescription: "Directory tree, 4-phase milestone breakdown, actionable task checklist",
-    badge: "Engineering Roadmap",
+    badge: "3. Development",
     iconName: "GitMerge",
+    color: "indigo",
     requiredSections: [
       "Repository Directory Tree Structure",
       "Sequential Milestone Breakdown (Phases 1-4)",
@@ -57,9 +65,11 @@ export const STAGES: StageInfo[] = [
     index: 3,
     fileName: "03_TESTING_STRATEGY.md",
     title: "Testing Strategy & QA Matrix",
-    shortDescription: "Unit coverage >80%, API mock suites, E2E user flows & edge cases",
-    badge: "Quality Assurance",
+    sdlcPhase: "SDLC Phase 4: Quality Assurance & Testing",
+    shortDescription: "Unit coverage >80%, API mock suites, Playwright E2E flows & edge cases",
+    badge: "4. Testing & QA",
     iconName: "CheckSquare",
+    color: "red",
     requiredSections: [
       "Unit Testing Matrix (>80% Target Coverage & Mocking)",
       "API & Integration Test Suites with Mock JSON Payloads",
@@ -71,9 +81,11 @@ export const STAGES: StageInfo[] = [
     index: 4,
     fileName: "04_SECURITY_COMPLIANCE.md",
     title: "Security & Compliance Blueprint",
+    sdlcPhase: "SDLC Phase 5: Security & Hardening",
     shortDescription: "JWT/OAuth2/RBAC, OWASP Top 10 mitigations, encryption & env vars",
-    badge: "Security & Hardening",
+    badge: "5. Security",
     iconName: "ShieldCheck",
+    color: "rose",
     requiredSections: [
       "Identity, Authentication & RBAC Permission Tables",
       "OWASP Top 10 Mitigation Blueprint",
@@ -85,9 +97,11 @@ export const STAGES: StageInfo[] = [
     index: 5,
     fileName: "05_DEPLOYMENT_DEVOPS.md",
     title: "Deployment & DevOps Spec",
+    sdlcPhase: "SDLC Phase 6: Deployment & Operations",
     shortDescription: "Multi-stage Dockerfile, docker-compose, CI/CD deploy.yml, IaC & observability",
-    badge: "Infra & Operations",
+    badge: "6. Deployment",
     iconName: "Terminal",
+    color: "emerald-dark",
     requiredSections: [
       "Multi-Stage Dockerfile & Production docker-compose.yml",
       "CI/CD Pipeline (.github/workflows/deploy.yml)",
@@ -134,8 +148,8 @@ export interface GenerationRequest {
   prompt: string;
   techStack: TechStackPreferences;
   llmConfig: LLMConfig;
-  targetStage?: number; // if re-generating a specific stage
-  accumulatedContext?: Record<string, string>; // for passing previous stages if selective
+  targetStage?: number;
+  accumulatedContext?: Record<string, string>;
 }
 
 export type SSEEvent =

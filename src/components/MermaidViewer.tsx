@@ -28,18 +28,19 @@ export const MermaidViewer: React.FC<MermaidViewerProps> = ({ chart, id }) => {
         const mermaid = (await import("mermaid")).default;
         mermaid.initialize({
           startOnLoad: false,
-          theme: "dark",
+          theme: "default",
           securityLevel: "loose",
           fontFamily: "ui-sans-serif, system-ui, sans-serif",
           themeVariables: {
-            darkMode: true,
-            background: "#0f172a",
-            primaryColor: "#6366f1",
-            primaryTextColor: "#f8fafc",
-            primaryBorderColor: "#818cf8",
-            lineColor: "#94a3b8",
-            secondaryColor: "#1e293b",
-            tertiaryColor: "#090d16"
+            primaryColor: "#ecfdf5",
+            primaryTextColor: "#064e3b",
+            primaryBorderColor: "#059669",
+            lineColor: "#047857",
+            secondaryColor: "#fef2f2",
+            secondaryTextColor: "#991b1b",
+            secondaryBorderColor: "#ef4444",
+            tertiaryColor: "#f8fafc",
+            background: "#ffffff"
           }
         });
 
@@ -83,54 +84,54 @@ export const MermaidViewer: React.FC<MermaidViewerProps> = ({ chart, id }) => {
   };
 
   return (
-    <div className={`my-6 rounded-xl border border-slate-800 bg-slate-900/90 overflow-hidden shadow-xl transition-all ${isFullscreen ? "fixed inset-4 z-50 flex flex-col bg-slate-950/95 backdrop-blur-xl border-indigo-500/50" : ""}`}>
-      {/* Diagram Toolbar */}
-      <div className="flex items-center justify-between px-4 py-2.5 bg-slate-950/70 border-b border-slate-800/80 text-xs text-slate-400">
+    <div className={`my-6 rounded-2xl border border-slate-200 bg-white overflow-hidden shadow-sm transition-all ${isFullscreen ? "fixed inset-4 z-50 flex flex-col bg-white/95 backdrop-blur-xl border-emerald-500 shadow-2xl" : ""}`}>
+      {/* Diagram Toolbar Card */}
+      <div className="flex items-center justify-between px-4 py-2.5 bg-slate-50 border-b border-slate-200 text-xs text-slate-600">
         <div className="flex items-center gap-2">
-          <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-          <span className="font-semibold text-slate-300 uppercase tracking-wider text-[11px]">Mermaid Visual Diagram</span>
+          <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+          <span className="font-bold text-slate-800 uppercase tracking-wider text-[11px]">SDLC Visual Architecture Diagram</span>
         </div>
 
         <div className="flex items-center gap-1">
           <button
             onClick={() => setScale((s) => Math.min(s + 0.15, 2.5))}
-            className="p-1.5 hover:bg-slate-800 rounded text-slate-400 hover:text-white"
+            className="p-1.5 hover:bg-slate-200 rounded-lg text-slate-600 hover:text-slate-900 transition-colors"
             title="Zoom In"
           >
             <ZoomIn className="h-3.5 w-3.5" />
           </button>
           <button
             onClick={() => setScale((s) => Math.max(s - 0.15, 0.5))}
-            className="p-1.5 hover:bg-slate-800 rounded text-slate-400 hover:text-white"
+            className="p-1.5 hover:bg-slate-200 rounded-lg text-slate-600 hover:text-slate-900 transition-colors"
             title="Zoom Out"
           >
             <ZoomOut className="h-3.5 w-3.5" />
           </button>
           <button
             onClick={() => setScale(1)}
-            className="p-1.5 hover:bg-slate-800 rounded text-slate-400 hover:text-white"
+            className="p-1.5 hover:bg-slate-200 rounded-lg text-slate-600 hover:text-slate-900 transition-colors"
             title="Reset Zoom"
           >
             <RotateCcw className="h-3.5 w-3.5" />
           </button>
-          <div className="h-3 w-px bg-slate-800 mx-1" />
+          <div className="h-3.5 w-px bg-slate-300 mx-1" />
           <button
             onClick={handleCopyCode}
-            className="p-1.5 hover:bg-slate-800 rounded text-slate-400 hover:text-white"
+            className="p-1.5 hover:bg-emerald-50 rounded-lg text-slate-600 hover:text-emerald-700 transition-colors"
             title="Copy Mermaid Code"
           >
-            {copied ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
+            {copied ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
           </button>
           <button
             onClick={handleDownloadSvg}
-            className="p-1.5 hover:bg-slate-800 rounded text-slate-400 hover:text-white"
+            className="p-1.5 hover:bg-emerald-50 rounded-lg text-slate-600 hover:text-emerald-700 transition-colors"
             title="Download SVG"
           >
             <Download className="h-3.5 w-3.5" />
           </button>
           <button
             onClick={() => setIsFullscreen(!isFullscreen)}
-            className="p-1.5 hover:bg-slate-800 rounded text-slate-400 hover:text-white"
+            className="p-1.5 hover:bg-slate-200 rounded-lg text-slate-600 hover:text-slate-900 transition-colors"
             title={isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
           >
             <Maximize2 className="h-3.5 w-3.5" />
@@ -141,16 +142,16 @@ export const MermaidViewer: React.FC<MermaidViewerProps> = ({ chart, id }) => {
       {/* Render Area */}
       <div
         ref={containerRef}
-        className={`p-6 overflow-auto flex items-center justify-center min-h-[220px] bg-gradient-to-b from-slate-900/50 to-slate-950/80 ${isFullscreen ? "flex-1" : "max-h-[550px]"}`}
+        className={`p-6 overflow-auto flex items-center justify-center min-h-[240px] bg-slate-50/50 ${isFullscreen ? "flex-1" : "max-h-[550px]"}`}
       >
         {error ? (
-          <div className="w-full text-left p-4 rounded-lg bg-amber-950/30 border border-amber-500/30 text-amber-300 text-xs">
-            <div className="flex items-center gap-2 font-semibold mb-2">
-              <AlertTriangle className="h-4 w-4 text-amber-400" />
-              <span>Diagram Rendering Note</span>
+          <div className="w-full text-left p-4 rounded-xl bg-red-50 border border-red-200 text-red-800 text-xs">
+            <div className="flex items-center gap-2 font-bold mb-2 text-red-700">
+              <AlertTriangle className="h-4 w-4" />
+              <span>Diagram Rendering Notice</span>
             </div>
-            <p className="text-slate-400 mb-3 font-mono text-[11px]">{error}</p>
-            <div className="p-3 rounded bg-slate-950 font-mono text-[11px] overflow-x-auto text-slate-300">
+            <p className="text-slate-600 mb-3 font-mono text-[11px]">{error}</p>
+            <div className="p-3 rounded-lg bg-white border border-red-200 font-mono text-[11px] overflow-x-auto text-slate-800">
               <pre>{chart}</pre>
             </div>
           </div>
@@ -162,8 +163,8 @@ export const MermaidViewer: React.FC<MermaidViewerProps> = ({ chart, id }) => {
           />
         ) : (
           <div className="flex items-center gap-2 text-xs text-slate-500">
-            <div className="h-4 w-4 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
-            <span>Compiling Mermaid diagram...</span>
+            <div className="h-4 w-4 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+            <span>Compiling Visual SDLC Diagram...</span>
           </div>
         )}
       </div>

@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import {
-  FileText,
   Eye,
   Code2,
   Columns,
@@ -11,7 +10,6 @@ import {
   Download,
   GitCompare,
   Search,
-  Sparkles,
   BookOpen
 } from "lucide-react";
 import { StageState, STAGES } from "@/lib/types";
@@ -42,7 +40,6 @@ export const WorkspaceViewer: React.FC<WorkspaceViewerProps> = ({
   const [searchTerm, setSearchTerm] = useState("");
   const [copied, setCopied] = useState(false);
 
-  // Tab index -1 indicates "All Combined Specs"
   const isCombinedView = selectedStageIndex === -1;
 
   const currentStageDef = !isCombinedView
@@ -80,10 +77,10 @@ export const WorkspaceViewer: React.FC<WorkspaceViewerProps> = ({
   };
 
   return (
-    <div className="h-full flex flex-col bg-slate-950 overflow-hidden">
-      {/* Tab Navigation Bar */}
-      <div className="flex items-center justify-between border-b border-slate-800 bg-slate-950/90 px-3 overflow-x-auto select-none scrollbar-none">
-        <div className="flex items-center gap-1 py-1.5 min-w-max">
+    <div className="h-full flex flex-col bg-white overflow-hidden">
+      {/* Tab Navigation Card Bar */}
+      <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50/90 px-3 py-2 overflow-x-auto select-none">
+        <div className="flex items-center gap-1.5 min-w-max">
           {STAGES.map((s) => {
             const stageState = stages.find((st) => st.index === s.index);
             const isSelected = selectedStageIndex === s.index;
@@ -95,29 +92,33 @@ export const WorkspaceViewer: React.FC<WorkspaceViewerProps> = ({
                 key={s.index}
                 data-testid={`tab-${s.fileName}`}
                 onClick={() => onSelectStageIndex(s.index)}
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-mono transition-all ${
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-mono transition-all border ${
                   isSelected
-                    ? "bg-slate-800/90 text-white font-semibold shadow-sm border border-slate-700"
-                    : "text-slate-400 hover:text-slate-200 hover:bg-slate-900/60 border border-transparent"
+                    ? "bg-white text-emerald-900 border-emerald-400 font-bold shadow-sm ring-1 ring-emerald-300"
+                    : "bg-slate-100/70 border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-white"
                 }`}
               >
-                <span className={`h-1.5 w-1.5 rounded-full ${
-                  isGeneratingThis ? "bg-cyan-400 animate-ping" : isCompleted ? "bg-emerald-400" : "bg-slate-600"
+                <span className={`h-2 w-2 rounded-full ${
+                  isGeneratingThis
+                    ? "bg-emerald-500 animate-ping"
+                    : isCompleted
+                    ? "bg-emerald-500"
+                    : "bg-slate-300"
                 }`} />
                 <span>{s.fileName}</span>
               </button>
             );
           })}
 
-          <div className="h-4 w-px bg-slate-800 mx-1" />
+          <div className="h-4 w-px bg-slate-300 mx-1" />
 
-          {/* Combined Master View Tab */}
+          {/* Master View Tab Card */}
           <button
             onClick={() => onSelectStageIndex(-1)}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono transition-all ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-mono transition-all border ${
               isCombinedView
-                ? "bg-indigo-600/30 text-indigo-200 font-semibold border border-indigo-500/40"
-                : "text-indigo-400/80 hover:text-indigo-300 hover:bg-slate-900/60 border border-transparent"
+                ? "bg-red-50 text-red-800 border-red-300 font-bold shadow-sm ring-1 ring-red-300"
+                : "bg-slate-100/70 border-slate-200 text-red-600 hover:bg-red-50/50 hover:text-red-700"
             }`}
           >
             <BookOpen className="h-3.5 w-3.5" />
@@ -126,16 +127,18 @@ export const WorkspaceViewer: React.FC<WorkspaceViewerProps> = ({
         </div>
       </div>
 
-      {/* Workspace Toolbar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-2 bg-slate-900/50 border-b border-slate-800/80 text-xs">
+      {/* Workspace Toolbar Card */}
+      <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-2.5 bg-white border-b border-slate-200 text-xs">
         {/* Left Stats & View Switcher */}
         <div className="flex items-center gap-3">
-          {/* View Mode Toggle */}
-          <div className="flex items-center p-0.5 rounded-lg bg-slate-950 border border-slate-800">
+          {/* View Mode Toggle Pill Card */}
+          <div className="flex items-center p-1 rounded-xl bg-slate-100 border border-slate-200 shadow-inner">
             <button
               onClick={() => setViewMode("preview")}
-              className={`flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${
-                viewMode === "preview" ? "bg-slate-800 text-white" : "text-slate-400 hover:text-slate-200"
+              className={`flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-bold transition-colors ${
+                viewMode === "preview"
+                  ? "bg-white text-emerald-800 shadow-sm"
+                  : "text-slate-600 hover:text-slate-900"
               }`}
               title="Rendered HTML Preview with Diagrams"
             >
@@ -145,8 +148,10 @@ export const WorkspaceViewer: React.FC<WorkspaceViewerProps> = ({
             <button
               data-testid="viewmode-editor"
               onClick={() => setViewMode("editor")}
-              className={`flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${
-                viewMode === "editor" ? "bg-slate-800 text-white" : "text-slate-400 hover:text-slate-200"
+              className={`flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-bold transition-colors ${
+                viewMode === "editor"
+                  ? "bg-white text-emerald-800 shadow-sm"
+                  : "text-slate-600 hover:text-slate-900"
               }`}
               title="Raw Code & Monaco In-Place Editor"
             >
@@ -155,8 +160,10 @@ export const WorkspaceViewer: React.FC<WorkspaceViewerProps> = ({
             </button>
             <button
               onClick={() => setViewMode("split")}
-              className={`flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${
-                viewMode === "split" ? "bg-slate-800 text-white" : "text-slate-400 hover:text-slate-200"
+              className={`flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-bold transition-colors ${
+                viewMode === "split"
+                  ? "bg-white text-emerald-800 shadow-sm"
+                  : "text-slate-600 hover:text-slate-900"
               }`}
               title="Side-by-Side Split View"
             >
@@ -165,8 +172,8 @@ export const WorkspaceViewer: React.FC<WorkspaceViewerProps> = ({
             </button>
           </div>
 
-          {/* Quick Metrics */}
-          <div className="hidden md:flex items-center gap-3 text-[11px] text-slate-500 font-mono">
+          {/* Quick Metrics Card */}
+          <div className="hidden md:flex items-center gap-2 px-3 py-1 rounded-lg bg-slate-50 border border-slate-200 text-[11px] text-slate-500 font-mono">
             <span>{lineCount.toLocaleString()} lines</span>
             <span>•</span>
             <span>{wordCount.toLocaleString()} words</span>
@@ -177,15 +184,15 @@ export const WorkspaceViewer: React.FC<WorkspaceViewerProps> = ({
 
         {/* Right Actions */}
         <div className="flex items-center gap-2">
-          {/* Quick Search */}
+          {/* Search Box */}
           <div className="relative hidden lg:block">
-            <Search className="h-3.5 w-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500" />
+            <Search className="h-3.5 w-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Search in spec..."
-              className="pl-8 pr-2.5 py-1 rounded-lg bg-slate-950 border border-slate-800 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 w-36"
+              className="pl-8 pr-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-emerald-500 w-40"
             />
           </div>
 
@@ -196,23 +203,23 @@ export const WorkspaceViewer: React.FC<WorkspaceViewerProps> = ({
                   onOpenDiff(currentStageDef.fileName, currentStageState?.content || "", currentContent);
                 }
               }}
-              className="flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-800 bg-slate-950 text-slate-300 hover:text-white hover:border-slate-700 transition-colors"
+              className="flex items-center gap-1 px-3 py-1.5 rounded-xl border border-red-200 bg-red-50 text-red-700 hover:bg-red-100 font-medium transition-colors"
               title="Compare revisions"
             >
-              <GitCompare className="h-3.5 w-3.5 text-indigo-400" />
+              <GitCompare className="h-3.5 w-3.5 text-red-600" />
               <span className="hidden sm:inline">Diff</span>
             </button>
           )}
 
           <button
             onClick={handleCopy}
-            className="flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-800 bg-slate-950 text-slate-300 hover:text-white hover:border-slate-700 transition-colors"
+            className="flex items-center gap-1 px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-700 hover:bg-white hover:border-emerald-300 font-medium transition-colors"
             title="Copy Markdown"
           >
             {copied ? (
               <>
-                <Check className="h-3.5 w-3.5 text-emerald-400" />
-                <span className="text-emerald-400">Copied</span>
+                <Check className="h-3.5 w-3.5 text-emerald-600" />
+                <span className="text-emerald-700 font-semibold">Copied</span>
               </>
             ) : (
               <>
@@ -224,40 +231,28 @@ export const WorkspaceViewer: React.FC<WorkspaceViewerProps> = ({
 
           <button
             onClick={handleDownloadSingle}
-            className="flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-800 bg-slate-950 text-slate-300 hover:text-white hover:border-slate-700 transition-colors"
+            className="flex items-center gap-1 px-3 py-1.5 rounded-xl border border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 font-semibold transition-colors"
             title="Download this markdown file"
           >
-            <Download className="h-3.5 w-3.5" />
+            <Download className="h-3.5 w-3.5 text-emerald-600" />
             <span className="hidden sm:inline">Save .md</span>
           </button>
         </div>
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 overflow-hidden bg-slate-50/50">
         {viewMode === "preview" && (
           <div data-testid="markdown-viewer" className="h-full overflow-y-auto p-6 md:p-8 max-w-5xl mx-auto">
-            <MarkdownRenderer content={currentContent} />
+            <div className="rounded-2xl bg-white border border-slate-200 p-8 shadow-sm">
+              <MarkdownRenderer content={currentContent} />
+            </div>
           </div>
         )}
 
         {viewMode === "editor" && (
           <div className="h-full p-4">
-            <CodeEditor
-              value={currentContent}
-              onChange={(val) => {
-                if (!isCombinedView && currentStageDef) {
-                  onUpdateStageContent(currentStageDef.index, val);
-                }
-              }}
-              readOnly={isCombinedView || isGenerating}
-            />
-          </div>
-        )}
-
-        {viewMode === "split" && (
-          <div className="h-full grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-slate-800">
-            <div className="h-full p-4 overflow-hidden">
+            <div className="h-full rounded-2xl overflow-hidden border border-slate-200 bg-white shadow-sm">
               <CodeEditor
                 value={currentContent}
                 onChange={(val) => {
@@ -268,8 +263,28 @@ export const WorkspaceViewer: React.FC<WorkspaceViewerProps> = ({
                 readOnly={isCombinedView || isGenerating}
               />
             </div>
+          </div>
+        )}
+
+        {viewMode === "split" && (
+          <div className="h-full grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-slate-200">
+            <div className="h-full p-4 overflow-hidden">
+              <div className="h-full rounded-2xl overflow-hidden border border-slate-200 bg-white shadow-sm">
+                <CodeEditor
+                  value={currentContent}
+                  onChange={(val) => {
+                    if (!isCombinedView && currentStageDef) {
+                      onUpdateStageContent(currentStageDef.index, val);
+                    }
+                  }}
+                  readOnly={isCombinedView || isGenerating}
+                />
+              </div>
+            </div>
             <div className="h-full overflow-y-auto p-6">
-              <MarkdownRenderer content={currentContent} />
+              <div className="rounded-2xl bg-white border border-slate-200 p-6 shadow-sm">
+                <MarkdownRenderer content={currentContent} />
+              </div>
             </div>
           </div>
         )}

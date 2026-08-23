@@ -64,22 +64,22 @@ export const ModelSettingsModal: React.FC<ModelSettingsModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="w-full max-w-lg rounded-2xl border border-slate-800 bg-slate-900 shadow-2xl overflow-hidden flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+      <div className="w-full max-w-lg rounded-2xl border border-slate-200 bg-white shadow-2xl overflow-hidden flex flex-col">
         {/* Modal Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-slate-950/50">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-slate-50">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+            <div className="p-2 rounded-xl bg-emerald-100 text-emerald-700 border border-emerald-200">
               <Sparkles className="h-4 w-4" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-white">LLM Provider & Orchestration Settings</h2>
-              <p className="text-xs text-slate-400">Configure AI models, API keys, and temperature</p>
+              <h2 className="text-base font-bold text-slate-900">LLM Provider & Engine Configuration</h2>
+              <p className="text-xs text-slate-500">Configure AI orchestration models, API keys, and creativity</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200 transition-colors"
           >
             <X className="h-4 w-4" />
           </button>
@@ -89,7 +89,7 @@ export const ModelSettingsModal: React.FC<ModelSettingsModalProps> = ({
         <div className="p-6 space-y-5 overflow-y-auto max-h-[75vh]">
           {/* Provider Selection */}
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-2">
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">
               Select Provider
             </label>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -107,12 +107,12 @@ export const ModelSettingsModal: React.FC<ModelSettingsModalProps> = ({
                   onClick={() => handleProviderChange(item.id as LLMProvider)}
                   className={`p-3 rounded-xl border text-left transition-all ${
                     provider === item.id
-                      ? "border-indigo-500 bg-indigo-500/10 shadow-sm shadow-indigo-500/20"
-                      : "border-slate-800 bg-slate-950/40 hover:border-slate-700 hover:bg-slate-950/70"
+                      ? "border-emerald-500 bg-emerald-50 text-emerald-900 font-semibold shadow-sm ring-1 ring-emerald-500"
+                      : "border-slate-200 bg-slate-50/70 hover:border-slate-300 hover:bg-white"
                   }`}
                 >
-                  <div className="text-xs font-semibold text-white">{item.label}</div>
-                  <div className="text-[10px] text-slate-400 mt-0.5">{item.badge}</div>
+                  <div className="text-xs font-bold">{item.label}</div>
+                  <div className="text-[10px] text-slate-500 mt-0.5">{item.badge}</div>
                 </button>
               ))}
             </div>
@@ -122,11 +122,11 @@ export const ModelSettingsModal: React.FC<ModelSettingsModalProps> = ({
           {provider !== "mock" && provider !== "ollama" && (
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="text-xs font-semibold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
-                  <Key className="h-3.5 w-3.5 text-indigo-400" />
+                <label className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                  <Key className="h-3.5 w-3.5 text-emerald-600" />
                   <span>{provider.toUpperCase()} API Key</span>
                 </label>
-                <span className="text-[10px] text-slate-500">Stored in browser localStorage</span>
+                <span className="text-[10px] text-slate-400">Stored locally in browser</span>
               </div>
               <div className="relative">
                 <input
@@ -134,12 +134,12 @@ export const ModelSettingsModal: React.FC<ModelSettingsModalProps> = ({
                   value={apiKey}
                   onChange={(e) => setApiKey(e.target.value)}
                   placeholder={`Enter your ${provider.toUpperCase()} API key...`}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-800 bg-slate-950 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 font-mono pr-10"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-emerald-500 font-mono pr-10"
                 />
                 <button
                   type="button"
                   onClick={() => setShowKey(!showKey)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700"
                 >
                   {showKey ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
                 </button>
@@ -149,30 +149,30 @@ export const ModelSettingsModal: React.FC<ModelSettingsModalProps> = ({
 
           {/* Model Name */}
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5 flex items-center gap-1.5">
-              <Cpu className="h-3.5 w-3.5 text-indigo-400" />
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5 flex items-center gap-1.5">
+              <Cpu className="h-3.5 w-3.5 text-emerald-600" />
               <span>Model Identifier</span>
             </label>
             <input
               type="text"
               value={model}
               onChange={(e) => setModel(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-800 bg-slate-950 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 font-mono"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-emerald-500 font-mono"
             />
           </div>
 
-          {/* Custom Base URL (for Ollama or OpenAI compatible proxies) */}
+          {/* Custom Base URL */}
           {(provider === "ollama" || provider === "openai") && (
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">
-                Base URL / Endpoint
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
+                Base URL / Custom Endpoint
               </label>
               <input
                 type="text"
                 value={customBaseUrl}
                 onChange={(e) => setCustomBaseUrl(e.target.value)}
                 placeholder={provider === "ollama" ? "http://localhost:11434" : "https://api.openai.com/v1/chat/completions"}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-800 bg-slate-950 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 font-mono"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-emerald-500 font-mono"
               />
             </div>
           )}
@@ -180,11 +180,11 @@ export const ModelSettingsModal: React.FC<ModelSettingsModalProps> = ({
           {/* Temperature Slider */}
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <label className="text-xs font-semibold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
-                <Thermometer className="h-3.5 w-3.5 text-indigo-400" />
+              <label className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                <Thermometer className="h-3.5 w-3.5 text-emerald-600" />
                 <span>Creativity / Temperature: {temperature}</span>
               </label>
-              <span className="text-[10px] text-slate-400">
+              <span className="text-[10px] text-emerald-700 font-semibold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
                 {temperature <= 0.3 ? "Strict Architecture (Recommended)" : "High Variety"}
               </span>
             </div>
@@ -195,22 +195,22 @@ export const ModelSettingsModal: React.FC<ModelSettingsModalProps> = ({
               step="0.05"
               value={temperature}
               onChange={(e) => setTemperature(parseFloat(e.target.value))}
-              className="w-full accent-indigo-500"
+              className="w-full accent-emerald-600"
             />
           </div>
         </div>
 
         {/* Modal Footer */}
-        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-800 bg-slate-950/50">
+        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-200 bg-slate-50">
           <button
             onClick={onClose}
-            className="px-4 py-2 rounded-xl text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+            className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-200 transition-colors"
           >
             Cancel
           </button>
           <button
             onClick={handleSave}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-lg shadow-indigo-600/30 transition-all"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-md shadow-emerald-600/30 transition-all"
           >
             <Check className="h-3.5 w-3.5" />
             <span>Save Configuration</span>

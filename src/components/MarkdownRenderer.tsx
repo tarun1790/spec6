@@ -27,25 +27,25 @@ const CodeBlock: React.FC<{
   };
 
   return (
-    <div className="my-5 rounded-xl border border-slate-800 bg-slate-950 overflow-hidden shadow-lg group">
-      <div className="flex items-center justify-between px-4 py-2 bg-slate-900/90 border-b border-slate-800/80 text-xs text-slate-400">
+    <div className="my-5 rounded-2xl border border-slate-200 bg-slate-900 text-slate-100 overflow-hidden shadow-sm">
+      <div className="flex items-center justify-between px-4 py-2.5 bg-slate-950/80 border-b border-slate-800 text-xs text-slate-400">
         <div className="flex items-center gap-2">
-          <Terminal className="h-3.5 w-3.5 text-indigo-400" />
-          <span className="font-mono text-indigo-300 font-medium lowercase">{language || "text"}</span>
+          <Terminal className="h-3.5 w-3.5 text-emerald-400" />
+          <span className="font-mono text-emerald-300 font-semibold lowercase">{language || "text"}</span>
         </div>
         <button
           onClick={handleCopy}
-          className="flex items-center gap-1 px-2 py-1 rounded bg-slate-800/60 hover:bg-slate-800 text-slate-300 hover:text-white transition-colors"
+          className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 transition-colors"
         >
           {copied ? (
             <>
               <Check className="h-3 w-3 text-emerald-400" />
-              <span className="text-[11px] text-emerald-400">Copied</span>
+              <span className="text-[11px] text-emerald-400 font-bold">Copied</span>
             </>
           ) : (
             <>
               <Copy className="h-3 w-3" />
-              <span className="text-[11px]">Copy</span>
+              <span className="text-[11px] font-medium">Copy</span>
             </>
           )}
         </button>
@@ -60,15 +60,15 @@ const CodeBlock: React.FC<{
 export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content }) => {
   if (!content || !content.trim()) {
     return (
-      <div className="py-20 text-center text-slate-500">
-        <p className="text-sm">No specification content generated yet.</p>
-        <p className="text-xs text-slate-600 mt-1">Select a template or enter a prompt on the left to start generation.</p>
+      <div className="py-20 text-center text-slate-400">
+        <p className="text-sm font-medium">No specification content generated yet.</p>
+        <p className="text-xs text-slate-500 mt-1">Select an SDLC template or enter a prompt on the left to start generation.</p>
       </div>
     );
   }
 
   return (
-    <div className="prose prose-invert max-w-none prose-headings:font-semibold prose-h1:text-2xl prose-h1:text-white prose-h1:border-b prose-h1:border-slate-800 prose-h1:pb-3 prose-h2:text-xl prose-h2:text-indigo-200 prose-h2:mt-8 prose-h3:text-lg prose-h3:text-slate-200 prose-p:text-slate-300 prose-p:leading-relaxed prose-strong:text-white prose-code:text-indigo-300 prose-code:bg-indigo-950/40 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:before:content-none prose-code:after:content-none prose-table:w-full prose-table:border-collapse prose-th:bg-slate-900/80 prose-th:text-slate-200 prose-th:p-3 prose-th:border prose-th:border-slate-800 prose-td:p-3 prose-td:border prose-td:border-slate-800/80 prose-td:text-slate-300 prose-li:text-slate-300">
+    <div className="prose prose-slate max-w-none prose-headings:font-bold prose-h1:text-2xl prose-h1:text-slate-900 prose-h1:border-b prose-h1:border-slate-200 prose-h1:pb-3 prose-h2:text-xl prose-h2:text-emerald-800 prose-h2:mt-8 prose-h3:text-lg prose-h3:text-slate-800 prose-p:text-slate-700 prose-p:leading-relaxed prose-strong:text-slate-900 prose-code:text-emerald-800 prose-code:bg-emerald-50 prose-code:border prose-code:border-emerald-200 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-md prose-code:before:content-none prose-code:after:content-none prose-li:text-slate-700">
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         components={{
@@ -89,14 +89,23 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content }) =
           },
           table({ children }) {
             return (
-              <div className="my-6 overflow-x-auto rounded-xl border border-slate-800 bg-slate-950/60 shadow-lg">
-                <table className="w-full text-left text-xs text-slate-300">{children}</table>
+              <div className="my-6 overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm">
+                <table className="w-full text-left text-xs text-slate-700 divide-y divide-slate-200">{children}</table>
               </div>
             );
           },
+          thead({ children }) {
+            return <thead className="bg-emerald-50/70 text-emerald-950 font-bold uppercase text-[11px]">{children}</thead>;
+          },
+          th({ children }) {
+            return <th className="px-4 py-3 border-b border-slate-200">{children}</th>;
+          },
+          td({ children }) {
+            return <td className="px-4 py-3 border-b border-slate-100">{children}</td>;
+          },
           blockquote({ children }) {
             return (
-              <blockquote className="my-4 border-l-4 border-indigo-500 bg-indigo-950/20 px-4 py-3 rounded-r-lg text-slate-300 not-italic">
+              <blockquote className="my-4 border-l-4 border-emerald-500 bg-emerald-50/60 px-5 py-3 rounded-r-2xl text-slate-800 not-italic border border-slate-200/80 shadow-sm">
                 {children}
               </blockquote>
             );
@@ -108,7 +117,7 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content }) =
                   type="checkbox"
                   checked={checked}
                   disabled={disabled}
-                  className="mr-2 h-4 w-4 rounded border-slate-700 bg-slate-900 text-indigo-600 focus:ring-indigo-500 focus:ring-offset-slate-950"
+                  className="mr-2 h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
                   {...props}
                 />
               );

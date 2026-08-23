@@ -251,7 +251,7 @@ export default function DashboardPage() {
   const completedCount = stages.filter((s) => s.status === "completed").length;
 
   return (
-    <div className="h-screen flex flex-col bg-slate-950 text-slate-100 font-sans overflow-hidden">
+    <div className="h-screen flex flex-col bg-slate-50 text-slate-900 font-sans overflow-hidden">
       {/* Top Header */}
       <Header
         llmConfig={llmConfig}

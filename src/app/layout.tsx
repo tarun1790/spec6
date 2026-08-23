@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "SpecFlow AI - Spec-Driven Development Dashboard & Artifact Generator",
-  description: "Automated software architecture and 6-stage specification suite generator with live Mermaid diagrams, Monaco editor, and one-click ZIP export.",
+  title: "SpecFlow AI - SDLC Spec-Driven Development Dashboard",
+  description: "Automated 6-stage Software Development Life Cycle (SDLC) specification suite and artifact generator.",
 };
 
 export default function RootLayout({
@@ -12,8 +12,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
-      <body className="antialiased bg-slate-950 text-slate-100 min-h-screen">
+    <html lang="en">
+      <body className="antialiased bg-slate-50 text-slate-900 min-h-screen">
         {children}
       </body>
     </html>
