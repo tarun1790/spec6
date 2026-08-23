@@ -165,8 +165,8 @@ export const ControllerPanel: React.FC<ControllerPanelProps> = ({
           className="w-full flex items-center justify-between p-3.5 text-xs font-bold text-slate-800 hover:bg-slate-50 transition-colors"
         >
           <div className="flex items-center gap-2">
-            <GitBranch className="h-3.5 w-3.5 text-emerald-600" />
-            <span>GitHub Codebase Ingestion (Repo-RAG)</span>
+            <Layers className="h-3.5 w-3.5 text-emerald-600" />
+            <span>Codebase Ingestion & AST Scanner (Repo-RAG)</span>
           </div>
           {showRepoIngest ? <ChevronUp className="h-3.5 w-3.5 text-slate-400" /> : <ChevronDown className="h-3.5 w-3.5 text-slate-400" />}
         </button>
