@@ -300,6 +300,8 @@ export default function DashboardPage() {
               setDiffModal({ isOpen: true, fileName, original: orig, current: curr });
             }}
             isGenerating={isGenerating}
+            techStack={techStack}
+            userPrompt={prompt}
           />
         </div>
       </div>

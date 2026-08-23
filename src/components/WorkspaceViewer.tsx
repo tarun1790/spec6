@@ -10,11 +10,16 @@ import {
   Download,
   GitCompare,
   Search,
-  BookOpen
+  BookOpen,
+  FolderGit2,
+  Sparkles
 } from "lucide-react";
-import { StageState, STAGES } from "@/lib/types";
+import { StageState, STAGES, TechStackPreferences } from "@/lib/types";
 import { MarkdownRenderer } from "./MarkdownRenderer";
 import { CodeEditor } from "./CodeEditor";
+import { AgentCouncilPanel } from "./AgentCouncilPanel";
+import { DiagnosticsDrawer } from "./DiagnosticsDrawer";
+import { exportStarterCodebase } from "@/lib/code-scaffolder";
 import { saveAs } from "file-saver";
 
 interface WorkspaceViewerProps {
@@ -24,6 +29,8 @@ interface WorkspaceViewerProps {
   onUpdateStageContent: (stageIndex: number, newContent: string) => void;
   onOpenDiff: (fileName: string, original: string, current: string) => void;
   isGenerating: boolean;
+  techStack?: TechStackPreferences;
+  userPrompt?: string;
 }
 
 type ViewMode = "preview" | "editor" | "split";
@@ -34,11 +41,22 @@ export const WorkspaceViewer: React.FC<WorkspaceViewerProps> = ({
   onSelectStageIndex,
   onUpdateStageContent,
   onOpenDiff,
-  isGenerating
+  isGenerating,
+  techStack = {
+    frontend: "Next.js 14 (App Router) + Tailwind CSS",
+    backend: "FastAPI / Node.js Microservices",
+    database: "PostgreSQL 16 + Redis Cluster",
+    architecture: "Event-Driven Microservices with Message Bus",
+    deployment: "Kubernetes (EKS) + Docker + Terraform",
+    auth: "OAuth 2.0 / JWT + RBAC",
+    caching: "Redis Cluster with Cache-Aside"
+  },
+  userPrompt = ""
 }) => {
   const [viewMode, setViewMode] = useState<ViewMode>("preview");
   const [searchTerm, setSearchTerm] = useState("");
   const [copied, setCopied] = useState(false);
+  const [isScaffolding, setIsScaffolding] = useState(false);
 
   const isCombinedView = selectedStageIndex === -1;
 
@@ -76,6 +94,22 @@ export const WorkspaceViewer: React.FC<WorkspaceViewerProps> = ({
     saveAs(blob, fileName);
   };
 
+  const handleScaffoldCodebase = async () => {
+    setIsScaffolding(true);
+    try {
+      await exportStarterCodebase({
+        projectName: "SpecFlow-App",
+        stages,
+        techStack,
+        userPrompt
+      });
+    } catch (err) {
+      console.error("Codebase scaffold error:", err);
+    } finally {
+      setIsScaffolding(false);
+    }
+  };
+
   return (
     <div className="h-full flex flex-col bg-white overflow-hidden">
       {/* Tab Navigation Card Bar */}
@@ -98,196 +132,207 @@ export const WorkspaceViewer: React.FC<WorkspaceViewerProps> = ({
                     : "bg-slate-100/70 border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-white"
                 }`}
               >
-                <span className={`h-2 w-2 rounded-full ${
-                  isGeneratingThis
-                    ? "bg-emerald-500 animate-ping"
-                    : isCompleted
-                    ? "bg-emerald-500"
-                    : "bg-slate-300"
-                }`} />
+                <div
+                  className={`h-2 w-2 rounded-full ${
+                    isGeneratingThis
+                      ? "bg-emerald-500 animate-ping"
+                      : isCompleted
+                      ? "bg-emerald-600"
+                      : "bg-slate-300"
+                  }`}
+                />
                 <span>{s.fileName}</span>
               </button>
             );
           })}
 
-          <div className="h-4 w-px bg-slate-300 mx-1" />
-
-          {/* Master View Tab Card */}
           <button
             onClick={() => onSelectStageIndex(-1)}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-mono transition-all border ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all border ${
               isCombinedView
-                ? "bg-red-50 text-red-800 border-red-300 font-bold shadow-sm ring-1 ring-red-300"
-                : "bg-slate-100/70 border-slate-200 text-red-600 hover:bg-red-50/50 hover:text-red-700"
+                ? "bg-white text-emerald-900 border-emerald-400 font-bold shadow-sm ring-1 ring-emerald-300"
+                : "bg-slate-100/70 border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-white"
             }`}
           >
-            <BookOpen className="h-3.5 w-3.5" />
+            <BookOpen className="h-3.5 w-3.5 text-emerald-600" />
             <span>Master Spec Index</span>
+          </button>
+        </div>
+
+        {/* Spec-to-Code Scaffolder Action */}
+        <div className="hidden sm:flex items-center gap-2 pl-3">
+          <button
+            onClick={handleScaffoldCodebase}
+            disabled={isScaffolding || stages.every((s) => !s.content)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 disabled:opacity-40 text-white text-xs font-bold shadow-sm transition-all active:scale-95"
+            title="Generate full runnable starter codebase (Next.js + Prisma + Docker + Playwright)"
+          >
+            <FolderGit2 className="h-3.5 w-3.5" />
+            <span>{isScaffolding ? "Scaffolding..." : "Scaffold Codebase"}</span>
           </button>
         </div>
       </div>
 
-      {/* Workspace Toolbar Card */}
-      <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-2.5 bg-white border-b border-slate-200 text-xs">
-        {/* Left Stats & View Switcher */}
-        <div className="flex items-center gap-3">
-          {/* View Mode Toggle Pill Card */}
-          <div className="flex items-center p-1 rounded-xl bg-slate-100 border border-slate-200 shadow-inner">
+      {/* Toolbar & Metrics Card */}
+      <div className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-2 text-xs">
+        {/* Left: View Mode Controls */}
+        <div className="flex items-center gap-2">
+          <div className="flex items-center bg-slate-100 p-0.5 rounded-xl border border-slate-200">
             <button
+              type="button"
               onClick={() => setViewMode("preview")}
-              className={`flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-bold transition-colors ${
+              className={`flex items-center gap-1.5 px-3 py-1 rounded-lg font-medium transition-all ${
                 viewMode === "preview"
-                  ? "bg-white text-emerald-800 shadow-sm"
+                  ? "bg-white text-emerald-800 font-bold shadow-sm"
                   : "text-slate-600 hover:text-slate-900"
               }`}
-              title="Rendered HTML Preview with Diagrams"
             >
               <Eye className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Preview</span>
+              <span>Preview</span>
             </button>
             <button
-              data-testid="viewmode-editor"
+              type="button"
               onClick={() => setViewMode("editor")}
-              className={`flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-bold transition-colors ${
+              className={`flex items-center gap-1.5 px-3 py-1 rounded-lg font-medium transition-all ${
                 viewMode === "editor"
-                  ? "bg-white text-emerald-800 shadow-sm"
+                  ? "bg-white text-emerald-800 font-bold shadow-sm"
                   : "text-slate-600 hover:text-slate-900"
               }`}
-              title="Raw Code & Monaco In-Place Editor"
             >
               <Code2 className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Editor</span>
+              <span>Monaco Editor</span>
             </button>
             <button
+              type="button"
               onClick={() => setViewMode("split")}
-              className={`flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-bold transition-colors ${
+              className={`hidden md:flex items-center gap-1.5 px-3 py-1 rounded-lg font-medium transition-all ${
                 viewMode === "split"
-                  ? "bg-white text-emerald-800 shadow-sm"
+                  ? "bg-white text-emerald-800 font-bold shadow-sm"
                   : "text-slate-600 hover:text-slate-900"
               }`}
-              title="Side-by-Side Split View"
             >
               <Columns className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Split</span>
+              <span>Split View</span>
             </button>
           </div>
 
-          {/* Quick Metrics Card */}
-          <div className="hidden md:flex items-center gap-2 px-3 py-1 rounded-lg bg-slate-50 border border-slate-200 text-[11px] text-slate-500 font-mono">
-            <span>{lineCount.toLocaleString()} lines</span>
-            <span>•</span>
-            <span>{wordCount.toLocaleString()} words</span>
-            <span>•</span>
-            <span>{charCount.toLocaleString()} chars</span>
-          </div>
-        </div>
-
-        {/* Right Actions */}
-        <div className="flex items-center gap-2">
-          {/* Search Box */}
-          <div className="relative hidden lg:block">
-            <Search className="h-3.5 w-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
+          {/* Quick Search */}
+          <div className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 bg-slate-50 border border-slate-200 rounded-lg text-slate-400">
+            <Search className="h-3 w-3" />
             <input
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Search in spec..."
-              className="pl-8 pr-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-emerald-500 w-40"
+              placeholder="Filter spec..."
+              className="bg-transparent text-[11px] text-slate-800 focus:outline-none w-24 placeholder-slate-400"
             />
           </div>
+        </div>
 
-          {!isCombinedView && (
-            <button
-              onClick={() => {
-                if (currentStageDef) {
-                  onOpenDiff(currentStageDef.fileName, currentStageState?.content || "", currentContent);
-                }
-              }}
-              className="flex items-center gap-1 px-3 py-1.5 rounded-xl border border-red-200 bg-red-50 text-red-700 hover:bg-red-100 font-medium transition-colors"
-              title="Compare revisions"
-            >
-              <GitCompare className="h-3.5 w-3.5 text-red-600" />
-              <span className="hidden sm:inline">Diff</span>
-            </button>
-          )}
+        {/* Right: Word Count & Action Buttons */}
+        <div className="flex items-center gap-3">
+          <div className="hidden sm:flex items-center gap-2 text-[11px] text-slate-500 font-mono">
+            <span>{wordCount.toLocaleString()} words</span>
+            <span>•</span>
+            <span>{lineCount} lines</span>
+          </div>
 
-          <button
-            onClick={handleCopy}
-            className="flex items-center gap-1 px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-700 hover:bg-white hover:border-emerald-300 font-medium transition-colors"
-            title="Copy Markdown"
-          >
-            {copied ? (
-              <>
-                <Check className="h-3.5 w-3.5 text-emerald-600" />
-                <span className="text-emerald-700 font-semibold">Copied</span>
-              </>
-            ) : (
-              <>
-                <Copy className="h-3.5 w-3.5" />
-                <span>Copy</span>
-              </>
+          <div className="flex items-center gap-1.5">
+            {!isCombinedView && (
+              <button
+                type="button"
+                onClick={() => {
+                  if (currentStageDef) {
+                    onOpenDiff(currentStageDef.fileName, "", currentContent);
+                  }
+                }}
+                className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+                title="View Changes & Diff"
+              >
+                <GitCompare className="h-3.5 w-3.5" />
+              </button>
             )}
-          </button>
 
-          <button
-            onClick={handleDownloadSingle}
-            className="flex items-center gap-1 px-3 py-1.5 rounded-xl border border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 font-semibold transition-colors"
-            title="Download this markdown file"
-          >
-            <Download className="h-3.5 w-3.5 text-emerald-600" />
-            <span className="hidden sm:inline">Save .md</span>
-          </button>
+            <button
+              type="button"
+              onClick={handleCopy}
+              className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+              title="Copy Markdown"
+            >
+              {copied ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
+            </button>
+
+            <button
+              type="button"
+              onClick={handleDownloadSingle}
+              className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+              title="Download Current .md"
+            >
+              <Download className="h-3.5 w-3.5" />
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Main Content Area */}
-      <div className="flex-1 overflow-hidden bg-slate-50/50">
-        {viewMode === "preview" && (
-          <div data-testid="markdown-viewer" className="h-full overflow-y-auto p-6 md:p-8 max-w-5xl mx-auto">
-            <div className="rounded-2xl bg-white border border-slate-200 p-8 shadow-sm">
-              <MarkdownRenderer content={currentContent} />
+      {/* Main Content Area: Dynamic Viewport */}
+      <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 bg-slate-50/50">
+        {/* Document Container Card */}
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 md:p-8 shadow-sm min-h-[500px]">
+          {viewMode === "preview" && (
+            <div data-testid="spec-markdown-content" className="w-full">
+              {currentContent.trim() ? (
+                <MarkdownRenderer content={currentContent} />
+              ) : (
+                <div className="py-24 text-center text-slate-400 space-y-3">
+                  <BookOpen className="h-12 w-12 mx-auto stroke-1 text-slate-300" />
+                  <p className="text-sm font-semibold text-slate-600">
+                    No specification generated yet for this phase.
+                  </p>
+                  <p className="text-xs text-slate-400 max-w-sm mx-auto">
+                    Click &ldquo;Generate SDLC Specification Suite&rdquo; on the left controller to trigger the chained LLM pipeline.
+                  </p>
+                </div>
+              )}
             </div>
-          </div>
-        )}
+          )}
 
-        {viewMode === "editor" && (
-          <div className="h-full p-4">
-            <div className="h-full rounded-2xl overflow-hidden border border-slate-200 bg-white shadow-sm">
+          {viewMode === "editor" && (
+            <div className="h-[600px] w-full rounded-xl overflow-hidden border border-slate-200">
               <CodeEditor
                 value={currentContent}
-                onChange={(val) => {
-                  if (!isCombinedView && currentStageDef) {
-                    onUpdateStageContent(currentStageDef.index, val);
+                onChange={(newVal) => {
+                  if (!isCombinedView && selectedStageIndex >= 0) {
+                    onUpdateStageContent(selectedStageIndex, newVal);
                   }
                 }}
                 readOnly={isCombinedView || isGenerating}
               />
             </div>
-          </div>
-        )}
+          )}
 
-        {viewMode === "split" && (
-          <div className="h-full grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-slate-200">
-            <div className="h-full p-4 overflow-hidden">
-              <div className="h-full rounded-2xl overflow-hidden border border-slate-200 bg-white shadow-sm">
+          {viewMode === "split" && (
+            <div className="grid grid-cols-2 gap-6 h-[600px]">
+              <div className="h-full rounded-xl overflow-hidden border border-slate-200">
                 <CodeEditor
                   value={currentContent}
-                  onChange={(val) => {
-                    if (!isCombinedView && currentStageDef) {
-                      onUpdateStageContent(currentStageDef.index, val);
+                  onChange={(newVal) => {
+                    if (!isCombinedView && selectedStageIndex >= 0) {
+                      onUpdateStageContent(selectedStageIndex, newVal);
                     }
                   }}
                   readOnly={isCombinedView || isGenerating}
                 />
               </div>
-            </div>
-            <div className="h-full overflow-y-auto p-6">
-              <div className="rounded-2xl bg-white border border-slate-200 p-6 shadow-sm">
+              <div className="h-full overflow-y-auto p-4 rounded-xl border border-slate-200 bg-slate-50">
                 <MarkdownRenderer content={currentContent} />
               </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
+
+        {/* Hyper-Advanced Widgets: Agent Council & Live Diagnostics */}
+        <AgentCouncilPanel stages={stages} isGenerating={isGenerating} />
+        <DiagnosticsDrawer techStack={techStack} stages={stages} />
       </div>
     </div>
   );
