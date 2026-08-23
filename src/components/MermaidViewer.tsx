@@ -20,17 +20,27 @@ export const MermaidViewer: React.FC<MermaidViewerProps> = ({ chart, id }) => {
   useEffect(() => {
     let isMounted = true;
 
+    // Helper to sweep and remove any stray error elements injected by Mermaid
+    const cleanupStrayErrors = () => {
+      if (typeof document === "undefined") return;
+      const strays = document.querySelectorAll('[id^="dmermaid"], #dmermaid, .error-icon, .error-text');
+      strays.forEach((el) => el.remove());
+    };
+
     async function renderChart() {
       if (!chart.trim()) return;
 
       try {
         setHasError(false);
+        cleanupStrayErrors();
+
         const mermaid = (await import("mermaid")).default;
         mermaid.initialize({
           startOnLoad: false,
-          theme: "default",
+          suppressErrorRendering: true,
           securityLevel: "loose",
           fontFamily: "ui-sans-serif, system-ui, sans-serif",
+          theme: "default",
           themeVariables: {
             primaryColor: "#ecfdf5",
             primaryTextColor: "#064e3b",
@@ -45,13 +55,25 @@ export const MermaidViewer: React.FC<MermaidViewerProps> = ({ chart, id }) => {
         });
 
         const cleanChart = chart.trim();
+
+        // Validate syntax first before attempting to render
+        const isValid = await mermaid.parse(cleanChart, { suppressErrors: true });
+        if (!isValid) {
+          if (isMounted) setHasError(true);
+          cleanupStrayErrors();
+          return;
+        }
+
         const renderId = `${chartId.current}-${Date.now()}`;
         const { svg } = await mermaid.render(renderId, cleanChart);
+
+        cleanupStrayErrors();
 
         if (isMounted) {
           setSvgContent(svg);
         }
       } catch {
+        cleanupStrayErrors();
         if (isMounted) {
           setHasError(true);
         }
@@ -62,6 +84,7 @@ export const MermaidViewer: React.FC<MermaidViewerProps> = ({ chart, id }) => {
 
     return () => {
       isMounted = false;
+      cleanupStrayErrors();
     };
   }, [chart]);
 
@@ -143,7 +166,7 @@ export const MermaidViewer: React.FC<MermaidViewerProps> = ({ chart, id }) => {
       {/* Render Area */}
       <div
         ref={containerRef}
-        className={`p-6 overflow-auto flex items-center justify-center min-h-[220px] bg-slate-50/50 ${isFullscreen ? "flex-1" : "max-h-[550px]"}`}
+        className={`p-6 overflow-auto flex items-center justify-center min-h-[200px] bg-slate-50/50 ${isFullscreen ? "flex-1" : "max-h-[550px]"}`}
       >
         {hasError ? (
           <div className="w-full text-left p-4 rounded-xl bg-slate-900 text-slate-100 font-mono text-xs overflow-x-auto">

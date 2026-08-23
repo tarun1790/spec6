@@ -355,8 +355,8 @@ flowchart TD
     end
 
     subgraph DataTier ["Data & Caching Tier"]
-        DB[("${stack.database}")]
-        Cache[("${stack.caching}")]
+        DBStore["Primary Database (PostgreSQL 16)"]
+        CacheStore["Distributed Cache (Redis)"]
     end
 
     WebClient --> CDN
@@ -369,10 +369,10 @@ flowchart TD
     RateLim --> S1
     RateLim --> S2
     RateLim --> S3
-    S1 --> DB
-    S2 --> DB
-    S1 --> Cache
-    S2 --> Cache
+    S1 --> DBStore
+    S2 --> DBStore
+    S1 --> CacheStore
+    S2 --> CacheStore
 \`\`\`
 
 ---
