@@ -3,8 +3,12 @@ const isGithubPages = process.env.GITHUB_PAGES === "true";
 
 const nextConfig = {
   reactStrictMode: true,
-  basePath: isGithubPages ? "/spec6" : "",
-  assetPrefix: isGithubPages ? "/spec6/" : "",
+  ...(isGithubPages
+    ? {
+        basePath: "/spec6",
+        assetPrefix: "/spec6/",
+      }
+    : {}),
   images: {
     unoptimized: true,
   },
