@@ -248,6 +248,11 @@ export default function DashboardPage() {
     await exportSpecificationZip("SpecFlow-Project", stages, prompt);
   };
 
+  const handleShareLink = () => {
+    const url = `https://tarun1790.github.io/spec6/`;
+    navigator.clipboard.writeText(url);
+  };
+
   const completedCount = stages.filter((s) => s.status === "completed").length;
 
   return (
@@ -258,6 +263,7 @@ export default function DashboardPage() {
         onOpenSettings={() => setIsSettingsOpen(true)}
         onOpenExport={() => setIsExportOpen(true)}
         onQuickDownloadZip={handleQuickDownloadZip}
+        onShareLink={handleShareLink}
         isGenerating={isGenerating}
         totalTokens={totalTokens}
         completedStagesCount={completedCount}

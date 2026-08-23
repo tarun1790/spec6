@@ -1,13 +1,16 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import {
   Layers,
   Settings,
   Download,
   Sparkles,
   Zap,
-  CheckCircle2
+  CheckCircle2,
+  Share2,
+  Globe,
+  Check
 } from "lucide-react";
 import { LLMConfig } from "@/lib/types";
 
@@ -16,6 +19,7 @@ interface HeaderProps {
   onOpenSettings: () => void;
   onOpenExport: () => void;
   onQuickDownloadZip: () => void;
+  onShareLink: () => void;
   isGenerating: boolean;
   totalTokens: number;
   completedStagesCount: number;
@@ -26,10 +30,13 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenSettings,
   onOpenExport,
   onQuickDownloadZip,
+  onShareLink,
   isGenerating,
   totalTokens,
   completedStagesCount
 }) => {
+  const [shared, setShared] = useState(false);
+
   const getProviderBadge = () => {
     switch (llmConfig.provider) {
       case "openai":
@@ -45,6 +52,12 @@ export const Header: React.FC<HeaderProps> = ({
       default:
         return { label: "High-Fidelity Synthesizer", color: "bg-emerald-50 text-emerald-700 border-emerald-200" };
     }
+  };
+
+  const handleCopyShare = () => {
+    onShareLink();
+    setShared(true);
+    setTimeout(() => setShared(false), 2000);
   };
 
   const badge = getProviderBadge();
@@ -70,7 +83,7 @@ export const Header: React.FC<HeaderProps> = ({
       </div>
 
       {/* Center Status / Model pill */}
-      <div className="hidden lg:flex items-center gap-4">
+      <div className="hidden lg:flex items-center gap-3">
         <button
           onClick={onOpenSettings}
           className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold border transition-all hover:shadow-sm ${badge.color}`}
@@ -80,26 +93,52 @@ export const Header: React.FC<HeaderProps> = ({
           <Settings className="h-3 w-3 opacity-60 ml-1" />
         </button>
 
+        {/* Live GitHub.io Link Badge */}
+        <a
+          href="https://tarun1790.github.io/spec6/"
+          target="_blank"
+          rel="noreferrer"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 text-xs font-bold transition-all shadow-sm"
+          title="Open Live GitHub Pages Site"
+        >
+          <Globe className="h-3.5 w-3.5 text-emerald-600 animate-spin-slow" />
+          <span>tarun1790.github.io/spec6</span>
+        </a>
+
         {isGenerating ? (
-          <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-300 text-xs font-semibold animate-pulse shadow-sm">
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-300 text-xs font-semibold animate-pulse shadow-sm">
             <Zap className="h-3.5 w-3.5 text-emerald-600 animate-spin" />
-            <span>Generating SDLC Pipeline...</span>
+            <span>Streaming Chained SDLC...</span>
           </div>
         ) : completedStagesCount === 6 ? (
-          <div className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 text-xs font-semibold shadow-sm">
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 text-xs font-semibold shadow-sm">
             <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
-            <span>All 6 SDLC Specs Ready</span>
+            <span>6/6 Ready</span>
             {totalTokens > 0 && <span className="opacity-80">({totalTokens.toLocaleString()} tokens)</span>}
           </div>
-        ) : (
-          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 text-slate-600 text-xs font-medium border border-slate-200">
-            <span>SDLC Pipeline Ready</span>
-          </div>
-        )}
+        ) : null}
       </div>
 
       {/* Right Controls */}
-      <div className="flex items-center gap-2.5">
+      <div className="flex items-center gap-2">
+        <button
+          onClick={handleCopyShare}
+          className="flex items-center gap-1 px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-colors"
+          title="Shareable Project Link"
+        >
+          {shared ? (
+            <>
+              <Check className="h-3.5 w-3.5 text-emerald-600" />
+              <span className="text-emerald-700">Link Copied!</span>
+            </>
+          ) : (
+            <>
+              <Share2 className="h-3.5 w-3.5 text-slate-600" />
+              <span className="hidden sm:inline">Share</span>
+            </>
+          )}
+        </button>
+
         <button
           onClick={onOpenSettings}
           className="p-2 rounded-xl text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 transition-colors border border-slate-200"
@@ -121,12 +160,11 @@ export const Header: React.FC<HeaderProps> = ({
         </a>
 
         <button
-          onClick={onQuickDownloadZip}
-          disabled={isGenerating || completedStagesCount === 0}
-          className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 disabled:opacity-40 disabled:hover:from-emerald-600 text-white text-xs font-bold shadow-md shadow-emerald-600/25 transition-all active:scale-95"
+          onClick={onOpenExport}
+          className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 disabled:opacity-40 text-white text-xs font-bold shadow-md shadow-emerald-600/25 transition-all active:scale-95"
         >
           <Download className="h-3.5 w-3.5" />
-          <span className="hidden sm:inline">Export .ZIP</span>
+          <span>Export Hub</span>
         </button>
       </div>
     </header>

@@ -123,7 +123,7 @@ Requirements:
   },
   {
     id: "saas-analytics-platform",
-    name: "B2B SaaS Multi-Tenant Analytics",
+    name: "B2B SaaS Analytics",
     category: "Enterprise Software",
     description: "High-volume telemetry ingestion, real-time funnel charts, tenant isolation, and custom alert webhooks.",
     prompt: `Build a modern, high-throughput B2B SaaS Product Analytics and Telemetry Platform (similar to Mixpanel + Datadog).
@@ -141,6 +141,94 @@ Key Requirements:
       deployment: "Docker Compose / Kubernetes + AWS NLB + Cloudflare",
       auth: "Auth0 / WorkOS Enterprise SSO with Org-level RBAC",
       caching: "Redis for Session & Dashboard Tile Cache"
+    }
+  },
+  {
+    id: "iot-edge-telemetry",
+    name: "IoT Edge & Telemetry Mesh",
+    category: "IoT & Embedded",
+    description: "MQTT mesh ingestion, timeseries aggregation, edge device firmware OTA updates.",
+    prompt: `Architect a scalable Industrial IoT (IIoT) Edge Device Management and High-Velocity Sensor Telemetry Mesh.
+Requirements:
+1. Ingest 500,000 sensor telemetry messages/sec over MQTT (EMQX) and CoAP with TLS mutual authentication.
+2. Time-series data store with automated downsampling, continuous rollups, and retention policies.
+3. Over-The-Air (OTA) firmware update manager with canary rollouts, checksum validation, and automated rollback upon sensor bricking.
+4. Edge AI inference engine dispatcher pushing lightweight ONNX models to remote gateways.
+5. Real-time geospatial asset tracking map with geofencing anomaly alerts.`,
+    defaultTechStack: {
+      frontend: "Next.js + Mapbox GL + Tailwind CSS",
+      backend: "Rust (Actix-Web) Ingestion Broker + Python Analytics Service",
+      database: "TimescaleDB / InfluxDB + Redis TimeSeries + PostgreSQL",
+      architecture: "Edge-to-Cloud Distributed Mesh Architecture",
+      deployment: "Kubernetes (K3s on Edge, EKS in Cloud) + Terraform",
+      auth: "X.509 Device Certificates + JWT Token Auth",
+      caching: "Redis Edge Cache"
+    }
+  },
+  {
+    id: "video-streaming-cdn",
+    name: "Video CDN & Live Transcoding",
+    category: "Media & WebRTC",
+    description: "HLS/DASH adaptive bitrate streaming, low-latency live broadcast, distributed edge caching.",
+    prompt: `Design a global Video-On-Demand (VOD) and Ultra-Low Latency Live Streaming Platform (similar to Twitch + Netflix).
+Requirements:
+1. Multi-bitrate live video ingestion via RTMP and SRT with automated FFmpeg / GPU transcoding into HLS / LL-HLS / MPEG-DASH renditions (1080p60, 720p60, 480p, 360p).
+2. Distributed Edge CDN caching hierarchy with token authentication and anti-leeching signed URLs.
+3. Real-time synchronized live chat cluster handling 100,000 concurrent viewers per stream channel.
+4. Digital Rights Management (DRM) integration supporting Widevine, FairPlay, and PlayReady.
+5. Automated VOD archive packaging with thumbnail sprites, AI audio transcription, and content moderation.`,
+    defaultTechStack: {
+      frontend: "Next.js + Video.js / Shaka Player + Tailwind",
+      backend: "Go (Golang) Transcoding Orchestrator + Node.js API Gateway",
+      database: "PostgreSQL + ScyllaDB (High-write Chat) + S3 Storage",
+      architecture: "Microservices with Distributed GPU Transcoding Workers",
+      deployment: "AWS ECS with GPU Instances + Cloudflare Stream + Terraform",
+      auth: "OAuth 2.0 / OpenID Connect + Signed HLS Tokens",
+      caching: "Redis Cluster & Edge Anycast CDN"
+    }
+  },
+  {
+    id: "web3-smart-contract-vault",
+    name: "Web3 Vault & Decentralized Escrow",
+    category: "Blockchain & DeFi",
+    description: "Multi-sig treasury vault, automated smart contract escrow, cross-chain bridge indexer.",
+    prompt: `Architect an institutional Web3 Multi-Signature Treasury Vault and Automated Escrow Platform.
+Requirements:
+1. Multi-chain smart contract integration (Ethereum EVM, Solana, Arbitrum, Polygon) with Gas Station network relayer for gasless user execution.
+2. Multi-party computation (MPC) and threshold signature scheme (TSS) vault management with time-locks and emergency circuit breakers.
+3. Real-time on-chain transaction indexer with WebSocket event broadcast and mempool transaction monitoring.
+4. Automated smart contract verification and static security analysis pipeline (Slither, Mythril) before deployment.
+5. Institutional compliance module with automated chainalysis risk scoring and Travel Rule compliance.`,
+    defaultTechStack: {
+      frontend: "Next.js + Wagmi / Viem + Tailwind CSS",
+      backend: "Node.js (NestJS) + Go Chain Indexer",
+      database: "PostgreSQL + Redis + IPFS / Arweave for metadata",
+      architecture: "Hybrid Web2-Web3 Event-Driven Architecture",
+      deployment: "Docker Compose + AWS Private Cluster + Alchemy / Infura",
+      auth: "Sign-In with Ethereum (SIWE / ERC-4361) + Session JWTs",
+      caching: "Redis for Mempool & Gas Price Estimations"
+    }
+  },
+  {
+    id: "cyber-siem-threat-intel",
+    name: "Cyber SIEM & Threat Hunting",
+    category: "Cybersecurity & SecOps",
+    description: "Security information & event management, Sigma rule detection engine, automated SOAR playbooks.",
+    prompt: `Build an enterprise Security Information and Event Management (SIEM) and Security Orchestration, Automation, and Response (SOAR) Platform.
+Key Requirements:
+1. High-speed log ingestion from Syslog, Windows Event Forwarding, AWS CloudTrail, and Kubernetes audit logs at 200,000 EPS (events/sec).
+2. Real-time Sigma and YARA-L rule detection engine with sub-second threat correlation.
+3. Automated incident response playbooks (SOAR) with automated IP quarantine, user session termination, and firewall rule updates.
+4. MITRE ATT&CK matrix visualization mapping active enterprise vulnerabilities and detected adversary tactics.
+5. Immutable WORM (Write Once, Read Many) compliance log storage for forensic audit trails.`,
+    defaultTechStack: {
+      frontend: "Next.js + React Flow + Tailwind CSS",
+      backend: "Go (Golang) Rule Engine + Python SOAR Workers",
+      database: "Elasticsearch / OpenSearch + ClickHouse + PostgreSQL",
+      architecture: "High-Throughput Stream-Processing Architecture",
+      deployment: "Kubernetes + Apache Kafka + Terraform",
+      auth: "SAML 2.0 / Okta SSO + FIDO2 Hardware Keys + Strict RBAC",
+      caching: "Redis for Active Threat IP Blacklists"
     }
   }
 ];
