@@ -26,6 +26,7 @@ import {
 import { StageState, STAGES, TechStackPreferences } from "@/lib/types";
 import { TEMPLATES, ProjectTemplate } from "@/lib/templates";
 import { ingestGitHubRepository } from "@/lib/github-ingest";
+import { refineUserPrompt } from "@/lib/prompt-refiner";
 
 interface ControllerPanelProps {
   prompt: string;
@@ -90,8 +91,9 @@ export const ControllerPanel: React.FC<ControllerPanelProps> = ({
 
   const handleEnhancePrompt = () => {
     if (!prompt.trim()) return;
-    const enhanced = `${prompt.trim()}\n\nKey SDLC Engineering Priorities:\n- High availability (99.99% uptime) and sub-50ms latency SLAs.\n- Strict horizontal scalability and decoupled microservices boundaries.\n- Complete type safety across client, API, and database layers.\n- Zero-trust security model with end-to-end audit logging and OWASP compliance.`;
-    setPrompt(enhanced);
+    const result = refineUserPrompt(prompt, techStack);
+    setPrompt(result.refinedPrompt);
+    setTechStack(result.suggestedTechStack);
   };
 
   const handleIngestRepo = async () => {
