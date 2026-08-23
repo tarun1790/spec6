@@ -17,10 +17,15 @@ import {
   RefreshCw,
   ChevronDown,
   ChevronUp,
-  Wand2
+  Wand2,
+  GitBranch,
+  Search,
+  Sliders,
+  Check
 } from "lucide-react";
 import { StageState, STAGES, TechStackPreferences } from "@/lib/types";
 import { TEMPLATES, ProjectTemplate } from "@/lib/templates";
+import { ingestGitHubRepository } from "@/lib/github-ingest";
 
 interface ControllerPanelProps {
   prompt: string;
@@ -52,7 +57,18 @@ export const ControllerPanel: React.FC<ControllerPanelProps> = ({
   onSelectStageTab
 }) => {
   const [showStackControls, setShowStackControls] = useState(false);
+  const [showAdvancedTools, setShowAdvancedTools] = useState(false);
+  const [showRepoIngest, setShowRepoIngest] = useState(false);
+  const [repoUrl, setRepoUrl] = useState("");
+  const [isIngesting, setIsIngesting] = useState(false);
+  const [ingestSuccess, setIngestSuccess] = useState(false);
   const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
+
+  // Advanced Tool Toggles
+  const [enableMermaidLinter, setEnableMermaidLinter] = useState(true);
+  const [enableOpenAPIValidator, setEnableOpenAPIValidator] = useState(true);
+  const [enableCVEScanner, setEnableCVEScanner] = useState(true);
+  const [enableCriticAgent, setEnableCriticAgent] = useState(true);
 
   const getStageIcon = (name: string) => {
     switch (name) {
@@ -76,6 +92,31 @@ export const ControllerPanel: React.FC<ControllerPanelProps> = ({
     if (!prompt.trim()) return;
     const enhanced = `${prompt.trim()}\n\nKey SDLC Engineering Priorities:\n- High availability (99.99% uptime) and sub-50ms latency SLAs.\n- Strict horizontal scalability and decoupled microservices boundaries.\n- Complete type safety across client, API, and database layers.\n- Zero-trust security model with end-to-end audit logging and OWASP compliance.`;
     setPrompt(enhanced);
+  };
+
+  const handleIngestRepo = async () => {
+    if (!repoUrl.trim()) return;
+    setIsIngesting(true);
+    setIngestSuccess(false);
+
+    try {
+      const context = await ingestGitHubRepository(repoUrl);
+      setTechStack((prev) => ({
+        ...prev,
+        frontend: context.detectedStack.frameworks[0] || context.detectedStack.languages[0] || prev.frontend,
+        backend: context.detectedStack.frameworks[1] || context.detectedStack.languages[1] || prev.backend,
+        database: context.detectedStack.databases[0] || prev.database
+      }));
+
+      const newPrompt = `Ground specifications in existing GitHub Codebase (${context.owner}/${context.repo}):\n\nDetected Repository Layout:\n\`\`\`text\n${context.directoryTreePreview}\n\`\`\`\n\nDetected Stack: ${context.detectedStack.languages.join(", ")} | ${context.detectedStack.frameworks.join(", ")}\n\nObjective: Modernize architecture, create production SDLC contracts, and expand feature capabilities.\n\n${prompt}`;
+      setPrompt(newPrompt);
+      setIngestSuccess(true);
+      setTimeout(() => setIngestSuccess(false), 3000);
+    } catch (err) {
+      console.error("Repository ingestion error:", err);
+    } finally {
+      setIsIngesting(false);
+    }
   };
 
   return (
@@ -111,7 +152,62 @@ export const ControllerPanel: React.FC<ControllerPanelProps> = ({
         </div>
       </div>
 
-      {/* Card 2: Requirements Prompt Input */}
+      {/* Card 2: GitHub Repository Ingestion Card */}
+      <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+        <button
+          type="button"
+          onClick={() => setShowRepoIngest(!showRepoIngest)}
+          className="w-full flex items-center justify-between p-3.5 text-xs font-bold text-slate-800 hover:bg-slate-50 transition-colors"
+        >
+          <div className="flex items-center gap-2">
+            <GitBranch className="h-3.5 w-3.5 text-emerald-600" />
+            <span>GitHub Codebase Ingestion (Repo-RAG)</span>
+          </div>
+          {showRepoIngest ? <ChevronUp className="h-3.5 w-3.5 text-slate-400" /> : <ChevronDown className="h-3.5 w-3.5 text-slate-400" />}
+        </button>
+
+        {showRepoIngest && (
+          <div className="p-4 pt-1 space-y-2.5 border-t border-slate-100 text-xs bg-slate-50/50">
+            <p className="text-[11px] text-slate-500">
+              Ingest AST directory trees and schemas from any GitHub repository to ground your SDLC specs:
+            </p>
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                value={repoUrl}
+                onChange={(e) => setRepoUrl(e.target.value)}
+                placeholder="https://github.com/owner/repository"
+                className="flex-1 px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-emerald-500 font-mono"
+              />
+              <button
+                type="button"
+                onClick={handleIngestRepo}
+                disabled={isIngesting || !repoUrl.trim()}
+                className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 text-white font-bold text-xs shadow-sm transition-all"
+              >
+                {ingestSuccess ? (
+                  <>
+                    <Check className="h-3.5 w-3.5" />
+                    <span>Ingested!</span>
+                  </>
+                ) : isIngesting ? (
+                  <>
+                    <div className="h-3.5 w-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <span>Scanning...</span>
+                  </>
+                ) : (
+                  <>
+                    <Search className="h-3.5 w-3.5" />
+                    <span>Scan Repo</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Card 3: Requirements Prompt Input */}
       <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm hover:shadow transition-shadow space-y-2">
         <div className="flex items-center justify-between">
           <label className="text-xs font-bold uppercase tracking-wider text-slate-800">
@@ -146,7 +242,7 @@ export const ControllerPanel: React.FC<ControllerPanelProps> = ({
         />
       </div>
 
-      {/* Card 3: Architecture & Tech Stack Config */}
+      {/* Card 4: Architecture & Tech Stack Config */}
       <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
         <button
           type="button"
@@ -215,7 +311,63 @@ export const ControllerPanel: React.FC<ControllerPanelProps> = ({
         )}
       </div>
 
-      {/* Card 4: Action Controls */}
+      {/* Card 5: Advanced Tooling & Multi-Agent Swarm */}
+      <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+        <button
+          type="button"
+          onClick={() => setShowAdvancedTools(!showAdvancedTools)}
+          className="w-full flex items-center justify-between p-3.5 text-xs font-bold text-slate-800 hover:bg-slate-50 transition-colors"
+        >
+          <div className="flex items-center gap-2">
+            <Sliders className="h-3.5 w-3.5 text-emerald-600" />
+            <span>MCP Tool Calling & Multi-Agent Verifiers</span>
+          </div>
+          {showAdvancedTools ? <ChevronUp className="h-3.5 w-3.5 text-slate-400" /> : <ChevronDown className="h-3.5 w-3.5 text-slate-400" />}
+        </button>
+
+        {showAdvancedTools && (
+          <div className="p-4 pt-1 space-y-2 border-t border-slate-100 text-xs bg-slate-50/50">
+            <label className="flex items-center justify-between cursor-pointer py-1">
+              <span className="text-slate-700 font-medium">Mermaid AST Syntax Linter</span>
+              <input
+                type="checkbox"
+                checked={enableMermaidLinter}
+                onChange={(e) => setEnableMermaidLinter(e.target.checked)}
+                className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+              />
+            </label>
+            <label className="flex items-center justify-between cursor-pointer py-1">
+              <span className="text-slate-700 font-medium">OpenAPI 3.1 Contract Validator</span>
+              <input
+                type="checkbox"
+                checked={enableOpenAPIValidator}
+                onChange={(e) => setEnableOpenAPIValidator(e.target.checked)}
+                className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+              />
+            </label>
+            <label className="flex items-center justify-between cursor-pointer py-1">
+              <span className="text-slate-700 font-medium">Security CVE Vulnerability Scanner</span>
+              <input
+                type="checkbox"
+                checked={enableCVEScanner}
+                onChange={(e) => setEnableCVEScanner(e.target.checked)}
+                className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+              />
+            </label>
+            <label className="flex items-center justify-between cursor-pointer py-1">
+              <span className="text-slate-700 font-medium">Critic Agent Self-Correction Loop</span>
+              <input
+                type="checkbox"
+                checked={enableCriticAgent}
+                onChange={(e) => setEnableCriticAgent(e.target.checked)}
+                className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+              />
+            </label>
+          </div>
+        )}
+      </div>
+
+      {/* Card 6: Action Controls */}
       <div className="flex items-center gap-2">
         {isGenerating ? (
           <button
@@ -250,7 +402,7 @@ export const ControllerPanel: React.FC<ControllerPanelProps> = ({
         </button>
       </div>
 
-      {/* Card 5: 6-Stage SDLC Pipeline Cards */}
+      {/* Card 7: 6-Stage SDLC Pipeline Cards */}
       <div className="space-y-2 pt-1">
         <div className="flex items-center justify-between px-1">
           <label className="text-xs font-bold uppercase tracking-wider text-slate-800">
