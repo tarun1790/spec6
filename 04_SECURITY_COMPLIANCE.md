@@ -33,21 +33,34 @@ flowchart LR
 
 ### 2.1 Technical Countermeasures & Implementations
 
-#### 1. Cross-Site Scripting (XSS) Prevention in Markdown Rendering
-- `react-markdown` is configured with strict HTML sanitization (`rehype-sanitize` or default text AST nodes). Raw user-injected `<script>` or `<iframe>` tags are stripped before DOM insertion.
-- Code blocks are escaped and rendered inside syntax-highlighted `<code>` blocks without `dangerouslySetInnerHTML`.
-
-#### 2. Prompt Injection & Jailbreak Defense
+#### 1. Injection & Prompt Injection Defense
 - System prompts are strictly separated from user input using OpenAI/Anthropic/Gemini native `system` role parameters.
-- User prompt inputs are wrapped in structured boundaries and checked against malicious directive patterns (e.g., "Ignore all previous instructions").
+- User prompt inputs are wrapped in structured boundaries and checked against malicious directive patterns.
+- Parameterized SQL queries and typed ORMs eliminate SQL Injection risks.
 
-#### 3. Secret Leakage Prevention
-- Client-side input components for API keys (`ModelSettingsModal.tsx`) use `type="password"` with masking.
-- Next.js server logs explicitly redact Authorization headers and API keys matching `sk-`, `gsk_`, `AIza`, or `ant-` regex patterns.
+#### 2. Broken Access Control & IDOR Prevention
+- Every data access query enforces compound WHERE clauses incorporating tenant ID: `WHERE id = :id AND tenant_id = :auth_tenant_id`.
+- Granular RBAC middleware verifies role permissions before executing controller use-cases.
 
-#### 4. Denial of Service (DoS) & Rate Limiting
-- Upstream SSE route handlers implement per-IP token bucket rate limiting (maximum 30 requests/minute per client).
-- Textarea input limits prevent payload sizes greater than 20,000 characters.
+#### 3. Cryptographic Failures Mitigation
+- In-transit encryption via TLS 1.3 with Perfect Forward Secrecy.
+- At-rest database encryption via AES-256-GCM with KMS-managed customer keys.
+
+#### 4. Insecure Design & Threat Modeling
+- Defense-in-depth architecture with rate limiting, input size limits, and circuit breakers.
+
+#### 5. Security Misconfiguration Hardening
+- Hardened multi-stage Docker container executing under dedicated non-root user (`apprunner`).
+- Production security headers: CSP, HSTS, X-Frame-Options DENY, X-Content-Type-Options nosniff.
+
+#### 6. Vulnerable Components & Supply Chain Security
+- Automated dependency vulnerability scanning via OSV.dev and Trivy container scanning in CI/CD.
+
+#### 7. Security Logging and Monitoring Failures
+- Structured JSON audit logging recording actor ID, IP, request ID, timestamp, and target resource.
+
+#### 8. Server-Side Request Forgery (SSRF) Protection
+- Outbound webhook and LLM URL dispatches restricted to validated HTTPS allowlists.
 
 ---
 

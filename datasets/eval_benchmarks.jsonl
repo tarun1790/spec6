@@ -1,0 +1,5 @@
+{"benchmark_id":"spec-eval-v1","metric":"Mermaid Syntax Validity","threshold":0.99,"description":"Percentage of generated Mermaid flowchart, ERD, and sequence diagram code blocks that compile without AST syntax errors."}
+{"benchmark_id":"spec-eval-v2","metric":"Cross-Document Entity Alignment","threshold":0.95,"description":"Percentage of entities defined in Stage 1 ERD that are consistently implemented in Stage 2 task breakdown and Stage 3 unit tests."}
+{"benchmark_id":"spec-eval-v3","metric":"OWASP Security Completeness","threshold":0.90,"description":"Verification that all 10 OWASP vulnerability classes contain explicit mitigation blueprints in Stage 4."}
+{"benchmark_id":"spec-eval-v4","metric":"Test Coverage Target Specification","threshold":0.80,"description":"Verification that unit test matrices target >80% coverage and include mock payloads with HTTP status codes."}
+{"benchmark_id":"spec-eval-v5","metric":"Zero Conversational Filler / Watermarks","threshold":1.00,"description":"Strict absence of introductory filler ('Here is...') or AI attribution watermarks."}
