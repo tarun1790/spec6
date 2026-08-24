@@ -332,6 +332,7 @@ export default function DashboardPage() {
             onReset={handleReset}
             onRegenerateStage={(idx: number) => handleStartGeneration(idx)}
             onSelectStageTab={(idx: number) => setSelectedStageIndex(idx)}
+            onQuickDownloadZip={handleQuickDownloadZip}
           />
         </div>
 

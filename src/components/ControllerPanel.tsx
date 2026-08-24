@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Play, Square, RotateCcw, CheckCircle2 } from "lucide-react";
+import { Play, Square, RotateCcw, CheckCircle2, Download } from "lucide-react";
 import { StageState, STAGES } from "@/lib/types";
 
 interface ControllerPanelProps {
@@ -14,6 +14,7 @@ interface ControllerPanelProps {
   onStopGeneration: () => void;
   onReset: () => void;
   onSelectStageTab: (stageIndex: number) => void;
+  onQuickDownloadZip?: () => void;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any;
 }
@@ -27,8 +28,11 @@ export const ControllerPanel: React.FC<ControllerPanelProps> = ({
   onStartGeneration,
   onStopGeneration,
   onReset,
-  onSelectStageTab
+  onSelectStageTab,
+  onQuickDownloadZip
 }) => {
+  const hasCompletedAny = stages.some((s) => s.status === "completed" || (s.content && s.content.trim().length > 0));
+
   return (
     <div className="h-full flex flex-col bg-slate-50 border-r border-slate-200 p-4 space-y-4 overflow-y-auto">
       {/* 1. Realtime Prompt Console */}
@@ -83,9 +87,11 @@ export const ControllerPanel: React.FC<ControllerPanelProps> = ({
 
       {/* 3. Realtime SDLC Stages */}
       <div className="space-y-1.5 pt-2 border-t border-slate-200 flex-1">
-        <label className="text-xs font-bold text-slate-800 uppercase tracking-wide block mb-2">
-          SDLC Lifecycle Stages
-        </label>
+        <div className="flex items-center justify-between mb-2">
+          <label className="text-xs font-bold text-slate-800 uppercase tracking-wide block">
+            SDLC Lifecycle Stages
+          </label>
+        </div>
 
         <div className="space-y-1.5">
           {STAGES.map((s) => {
@@ -129,6 +135,21 @@ export const ControllerPanel: React.FC<ControllerPanelProps> = ({
             );
           })}
         </div>
+
+        {/* Instant Download All Button */}
+        {hasCompletedAny && (
+          <div className="pt-3">
+            <button
+              type="button"
+              onClick={onQuickDownloadZip}
+              disabled={isGenerating}
+              className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 text-xs font-bold shadow-sm transition-all active:scale-[0.99]"
+            >
+              <Download className="h-3.5 w-3.5 text-emerald-600" />
+              <span>Download 6 Specs (.ZIP)</span>
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

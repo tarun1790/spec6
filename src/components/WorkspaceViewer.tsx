@@ -6,12 +6,14 @@ import {
   Code2,
   Copy,
   Check,
-  Download
+  Download,
+  FolderArchive
 } from "lucide-react";
 import { StageState, STAGES } from "@/lib/types";
 import { MarkdownRenderer } from "./MarkdownRenderer";
 import { CodeEditor } from "./CodeEditor";
 import { saveAs } from "file-saver";
+import { exportSpecificationZip } from "@/lib/zip-exporter";
 
 interface WorkspaceViewerProps {
   stages: StageState[];
@@ -19,6 +21,7 @@ interface WorkspaceViewerProps {
   onSelectStageIndex: (idx: number) => void;
   onUpdateStageContent: (stageIndex: number, newContent: string) => void;
   isGenerating: boolean;
+  userPrompt?: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any;
 }
@@ -30,10 +33,12 @@ export const WorkspaceViewer: React.FC<WorkspaceViewerProps> = ({
   selectedStageIndex,
   onSelectStageIndex,
   onUpdateStageContent,
-  isGenerating
+  isGenerating,
+  userPrompt = ""
 }) => {
   const [viewMode, setViewMode] = useState<ViewMode>("preview");
   const [copied, setCopied] = useState(false);
+  const [downloadingZip, setDownloadingZip] = useState(false);
 
   const currentStageDef = STAGES.find((s) => s.index === selectedStageIndex) || STAGES[0];
   const currentStageState = stages.find((s) => s.index === selectedStageIndex);
@@ -50,6 +55,17 @@ export const WorkspaceViewer: React.FC<WorkspaceViewerProps> = ({
     const blob = new Blob([currentContent], { type: "text/markdown;charset=utf-8" });
     saveAs(blob, fileName);
   };
+
+  const handleDownloadAllZip = async () => {
+    try {
+      setDownloadingZip(true);
+      await exportSpecificationZip("SDLC-Specification-Suite", stages, userPrompt);
+    } finally {
+      setDownloadingZip(false);
+    }
+  };
+
+  const hasAnyContent = stages.some((s) => s.content && s.content.trim().length > 0);
 
   return (
     <div className="h-full flex flex-col bg-white overflow-hidden">
@@ -88,7 +104,7 @@ export const WorkspaceViewer: React.FC<WorkspaceViewerProps> = ({
         </div>
 
         {/* 2. Top Right Actions */}
-        <div className="flex items-center gap-1.5 pl-3">
+        <div className="flex items-center gap-1.5 pl-3 min-w-max">
           <div className="flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200">
             <button
               type="button"
@@ -119,7 +135,8 @@ export const WorkspaceViewer: React.FC<WorkspaceViewerProps> = ({
           <button
             type="button"
             onClick={handleCopy}
-            className="flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-medium transition-colors"
+            disabled={!currentContent.trim()}
+            className="flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-40 text-slate-700 text-xs font-medium transition-colors"
             title="Copy Markdown"
           >
             {copied ? <Check className="h-3 w-3 text-emerald-600" /> : <Copy className="h-3 w-3" />}
@@ -129,11 +146,23 @@ export const WorkspaceViewer: React.FC<WorkspaceViewerProps> = ({
           <button
             type="button"
             onClick={handleDownloadSingle}
-            className="flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-medium transition-colors"
-            title="Download .md file"
+            disabled={!currentContent.trim()}
+            className="flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-40 text-slate-700 text-xs font-medium transition-colors"
+            title="Download active .md file"
           >
             <Download className="h-3 w-3" />
-            <span>Download</span>
+            <span>Download .md</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={handleDownloadAllZip}
+            disabled={!hasAnyContent || isGenerating}
+            className="flex items-center gap-1 px-3 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 text-white text-xs font-bold shadow-sm transition-all active:scale-95"
+            title="Download all 6 specifications in a .ZIP archive"
+          >
+            <FolderArchive className="h-3.5 w-3.5" />
+            <span>{downloadingZip ? "Zipping..." : "Download All (.ZIP)"}</span>
           </button>
         </div>
       </div>
@@ -147,8 +176,8 @@ export const WorkspaceViewer: React.FC<WorkspaceViewerProps> = ({
                 <MarkdownRenderer content={currentContent} />
               ) : (
                 <div className="py-20 text-center text-slate-400">
-                  <p className="text-sm font-semibold text-slate-600">No content generated yet.</p>
-                  <p className="text-xs text-slate-400 mt-1">Enter a prompt and click Generate Specifications.</p>
+                  <p className="text-sm font-semibold text-slate-600">No content generated yet for {currentStageDef.fileName}.</p>
+                  <p className="text-xs text-slate-400 mt-1">Enter your custom requirements on the left and click Generate Specifications.</p>
                 </div>
               )}
             </div>
