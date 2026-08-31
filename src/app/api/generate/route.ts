@@ -2,9 +2,6 @@ import { NextRequest } from "next/server";
 import { GenerationRequest, STAGES } from "@/lib/types";
 import { streamStageContent } from "@/lib/llm-providers";
 
-export const dynamic = "force-dynamic";
-export const runtime = "nodejs";
-
 export async function POST(req: NextRequest) {
   let body: GenerationRequest;
   try {

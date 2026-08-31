@@ -5,8 +5,9 @@ const nextConfig = {
   reactStrictMode: true,
   ...(isGithubPages
     ? {
+        output: "export",
         basePath: "/spec6",
-        assetPrefix: "/spec6/",
+        assetPrefix: "/spec6",
       }
     : {}),
   images: {
