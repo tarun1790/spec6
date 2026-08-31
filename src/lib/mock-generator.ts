@@ -13,6 +13,7 @@ export interface DomainContext {
   personas: { role: string; description: string; coreNeed: string; painPoint: string }[];
   p0Requirements: { id: string; title: string; desc: string; acceptance: string }[];
   p1Requirements: { id: string; title: string; desc: string; acceptance: string }[];
+  p2Requirements: { id: string; title: string; desc: string; acceptance: string }[];
   apiEndpoints: { method: string; path: string; desc: string; payload: string; response: string }[];
   securityFocus: { area: string; mitigation: string }[];
 }
@@ -70,126 +71,139 @@ export function extractDomainContext(prompt: string): DomainContext {
   const uniqueConcepts = Array.from(new Set(meaningfulWords.map((w) => cleanPascalCase(w))));
   
   // Synthesize Project Title & Short Name
-  let title = "Custom Software System";
+  let title = "Custom Cloud Application";
   let shortName = "AppCore";
 
   if (uniqueConcepts.length >= 2) {
-    title = `${cleanTitle(uniqueConcepts.slice(0, 3).join(" "))} System`;
+    title = `${cleanTitle(uniqueConcepts.slice(0, 3).join(" "))} Platform`;
     shortName = uniqueConcepts.slice(0, 2).join("");
   } else if (uniqueConcepts.length === 1) {
-    title = `${cleanTitle(uniqueConcepts[0])} Enterprise Platform`;
+    title = `${cleanTitle(uniqueConcepts[0])} Enterprise Suite`;
     shortName = `${uniqueConcepts[0]}Core`;
   } else if (cleanPrompt.length > 3) {
-    title = cleanPrompt.length < 50 ? cleanTitle(cleanPrompt) : "High-Performance Cloud Application";
+    title = cleanPrompt.length < 60 ? cleanTitle(cleanPrompt) : "High-Performance Cloud Application";
     shortName = "CustomApp";
   }
 
   // Derive domain-specific entities directly from prompt concepts
   const coreEntities: string[] = [];
   uniqueConcepts.forEach((concept) => {
-    if (concept && concept.length > 2) {
+    if (concept && concept.length > 2 && !coreEntities.includes(concept)) {
       coreEntities.push(concept);
     }
   });
 
   // Ensure minimum 5 rich entities
-  if (coreEntities.length < 5) {
-    const standardAdditions = ["UserProfile", "TransactionRecord", "AuditLog", "NotificationEvent", "WorkspaceTenant", "AnalyticsMetric"];
-    standardAdditions.forEach((add) => {
-      if (!coreEntities.includes(add) && coreEntities.length < 6) {
-        coreEntities.push(add);
-      }
-    });
-  }
+  const fallbackEntities = ["UserProfile", "TransactionRecord", "AuditLog", "NotificationEvent", "WorkspaceTenant", "AnalyticsMetric"];
+  fallbackEntities.forEach((add) => {
+    if (!coreEntities.includes(add) && coreEntities.length < 6) {
+      coreEntities.push(add);
+    }
+  });
 
   const primaryEntities = coreEntities.slice(0, 6);
 
-  // Synthesize domain services
+  // Synthesize domain microservices
   const services: string[] = [
     `${primaryEntities[0] || "Core"} Orchestration Service`,
-    `${primaryEntities[1] || "Data"} Processing Service`,
+    `${primaryEntities[1] || "Data"} Processing Engine`,
     `${primaryEntities[2] || "Event"} Ingestion Gateway`,
-    "Real-Time WebSocket & Push Service",
-    "Telemetry & Audit Logging Engine"
+    "Real-Time WebSocket & Push Notification Cluster",
+    "Telemetry, Metrics & Audit Logging Worker"
   ];
 
   // Synthesize primary domain actions
   const primaryActions: string[] = [
-    `Create and configure new ${primaryEntities[0]}`,
-    `Process real-time streaming data for ${primaryEntities[1] || "events"}`,
-    `Validate state transition and dispatch ${primaryEntities[2] || "notifications"}`,
-    `Execute high-concurrency batch query on ${primaryEntities[0]}`,
-    "Monitor telemetry, system health, and audit trail"
+    `Create, validate, and persist ${primaryEntities[0]} records`,
+    `Ingest and stream high-concurrency event telemetry for ${primaryEntities[1] || "transactions"}`,
+    `Evaluate state transition rules and dispatch automated triggers for ${primaryEntities[2] || "events"}`,
+    `Execute high-performance indexed queries on ${primaryEntities[0]} with sub-50ms latency`,
+    "Enforce zero-trust RBAC authorization and emit immutable audit log entries"
   ];
 
   // Synthesize targeted user personas based on prompt
   const personas = [
     {
-      role: `Primary Operator (${primaryEntities[0]} Lead)`,
-      description: `Responsible for managing day-to-day operations and configurations within the ${title}.`,
-      coreNeed: `Low-latency dashboard with live status updates and instant action execution for ${primaryEntities[0]}.`,
-      painPoint: `Manual workflows, synchronization lag, and lack of real-time visibility.`
+      role: `Principal Operations Lead (${primaryEntities[0]} Manager)`,
+      description: `Primary administrative stakeholder responsible for orchestrating workflows, managing ${primaryEntities[0]} state transitions, and tracking platform metrics.`,
+      coreNeed: `Real-time management dashboard with sub-second data refresh, automated error detection, and bulk workflow controls.`,
+      painPoint: `Manual spreadsheet reconciliation, data synchronization lag across services, and lack of real-time operational visibility.`
     },
     {
-      role: `Field User / Client Consumer`,
-      description: `End-user accessing ${title} across mobile and desktop interfaces.`,
-      coreNeed: `Intuitive, responsive interface with sub-100ms response times and offline reliability.`,
-      painPoint: `Complex navigation, broken forms, and delayed feedback during operations.`
+      role: `End-User Consumer / Client Actor`,
+      description: `Direct participant interacting with ${title} across mobile, web, and progressive interfaces.`,
+      coreNeed: `Frictionless, responsive user experience with sub-100ms API response times and instant offline-ready mutations.`,
+      painPoint: `Confusing navigation, validation errors without clear feedback, and latency during peak load.`
     },
     {
-      role: `Systems Integration Developer`,
-      description: `Integrates external enterprise systems, IoT sensors, and third-party APIs with ${shortName}.`,
-      coreNeed: `Strictly typed REST/GraphQL APIs, idempotent webhooks, and comprehensive OpenAPI 3.1 documentation.`,
-      painPoint: `Undocumented breaking schema changes and intermittent rate-limit errors.`
+      role: `Systems Integration & API Engineer`,
+      description: `Third-party developer connecting external enterprise software, IoT devices, or third-party webhooks to ${shortName}.`,
+      coreNeed: `Strictly typed OpenAPI 3.1 REST and gRPC endpoints, idempotent retry keys, and comprehensive SDK documentation.`,
+      painPoint: `Undocumented breaking schema changes, unhandled rate-limit bursts, and opaque error envelopes.`
     },
     {
-      role: `Security & Compliance Officer`,
-      description: `Audits access permissions, encryption policies, and data privacy safeguards.`,
-      coreNeed: `Zero-trust RBAC enforcement, automated vulnerability patching, and immutable audit logs.`,
-      painPoint: `Unrestricted API endpoints, credential leaks, and non-compliant PII handling.`
+      role: `Security & Compliance Auditor`,
+      description: `Governance officer auditing access controls, data sovereignty, encryption key rotation, and privacy standards.`,
+      coreNeed: `Enforced zero-trust RBAC/ABAC policies, field-level AES-256-GCM encryption, and tamper-evident audit logs.`,
+      painPoint: `Over-privileged API keys, unencrypted PII at rest, and lack of structured security event telemetry.`
     }
   ];
 
-  // Synthesize P0 & P1 Requirements directly reflecting user prompt
+  // Synthesize P0, P1, P2 Requirements directly reflecting user prompt
   const p0Requirements = [
     {
       id: "REQ-P0-01",
       title: `Core ${primaryEntities[0]} Lifecycle & State Machine`,
-      desc: `Full CRUD management, validation, and lifecycle transitions for ${primaryEntities[0]} with atomic database transactions.`,
-      acceptance: `Validates payloads with Zod schemas; persists state with <50ms p95 database write latency.`
+      desc: `Full CRUD management, schema validation, and lifecycle state transitions for ${primaryEntities[0]} with atomic database transactions.`,
+      acceptance: `Validates payloads with Zod/Pydantic schemas; persists state in PostgreSQL with <50ms p95 write latency; enforces unique constraint on identity fields.`
     },
     {
       id: "REQ-P0-02",
-      title: `Real-Time Data Ingestion & Event Stream for ${primaryEntities[1] || "Operations"}`,
-      desc: `High-throughput asynchronous event ingestion stream handling continuous updates for ${primaryEntities[1] || "records"}.`,
-      acceptance: `Ingests 10,000 events/sec via Redis Streams/Kafka with zero message drops and sub-20ms processing.`
+      title: `High-Throughput Ingestion & Stream Processing for ${primaryEntities[1] || "Events"}`,
+      desc: `Asynchronous event stream processing for continuous updates to ${primaryEntities[1] || "records"} using distributed message brokers.`,
+      acceptance: `Ingests 10,000 events/sec via Redis Streams/Kafka with zero message loss; delivers event payloads to consumers in <20ms.`
     },
     {
       id: "REQ-P0-03",
-      title: `Automated Dispatch & Notification Triggers for ${primaryEntities[2] || "Events"}`,
-      desc: `Event-driven webhook and push notification subsystem triggering on state anomalies or completion events.`,
-      acceptance: `Dispatches notifications to subscribed clients within 500ms of trigger condition.`
+      title: `Automated Workflow Triggers & Notification Dispatch for ${primaryEntities[2] || "Alerts"}`,
+      desc: `Event-driven webhook and push notification subsystem executing on state anomalies, SLA thresholds, or completion events.`,
+      acceptance: `Dispatches signed webhooks and WebSocket notifications within 300ms of trigger condition; implements exponential backoff retry.`
     },
     {
       id: "REQ-P0-04",
-      title: `Zero-Trust Authentication & RBAC Permission Layer`,
-      desc: `JWT/OAuth2 access control with refresh token rotation and role-based permissions on all endpoints.`,
-      acceptance: `Rejects unauthorized requests with HTTP 401/403; verifies token signatures in <2ms.`
+      title: `Zero-Trust Authentication & RBAC Authorization Engine`,
+      desc: `JWT/OAuth 2.0 access control supporting RS256 token verification, refresh token rotation, and granular role permissions on all endpoints.`,
+      acceptance: `Rejects unauthorized requests with RFC 7807 formatted HTTP 401/403 responses; verifies asymmetric token signatures in <2ms.`
     }
   ];
 
   const p1Requirements = [
     {
       id: "REQ-P1-01",
-      title: `Automated Health Monitoring & Telemetry Aggregation`,
-      desc: `Prometheus metrics scraping, structured JSON logs, and distributed tracing across all microservices.`,
-      acceptance: `Exposes /healthz, /ready, and /metrics endpoints; alerts on error rates >0.1%.`
+      title: `Observability, Prometheus Metrics & Distributed Tracing`,
+      desc: `Structured JSON logging, Prometheus metric scraping (/metrics), and OpenTelemetry distributed tracing across all microservices.`,
+      acceptance: `Exposes /healthz, /ready, and /metrics endpoints; records p50/p95/p99 request duration; alerts on error rates >0.1%.`
     },
     {
       id: "REQ-P1-02",
-      title: `High-Performance Search & Batch Export`,
-      desc: `Full-text multi-criteria search and asynchronous CSV/JSON export for ${primaryEntities[0]} datasets.`,
-      acceptance: `Returns search results in <80ms for 1,000,000 indexed records; generates exports in <5 seconds.`
+      title: `High-Performance Indexed Search & Asynchronous Batch Export`,
+      desc: `Multi-criteria search filtering with B-Tree indexes and asynchronous background export (CSV/JSON) for ${primaryEntities[0]} datasets.`,
+      acceptance: `Returns paginated search results in <60ms over 1,000,000 indexed records; generates signed downloadable export URLs in <5 seconds.`
+    }
+  ];
+
+  const p2Requirements = [
+    {
+      id: "REQ-P2-01",
+      title: `AI Copilot & Predictive Anomaly Detection`,
+      desc: `Machine learning anomaly detection pipeline forecasting operational anomalies for ${primaryEntities[0]}.`,
+      acceptance: `Executes sub-200ms vector inference queries; delivers automated recommendations with human review gates.`
+    },
+    {
+      id: "REQ-P2-02",
+      title: `Active-Active Multi-Region High Availability`,
+      desc: `Cross-region continuous database replication and global traffic routing for automated disaster recovery.`,
+      acceptance: `Regional failover completes in <30 seconds with Recovery Point Objective (RPO) = 0.`
     }
   ];
 
@@ -199,37 +213,99 @@ export function extractDomainContext(prompt: string): DomainContext {
     {
       method: "POST",
       path: apiPrefix,
-      desc: `Create and initialize new ${primaryEntities[0]}`,
-      payload: JSON.stringify({ name: `${primaryEntities[0]} Record`, status: "active", config: { priority: "high" } }, null, 2),
-      response: JSON.stringify({ status: "success", data: { id: "9f3a1b2c-8d7e-4f6a-5b4c-3d2e1a0f9e8d", status: "active", created_at: "2026-08-24T12:00:00Z" } }, null, 2)
+      desc: `Create and initialize a new ${primaryEntities[0]} entity`,
+      payload: JSON.stringify({
+        name: `${primaryEntities[0]} Master Record`,
+        status: "active",
+        metadata: {
+          tier: "enterprise",
+          priority: 1
+        }
+      }, null, 2),
+      response: JSON.stringify({
+        status: "success",
+        data: {
+          id: "9f3a1b2c-8d7e-4f6a-5b4c-3d2e1a0f9e8d",
+          name: `${primaryEntities[0]} Master Record`,
+          status: "active",
+          created_at: "2026-09-01T10:00:00Z",
+          updated_at: "2026-09-01T10:00:00Z"
+        }
+      }, null, 2)
     },
     {
       method: "GET",
-      path: `${apiPrefix}?limit=20&status=active`,
-      desc: `Query paginated list of ${primaryEntities[0]} records`,
-      payload: "N/A (Query Parameters: limit, cursor, status)",
-      response: JSON.stringify({ status: "success", data: [], pagination: { limit: 20, has_more: false, next_cursor: null } }, null, 2)
+      path: `${apiPrefix}?limit=20&cursor=eyJpZCI6MTAwfQ==`,
+      desc: `Query paginated list of ${primaryEntities[0]} records with cursor pagination`,
+      payload: "N/A (Query Parameters: limit=20, cursor, status=active, sort=desc)",
+      response: JSON.stringify({
+        status: "success",
+        data: [
+          {
+            id: "9f3a1b2c-8d7e-4f6a-5b4c-3d2e1a0f9e8d",
+            name: `${primaryEntities[0]} Master Record`,
+            status: "active",
+            created_at: "2026-09-01T10:00:00Z"
+          }
+        ],
+        pagination: {
+          limit: 20,
+          has_more: false,
+          next_cursor: null,
+          total_count: 1
+        }
+      }, null, 2)
+    },
+    {
+      method: "PUT",
+      path: `${apiPrefix}/:id`,
+      desc: `Update mutable attributes and state of an existing ${primaryEntities[0]}`,
+      payload: JSON.stringify({
+        status: "processing",
+        metadata: {
+          last_reviewed_by: "operator_admin"
+        }
+      }, null, 2),
+      response: JSON.stringify({
+        status: "success",
+        data: {
+          id: "9f3a1b2c-8d7e-4f6a-5b4c-3d2e1a0f9e8d",
+          status: "processing",
+          updated_at: "2026-09-01T10:05:00Z"
+        }
+      }, null, 2)
     },
     {
       method: "POST",
-      path: `${apiPrefix}/:id/action`,
-      desc: `Execute primary operation on ${primaryEntities[0]}`,
-      payload: JSON.stringify({ action: "execute_step", parameters: { mode: "automated" } }, null, 2),
-      response: JSON.stringify({ status: "success", result: "operation_completed", timestamp: "2026-08-24T12:00:01Z" }, null, 2)
+      path: `${apiPrefix}/:id/execute`,
+      desc: `Trigger primary domain action on ${primaryEntities[0]}`,
+      payload: JSON.stringify({
+        action: "dispatch_workflow",
+        parameters: {
+          notify_webhook: true,
+          mode: "realtime"
+        }
+      }, null, 2),
+      response: JSON.stringify({
+        status: "success",
+        job_id: "job_88a9f02b-11c4-4e78-90b1",
+        state: "queued",
+        estimated_duration_ms: 120
+      }, null, 2)
     }
   ];
 
   const securityFocus = [
-    { area: "Access Control (RBAC & IDOR)", mitigation: `Every query for ${primaryEntities[0]} enforces tenant boundary: WHERE id = :id AND tenant_id = :auth_tenant.` },
-    { area: "In-Transit & At-Rest Encryption", mitigation: "TLS 1.3 enforced for all client-to-server traffic; AES-256-GCM for sensitive fields in database." },
-    { area: "Injection Defense", mitigation: "Strict ORM parameterization with Zod schema validation on 100% of ingress endpoints." },
-    { area: "DDoS & Rate Limiting", mitigation: "Token bucket distributed rate limiting (120 req/min per API key/IP) via Redis." }
+    { area: "Access Control & IDOR Defense", mitigation: `Every database query for ${primaryEntities[0]} enforces multi-tenant boundary predicates: WHERE id = :id AND tenant_id = :auth_tenant_id.` },
+    { area: "Cryptographic Protocols", mitigation: "Enforces TLS 1.3 in transit with Perfect Forward Secrecy; sensitive field-level persistence encrypted with AES-256-GCM via KMS." },
+    { area: "Input Sanitization & Injection", mitigation: "Strict type coercion and parameterization using Prisma ORM and Zod schemas on 100% of API endpoints; prevents SQL/NoSQL injection." },
+    { area: "DDoS Mitigation & Rate Limiting", mitigation: "Distributed token bucket rate limiting (120 req/min per IP/API key) enforced at Redis API Gateway layer." }
   ];
 
   return {
     title,
     shortName,
-    category: "Custom Spec-Driven Software System",
+    category: "Principal Spec-Driven Architecture",
     userPromptRaw: cleanPrompt,
     extractedKeywords: uniqueConcepts,
     primaryEntities,
@@ -239,6 +315,7 @@ export function extractDomainContext(prompt: string): DomainContext {
     personas,
     p0Requirements,
     p1Requirements,
+    p2Requirements,
     apiEndpoints,
     securityFocus
   };
@@ -251,7 +328,7 @@ export function generateMockStageContent(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   accumulatedContext: Record<string, string>
 ): string {
-  const domain = extractDomainContext(userPrompt || "Custom Cloud Platform");
+  const domain = extractDomainContext(userPrompt || "Enterprise Cloud Platform");
 
   switch (stageIndex) {
     case 0:
@@ -281,23 +358,23 @@ function generateProjectBrief(prompt: string, stack: TechStackPreferences, d: Do
 ---
 
 ## 1. Executive Summary & Objective
-This specification suite defines the end-to-end architecture, technical implementation roadmap, quality assurance strategy, security hardening blueprint, and DevOps deployment model for **${d.title}** (${d.shortName}).
+This master engineering specification defines the architecture, data models, API contracts, testing matrix, security blueprint, and DevOps deployment pipeline for **${d.title}** (${d.shortName}).
 
-The system is engineered according to **${stack.architecture}**, utilizing **${stack.frontend}** for user interfaces, **${stack.backend}** for business logic, **${stack.database}** for persistence, and **${stack.caching}** for caching and distributed locks.
+The platform is designed to provide high-concurrency, enterprise-grade availability engineered according to **${stack.architecture}**, leveraging **${stack.frontend}** for the user interface, **${stack.backend}** for business logic execution, **${stack.database}** for transactional persistence, and **${stack.caching}** for distributed caching and state management.
 
 ### 📋 Grounding User Requirements
 > "${d.userPromptRaw}"
 
 ### 🔍 Extracted Domain Concepts
-* **Primary Entities:** ${d.primaryEntities.join(", ")}
-* **Target Services:** ${d.services.join(", ")}
-* **Core Actions:** ${d.primaryActions.join("; ")}
+* **Primary Domain Entities:** ${d.primaryEntities.join(", ")}
+* **Core Microservices:** ${d.services.join(", ")}
+* **Primary Operations:** ${d.primaryActions.join("; ")}
 
 ---
 
-## 2. User Persona Matrix
+## 2. Stakeholder & User Persona Matrix
 
-| Persona Role | Target Profile | Core Need | Key Friction Mitigated |
+| Persona Role | Target Profile | Core Functional Need | Critical Friction Mitigated |
 | :--- | :--- | :--- | :--- |
 ${d.personas.map((p) => `| **${p.role}** | ${p.description} | ${p.coreNeed} | ${p.painPoint} |`).join("\n")}
 
@@ -318,20 +395,20 @@ ${d.p1Requirements.map((r) => `| **${r.id}** | **${r.title}** | ${r.desc} | ${r.
 ### 3.3 P2 (Nice-to-Have - Future Enhancements)
 | ID | Requirement Name | Description | Acceptance Criteria |
 | :--- | :--- | :--- | :--- |
-| **REQ-P2-01** | **Predictive AI Insights** | Automated anomaly detection and predictive analytics for ${d.primaryEntities[0]}. | Computes predictive metrics with <200ms query latency. |
-| **REQ-P2-02** | **Multi-Region Disaster Recovery** | Cross-region continuous database replication. | Regional failover completes in <30 seconds with RPO=0. |
+${d.p2Requirements.map((r) => `| **${r.id}** | **${r.title}** | ${r.desc} | ${r.acceptance} |`).join("\n")}
 
 ---
 
-## 4. Non-Functional Requirements & SLAs
+## 4. Non-Functional Requirements & Engineering SLAs
 
-| Vector | Target SLA | Technical Enforcement |
+| SLA Vector | Target Metric | Technical Enforcement & Verification |
 | :--- | :--- | :--- |
-| **Availability** | **99.99% Uptime** | Multi-AZ Kubernetes pod spreads, active health check probes. |
-| **Read Latency** | **p95 < 80ms** | Multi-tier Redis caching, indexed B-Tree database queries. |
-| **Write Latency** | **p95 < 150ms** | Async message queuing, connection pooling with PgBouncer. |
-| **Throughput** | **10,000+ RPS** | Horizontal Pod Autoscaler (HPA) triggering on >70% CPU/Memory. |
-| **Security** | **OWASP Top 10** | Parameterized SQL queries, WAF rate limiting, JWT RBAC guards. |
+| **Availability** | **99.99% Uptime** | Multi-AZ Kubernetes pod spreads with automated health check restart probes. |
+| **Read Latency** | **p95 < 80ms** | Multi-tier Redis caching, indexed B-Tree database queries, connection pooling. |
+| **Write Latency** | **p95 < 150ms** | Asynchronous message queuing with PgBouncer connection multiplexing. |
+| **Throughput** | **10,000+ RPS** | Horizontal Pod Autoscaler (HPA) triggering on >70% CPU/Memory utilization. |
+| **Security** | **OWASP Top 10** | Parameterized SQL queries, WAF rate limiting, JWT RBAC guards, AES-256-GCM. |
+| **Disaster Recovery** | **RTO < 5m, RPO = 0** | Continuous WAL archiving to S3, automated point-in-time recovery (PITR). |
 `;
 }
 
@@ -345,15 +422,15 @@ function generateSystemArchitecture(prompt: string, stack: TechStackPreferences,
 
   return `# 01_SYSTEM_ARCHITECTURE.md: Topology & Schema Blueprint
 
-## 1. Architectural Overview & Rationale
+## 1. Architectural Overview & Design Rationales
 
-| Layer | Selected Tech | Design Rationale & Trade-offs |
+| Layer | Selected Tech | Design Rationale & Architectural Trade-offs |
 | :--- | :--- | :--- |
-| **Frontend UI** | ${stack.frontend} | Server Components reduce client JS bundle; streaming SSR delivers fast initial paint. |
-| **Backend API** | ${stack.backend} | High async I/O concurrency; strict type enforcement with schema validation. |
-| **Database** | ${stack.database} | ACID transactional guarantees; indexed relational modeling for ${d.primaryEntities.join(", ")}. |
-| **Cache & Locks** | ${stack.caching} | Sub-millisecond distributed caching, session state, and distributed mutex locks. |
-| **Deployment** | ${stack.deployment} | Containerized zero-downtime rolling updates with declarative infrastructure. |
+| **Frontend UI** | ${stack.frontend} | React Server Components eliminate client bundle bloat; streaming SSR delivers sub-second initial paint. |
+| **Backend API** | ${stack.backend} | High asynchronous I/O concurrency; strict compile-time type safety with Zod validation. |
+| **Database** | ${stack.database} | Strict ACID transactional guarantees; indexed relational modeling for ${d.primaryEntities.join(", ")}. |
+| **Cache & Locks** | ${stack.caching} | Sub-millisecond distributed caching, session state storage, and distributed Redlock mutexes. |
+| **Deployment** | ${stack.deployment} | Containerized zero-downtime rolling deploys with declarative Terraform infrastructure. |
 
 ---
 
@@ -362,20 +439,20 @@ function generateSystemArchitecture(prompt: string, stack: TechStackPreferences,
 \`\`\`mermaid
 flowchart TD
     subgraph Clients ["Client Applications"]
-        WebClient["Web Browser App"]
-        MobileClient["Mobile Native App"]
+        WebClient["Desktop & Mobile Web (SSR / PWA)"]
+        MobileClient["Mobile Native App (iOS / Android)"]
     end
 
-    subgraph Ingress ["Edge & Security Ingress"]
-        CDN["Global CDN / Edge Cache"]
+    subgraph Ingress ["Edge & Security Ingress Layer"]
+        CDN["Global CDN / Cloudflare Edge"]
         WAF["Web Application Firewall (WAF)"]
-        ALB["Application Load Balancer"]
+        ALB["Application Load Balancer (ALB / Envoy)"]
     end
 
     subgraph GatewayLayer ["API Gateway & Middleware"]
         APIGateway["API Gateway Reverse Proxy"]
         AuthGuard["JWT / RBAC Middleware"]
-        RateLimiter["Distributed Token Bucket Limiter"]
+        RateLimiter["Distributed Token Bucket Rate Limiter"]
     end
 
     subgraph ServiceMesh ["Core Microservices"]
@@ -482,69 +559,70 @@ ${ep.response}
 function generateImplementationPlan(prompt: string, stack: TechStackPreferences, d: DomainContext): string {
   return `# 02_IMPLEMENTATION_PLAN.md: Engineering Roadmap & Milestones
 
-## 1. Production Repository Monorepo Structure
+## 1. Production Monorepo Directory Architecture
 
 \`\`\`text
-${d.shortName.toLowerCase()}-root/
+${d.shortName.toLowerCase()}-monorepo/
 ├── .github/
 │   └── workflows/
-│       ├── ci.yml                 # Lint, TypeCheck, Unit Tests
-│       └── deploy.yml             # Docker build and Kubernetes deployment
+│       ├── ci.yml                 # Lint, TypeCheck, Unit & Integration Tests
+│       └── deploy.yml             # Docker container build and Kubernetes deployment
 ├── docker/
 │   ├── Dockerfile.production      # Multi-stage hardened production container
-│   └── docker-compose.yml         # Local stack (DB, Redis, API)
+│   └── docker-compose.yml         # Local stack (PostgreSQL, Redis, App Server)
 ├── src/
 │   ├── app/                       # Next.js 14 App Router
 │   │   ├── api/                   # REST API controllers
 │   │   │   └── v1/
-│   │   │       ├── auth/          # Authentication handlers
+│   │   │       ├── auth/          # Authentication & Token handlers
 │   │   │       └── ${d.primaryEntities[0].toLowerCase()}s/      # ${d.primaryEntities[0]} domain endpoints
 │   │   └── page.tsx               # Primary dashboard interface
-│   ├── components/                # UI component library
-│   │   ├── ui/                    # Base primitives
+│   ├── components/                # Modular UI component library
+│   │   ├── ui/                    # Base primitives (Buttons, Inputs, Modals)
 │   │   └── domain/                # ${d.shortName} domain components
 │   ├── lib/
-│   │   ├── db.ts                  # Database connection pool (Prisma)
-│   │   ├── redis.ts               # Redis cache & locks
-│   │   └── auth.ts                # Token verification
+│   │   ├── db.ts                  # Database client connection pool (Prisma)
+│   │   ├── redis.ts               # Redis cache & distributed lock manager
+│   │   └── auth.ts                # Token verification and RBAC guards
 │   └── types/
 │       └── index.ts               # Domain TypeScript interfaces
 ├── prisma/
-│   └── schema.prisma              # Schema definitions for ${d.primaryEntities.join(", ")}
+│   └── schema.prisma              # Database schema for ${d.primaryEntities.join(", ")}
 ├── tests/
 │   ├── unit/                      # Vitest unit test suites
 │   ├── integration/               # API route integration tests
-│   └── e2e/                       # Playwright E2E test suites
+│   └── e2e/                       # Playwright E2E master test suites
+├── openapi.json                   # OpenAPI 3.1 REST API specification
 └── package.json
 \`\`\`
 
 ---
 
-## 2. Phased Engineering Tasks
+## 2. Phased Engineering Milestones
 
-### Phase 1: Foundation & Data Modeling (Sprint 1)
-- [ ] Initialize repository with TypeScript, ESLint, and Tailwind CSS.
-- [ ] Setup PostgreSQL 16 database and define Prisma schemas for \`${d.primaryEntities.join(", ")}\`.
-- [ ] Implement JWT/OAuth 2.0 authentication routes with token rotation.
-- [ ] Author database seed scripts with mock ${d.primaryEntities[0]} data.
+### Milestone 1: Data Modeling, Auth & Core Infrastructure (Sprint 1)
+- [ ] Initialize repository with TypeScript 5, Tailwind CSS, and strict ESLint rules.
+- [ ] Provision PostgreSQL 16 database and define Prisma schemas for \`${d.primaryEntities.join(", ")}\`.
+- [ ] Implement JWT/OAuth 2.0 authentication endpoints with RS256 token signing and refresh rotation.
+- [ ] Author database migration scripts and seed scripts for mock testing data.
 
-### Phase 2: Core Domain Logic & REST APIs (Sprint 2)
-- [ ] Build CRUD controllers for \`${d.apiPrefix}\`.
+### Milestone 2: Core Domain Logic & REST Endpoints (Sprint 2)
+- [ ] Build CRUD controllers under \`${d.apiPrefix}\` with Zod input validation schemas.
 - [ ] Implement business logic for **${d.primaryActions[0]}** and **${d.primaryActions[1]}**.
-- [ ] Integrate Redis cache-aside layer with 5-minute TTL on queries.
-- [ ] Configure distributed lock mechanics on critical mutation workflows.
+- [ ] Integrate Redis cache-aside caching with 5-minute TTL on queries.
+- [ ] Configure distributed lock mechanics on critical mutation workflows to prevent race conditions.
 
-### Phase 3: Real-Time Telemetry & Event Dispatch (Sprint 3)
+### Milestone 3: Real-Time Telemetry & Event Subsystem (Sprint 3)
 - [ ] Implement WebSocket / SSE streaming server for live updates.
-- [ ] Implement event triggers for **${d.primaryActions[2]}**.
-- [ ] Setup rate limiting (120 req/min) via Redis token bucket.
-- [ ] Build administrative telemetry and audit logging endpoints.
+- [ ] Implement event dispatch triggers for **${d.primaryActions[2]}**.
+- [ ] Setup distributed token bucket rate limiting (120 req/min) via Redis.
+- [ ] Build administrative telemetry, health probes, and audit logging endpoints.
 
-### Phase 4: Quality Assurance, Security & Deployment (Sprint 4)
-- [ ] Author unit tests achieving >85% code coverage across domain services.
-- [ ] Author Playwright E2E master tests for end-to-end user workflows.
-- [ ] Execute OWASP vulnerability audit and harden Docker configuration.
-- [ ] Configure GitHub Actions CI/CD deploying to production cluster.
+### Milestone 4: Quality Assurance, Security Hardening & Production Release (Sprint 4)
+- [ ] Author Vitest unit tests achieving >85% code coverage across domain services.
+- [ ] Author Playwright E2E master tests verifying critical user paths.
+- [ ] Execute OWASP ZAP vulnerability audit and harden Docker configuration.
+- [ ] Configure GitHub Actions CI/CD deploying to Kubernetes (EKS/GKE) cluster.
 `;
 }
 
@@ -552,14 +630,14 @@ ${d.shortName.toLowerCase()}-root/
 function generateTestingStrategy(prompt: string, stack: TechStackPreferences, d: DomainContext): string {
   return `# 03_TESTING_STRATEGY.md: Quality Assurance & Test Automation Matrix
 
-## 1. Test Pyramid & Target Coverage
+## 1. Test Pyramid & Target Coverage Commitments
 
-| Test Type | Target Scope | Target Coverage | Tooling |
+| Test Tier | Scope & Focus | Target Coverage | Tooling & Framework |
 | :--- | :--- | :---: | :--- |
-| **Unit Tests** | Domain models, validation schemas, business logic helpers. | **> 85%** | Vitest / Jest |
-| **Integration Tests** | REST API endpoints, SQL transactions, cache invalidation. | **> 80%** | Supertest / Vitest |
+| **Unit Tests** | Domain business logic, entity helpers, validation schemas. | **> 85%** | Vitest / Jest |
+| **Integration Tests** | REST API endpoints, SQL transactions, Redis lock mechanics. | **> 80%** | Supertest / Vitest |
 | **End-to-End (E2E)** | Critical user journeys for ${d.primaryEntities[0]}. | **100% Core** | Playwright (Headless Chrome) |
-| **Load Testing** | Concurrency bottlenecks under high load. | **10,000 RPS** | k6 / Artillery |
+| **Load Testing** | Concurrency bottlenecks under peak traffic. | **10,000 RPS** | k6 / Artillery |
 
 ---
 
@@ -588,7 +666,7 @@ test.describe("${d.title} - Critical User Workflow", () => {
   test("TC-02: Execute primary workflow (${d.primaryActions[0]})", async ({ page }) => {
     await page.goto("/dashboard");
 
-    // Click creation action
+    // Trigger creation action
     await page.click('[data-testid="btn-create-${d.primaryEntities[0].toLowerCase()}"]');
     await page.fill('[data-testid="input-name"]', "Test ${d.primaryEntities[0]} Production Record");
     await page.click('[data-testid="btn-save"]');
@@ -610,7 +688,7 @@ function generateSecurityCompliance(prompt: string, stack: TechStackPreferences,
 
 | Role | Scope | Permissions Granted |
 | :--- | :--- | :--- |
-| **Super Admin** | Global Organization | \`*:*\` (Full system configuration, user provisioning, audit logs) |
+| **Super Admin** | Global Organization | \`*:*\` (Full system configuration, user provisioning, billing, audit logs) |
 | **${d.shortName} Manager** | Workspace Tenant | \`${d.shortName.toLowerCase()}:write\`, \`${d.shortName.toLowerCase()}:read\`, \`reports:export\` |
 | **Standard Operator** | Assigned Domain | \`${d.shortName.toLowerCase()}:read\`, \`${d.shortName.toLowerCase()}:create\` |
 | **Auditor / Read-Only** | Tenant Scope | \`*:read\` (Zero mutation permissions, audit logs read-only) |
@@ -622,7 +700,7 @@ function generateSecurityCompliance(prompt: string, stack: TechStackPreferences,
 | OWASP Vulnerability | Technical Defense-in-Depth Mitigation |
 | :--- | :--- |
 ${d.securityFocus.map((s) => `| **${s.area}** | ${s.mitigation} |`).join("\n")}
-| **Cryptographic Failures** | TLS 1.3 in transit; AES-256-GCM at rest; Argon2id for password hashing. |
+| **Cryptographic Failures** | TLS 1.3 enforced in transit; AES-256-GCM at rest via AWS KMS; Argon2id for password hashing. |
 | **Security Misconfiguration** | Hardened multi-stage Docker running as non-root user (\`appuser:10001\`). |
 
 ---
