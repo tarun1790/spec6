@@ -12,6 +12,8 @@ import { TEMPLATES } from "@/lib/templates";
 import { exportSpecificationZip } from "@/lib/zip-exporter";
 import { generateMockStageContent } from "@/lib/mock-generator";
 
+import { detectOptimalTechStack } from "@/lib/stack-detector";
+
 const initialTechStack: TechStackPreferences = TEMPLATES[0].defaultTechStack || {
   frontend: "Next.js 14 (App Router) + Tailwind CSS",
   backend: "FastAPI / Node.js Microservices",
@@ -34,6 +36,14 @@ const initialStages: StageState[] = STAGES.map((s) => ({
 export default function DashboardPage() {
   const [prompt, setPrompt] = useState<string>("");
   const [techStack, setTechStack] = useState<TechStackPreferences>(initialTechStack);
+
+  const handlePromptChange = (newPrompt: string) => {
+    setPrompt(newPrompt);
+    if (newPrompt.trim().length > 5) {
+      const detected = detectOptimalTechStack(newPrompt);
+      setTechStack(detected);
+    }
+  };
   const [stages, setStages] = useState<StageState[]>(initialStages);
   const [activeStageIndex, setActiveStageIndex] = useState<number>(0);
   const [selectedStageIndex, setSelectedStageIndex] = useState<number>(0);
@@ -321,7 +331,7 @@ export default function DashboardPage() {
         <div className="lg:col-span-4 h-full overflow-hidden">
           <ControllerPanel
             prompt={prompt}
-            setPrompt={setPrompt}
+            setPrompt={handlePromptChange}
             techStack={techStack}
             setTechStack={setTechStack}
             stages={stages}

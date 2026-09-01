@@ -108,7 +108,7 @@ export function extractDomainContext(prompt: string): DomainContext {
     `${primaryEntities[0] || "Core"} Orchestration Service`,
     `${primaryEntities[1] || "Data"} Processing Engine`,
     `${primaryEntities[2] || "Event"} Ingestion Gateway`,
-    "Real-Time WebSocket & Push Notification Cluster",
+    "Real-Time Stream & Push Notification Cluster",
     "Telemetry, Metrics & Audit Logging Worker"
   ];
 
@@ -118,7 +118,7 @@ export function extractDomainContext(prompt: string): DomainContext {
     `Ingest and stream high-concurrency event telemetry for ${primaryEntities[1] || "transactions"}`,
     `Evaluate state transition rules and dispatch automated triggers for ${primaryEntities[2] || "events"}`,
     `Execute high-performance indexed queries on ${primaryEntities[0]} with sub-50ms latency`,
-    "Enforce zero-trust RBAC authorization and emit immutable audit log entries"
+    "Enforce zero-trust authorization and emit immutable audit log entries"
   ];
 
   // Synthesize targeted user personas based on prompt
@@ -137,7 +137,7 @@ export function extractDomainContext(prompt: string): DomainContext {
     },
     {
       role: `Systems Integration & API Engineer`,
-      description: `Third-party developer connecting external enterprise software, IoT devices, or third-party webhooks to ${shortName}.`,
+      description: `Third-party developer connecting external enterprise software, IoT sensors, or third-party webhooks to ${shortName}.`,
       coreNeed: `Strictly typed OpenAPI 3.1 REST and gRPC endpoints, idempotent retry keys, and comprehensive SDK documentation.`,
       painPoint: `Undocumented breaking schema changes, unhandled rate-limit bursts, and opaque error envelopes.`
     },
@@ -155,13 +155,13 @@ export function extractDomainContext(prompt: string): DomainContext {
       id: "REQ-P0-01",
       title: `Core ${primaryEntities[0]} Lifecycle & State Machine`,
       desc: `Full CRUD management, schema validation, and lifecycle state transitions for ${primaryEntities[0]} with atomic database transactions.`,
-      acceptance: `Validates payloads with Zod/Pydantic schemas; persists state in PostgreSQL with <50ms p95 write latency; enforces unique constraint on identity fields.`
+      acceptance: `Validates payloads with Zod/Pydantic schemas; persists state with <50ms p95 write latency; enforces unique constraint on identity fields.`
     },
     {
       id: "REQ-P0-02",
       title: `High-Throughput Ingestion & Stream Processing for ${primaryEntities[1] || "Events"}`,
       desc: `Asynchronous event stream processing for continuous updates to ${primaryEntities[1] || "records"} using distributed message brokers.`,
-      acceptance: `Ingests 10,000 events/sec via Redis Streams/Kafka with zero message loss; delivers event payloads to consumers in <20ms.`
+      acceptance: `Ingests 10,000 events/sec via distributed message bus with zero message loss; delivers event payloads to consumers in <20ms.`
     },
     {
       id: "REQ-P0-03",
@@ -298,8 +298,8 @@ export function extractDomainContext(prompt: string): DomainContext {
   const securityFocus = [
     { area: "Access Control & IDOR Defense", mitigation: `Every database query for ${primaryEntities[0]} enforces multi-tenant boundary predicates: WHERE id = :id AND tenant_id = :auth_tenant_id.` },
     { area: "Cryptographic Protocols", mitigation: "Enforces TLS 1.3 in transit with Perfect Forward Secrecy; sensitive field-level persistence encrypted with AES-256-GCM via KMS." },
-    { area: "Input Sanitization & Injection", mitigation: "Strict type coercion and parameterization using Prisma ORM and Zod schemas on 100% of API endpoints; prevents SQL/NoSQL injection." },
-    { area: "DDoS Mitigation & Rate Limiting", mitigation: "Distributed token bucket rate limiting (120 req/min per IP/API key) enforced at Redis API Gateway layer." }
+    { area: "Input Sanitization & Injection", mitigation: "Strict type coercion and parameterization using ORM/Zod schemas on 100% of API endpoints; prevents SQL/NoSQL injection." },
+    { area: "DDoS Mitigation & Rate Limiting", mitigation: "Distributed token bucket rate limiting (120 req/min per IP/API key) enforced at ingress API Gateway layer." }
   ];
 
   return {
@@ -360,7 +360,13 @@ function generateProjectBrief(prompt: string, stack: TechStackPreferences, d: Do
 ## 1. Executive Summary & Objective
 This master engineering specification defines the architecture, data models, API contracts, testing matrix, security blueprint, and DevOps deployment pipeline for **${d.title}** (${d.shortName}).
 
-The platform is designed to provide high-concurrency, enterprise-grade availability engineered according to **${stack.architecture}**, leveraging **${stack.frontend}** for the user interface, **${stack.backend}** for business logic execution, **${stack.database}** for transactional persistence, and **${stack.caching}** for distributed caching and state management.
+The platform is designed to provide high-concurrency, enterprise-grade availability engineered according to **${stack.architecture}**, leveraging:
+* **Frontend Layer:** ${stack.frontend}
+* **Backend Core:** ${stack.backend}
+* **Persistence & Storage:** ${stack.database}
+* **Caching & Message Broker:** ${stack.caching}
+* **Deployment & Orchestration:** ${stack.deployment}
+* **Authentication & Identity:** ${stack.auth}
 
 ### 📋 Grounding User Requirements
 > "${d.userPromptRaw}"
@@ -403,12 +409,12 @@ ${d.p2Requirements.map((r) => `| **${r.id}** | **${r.title}** | ${r.desc} | ${r.
 
 | SLA Vector | Target Metric | Technical Enforcement & Verification |
 | :--- | :--- | :--- |
-| **Availability** | **99.99% Uptime** | Multi-AZ Kubernetes pod spreads with automated health check restart probes. |
-| **Read Latency** | **p95 < 80ms** | Multi-tier Redis caching, indexed B-Tree database queries, connection pooling. |
-| **Write Latency** | **p95 < 150ms** | Asynchronous message queuing with PgBouncer connection multiplexing. |
-| **Throughput** | **10,000+ RPS** | Horizontal Pod Autoscaler (HPA) triggering on >70% CPU/Memory utilization. |
-| **Security** | **OWASP Top 10** | Parameterized SQL queries, WAF rate limiting, JWT RBAC guards, AES-256-GCM. |
-| **Disaster Recovery** | **RTO < 5m, RPO = 0** | Continuous WAL archiving to S3, automated point-in-time recovery (PITR). |
+| **Availability** | **99.99% Uptime** | Automated multi-region health checks, zero-downtime rolling updates. |
+| **Read Latency** | **p95 < 80ms** | Multi-tier caching via ${stack.caching}, indexed database queries. |
+| **Write Latency** | **p95 < 150ms** | Asynchronous queuing, database connection pooling. |
+| **Throughput** | **10,000+ RPS** | Horizontal pod autoscaling on ${stack.deployment} based on CPU/Memory load. |
+| **Security** | **OWASP Top 10** | Zero-trust authentication via ${stack.auth}, TLS 1.3, AES-256 at rest. |
+| **Disaster Recovery** | **RTO < 5m, RPO = 0** | Continuous WAL / snapshot replication to object storage. |
 `;
 }
 
@@ -422,15 +428,16 @@ function generateSystemArchitecture(prompt: string, stack: TechStackPreferences,
 
   return `# 01_SYSTEM_ARCHITECTURE.md: Topology & Schema Blueprint
 
-## 1. Architectural Overview & Design Rationales
+## 1. Architectural Overview & Stack Selection
 
-| Layer | Selected Tech | Design Rationale & Architectural Trade-offs |
+| Layer | Selected Technology | Architectural Rationale & Trade-offs |
 | :--- | :--- | :--- |
-| **Frontend UI** | ${stack.frontend} | React Server Components eliminate client bundle bloat; streaming SSR delivers sub-second initial paint. |
-| **Backend API** | ${stack.backend} | High asynchronous I/O concurrency; strict compile-time type safety with Zod validation. |
-| **Database** | ${stack.database} | Strict ACID transactional guarantees; indexed relational modeling for ${d.primaryEntities.join(", ")}. |
-| **Cache & Locks** | ${stack.caching} | Sub-millisecond distributed caching, session state storage, and distributed Redlock mutexes. |
-| **Deployment** | ${stack.deployment} | Containerized zero-downtime rolling deploys with declarative Terraform infrastructure. |
+| **Frontend UI** | ${stack.frontend} | Tailored for responsiveness, low bundle overhead, and native platform UX. |
+| **Backend Core** | ${stack.backend} | Selected for high async throughput, strict type safety, and domain encapsulation. |
+| **Database** | ${stack.database} | Relational ACID guarantees and specialized indexing for ${d.primaryEntities.join(", ")}. |
+| **Cache & Bus** | ${stack.caching} | Sub-millisecond distributed caching, session state, and message brokering. |
+| **Auth & Identity** | ${stack.auth} | Enforces token verification, role-based access, and cryptographic integrity. |
+| **Infrastructure** | ${stack.deployment} | Declarative orchestration, automated scaling, and production reliability. |
 
 ---
 
@@ -439,40 +446,36 @@ function generateSystemArchitecture(prompt: string, stack: TechStackPreferences,
 \`\`\`mermaid
 flowchart TD
     subgraph Clients ["Client Applications"]
-        WebClient["Desktop & Mobile Web (SSR / PWA)"]
-        MobileClient["Mobile Native App (iOS / Android)"]
+        AppClient["${stack.frontend.split("+")[0].trim()}"]
     end
 
     subgraph Ingress ["Edge & Security Ingress Layer"]
-        CDN["Global CDN / Cloudflare Edge"]
+        CDN["Global CDN / Edge Gateway"]
         WAF["Web Application Firewall (WAF)"]
-        ALB["Application Load Balancer (ALB / Envoy)"]
+        ALB["Load Balancer & SSL Termination"]
     end
 
     subgraph GatewayLayer ["API Gateway & Middleware"]
-        APIGateway["API Gateway Reverse Proxy"]
-        AuthGuard["JWT / RBAC Middleware"]
+        APIGateway["API Gateway (${stack.auth.split("/")[0].trim()} Guard)"]
         RateLimiter["Distributed Token Bucket Rate Limiter"]
     end
 
-    subgraph ServiceMesh ["Core Microservices"]
+    subgraph ServiceMesh ["Core Services (${stack.backend.split("/")[0].trim()})"]
         S1["${d.services[0]}"]
         S2["${d.services[1]}"]
         S3["${d.services[2]}"]
     end
 
     subgraph DataStorage ["Data & Cache Tier"]
-        DBStore["Primary Database (PostgreSQL 16)"]
-        CacheStore["Distributed Cache (Redis Cluster)"]
+        DBStore["${stack.database}"]
+        CacheStore["${stack.caching}"]
     end
 
-    WebClient --> CDN
-    MobileClient --> CDN
+    AppClient --> CDN
     CDN --> WAF
     WAF --> ALB
     ALB --> APIGateway
-    APIGateway --> AuthGuard
-    AuthGuard --> RateLimiter
+    APIGateway --> RateLimiter
     RateLimiter --> S1
     RateLimiter --> S2
     RateLimiter --> S3
@@ -557,91 +560,91 @@ ${ep.response}
 
 // Stage 2: 02_IMPLEMENTATION_PLAN.md
 function generateImplementationPlan(prompt: string, stack: TechStackPreferences, d: DomainContext): string {
+  const isPython = stack.backend.toLowerCase().includes("python") || stack.backend.toLowerCase().includes("fastapi");
+  const isRust = stack.backend.toLowerCase().includes("rust");
+  const isGo = stack.backend.toLowerCase().includes("go");
+
+  const configFile = isPython ? "pyproject.toml" : isRust ? "Cargo.toml" : isGo ? "go.mod" : "package.json";
+  const mainEntry = isPython ? "app/main.py" : isRust ? "src/main.rs" : isGo ? "cmd/server/main.go" : "src/app/page.tsx";
+
   return `# 02_IMPLEMENTATION_PLAN.md: Engineering Roadmap & Milestones
 
-## 1. Production Monorepo Directory Architecture
+## 1. Target Repository Monorepo Architecture
 
 \`\`\`text
 ${d.shortName.toLowerCase()}-monorepo/
 ├── .github/
 │   └── workflows/
 │       ├── ci.yml                 # Lint, TypeCheck, Unit & Integration Tests
-│       └── deploy.yml             # Docker container build and Kubernetes deployment
+│       └── deploy.yml             # Container build and deployment pipeline
 ├── docker/
-│   ├── Dockerfile.production      # Multi-stage hardened production container
-│   └── docker-compose.yml         # Local stack (PostgreSQL, Redis, App Server)
+│   ├── Dockerfile                 # Hardened production container for ${stack.backend.split("/")[0].trim()}
+│   └── docker-compose.yml         # Local stack (${stack.database.split("+")[0].trim()}, ${stack.caching.split("+")[0].trim()})
 ├── src/
-│   ├── app/                       # Next.js 14 App Router
-│   │   ├── api/                   # REST API controllers
-│   │   │   └── v1/
-│   │   │       ├── auth/          # Authentication & Token handlers
-│   │   │       └── ${d.primaryEntities[0].toLowerCase()}s/      # ${d.primaryEntities[0]} domain endpoints
-│   │   └── page.tsx               # Primary dashboard interface
-│   ├── components/                # Modular UI component library
-│   │   ├── ui/                    # Base primitives (Buttons, Inputs, Modals)
-│   │   └── domain/                # ${d.shortName} domain components
-│   ├── lib/
-│   │   ├── db.ts                  # Database client connection pool (Prisma)
-│   │   ├── redis.ts               # Redis cache & distributed lock manager
-│   │   └── auth.ts                # Token verification and RBAC guards
-│   └── types/
-│       └── index.ts               # Domain TypeScript interfaces
-├── prisma/
-│   └── schema.prisma              # Database schema for ${d.primaryEntities.join(", ")}
+│   ├── api/                       # REST & RPC controllers
+│   │   ├── auth/                  # ${stack.auth} integration
+│   │   └── ${d.primaryEntities[0].toLowerCase()}s/      # Domain endpoints
+│   └── ${mainEntry}
 ├── tests/
-│   ├── unit/                      # Vitest unit test suites
-│   ├── integration/               # API route integration tests
-│   └── e2e/                       # Playwright E2E master test suites
-├── openapi.json                   # OpenAPI 3.1 REST API specification
-└── package.json
+│   ├── unit/                      # Unit test suites
+│   ├── integration/               # API integration tests
+│   └── e2e/                       # Master end-to-end test suites
+├── ${configFile}
+└── README.md
 \`\`\`
 
 ---
 
 ## 2. Phased Engineering Milestones
 
-### Milestone 1: Data Modeling, Auth & Core Infrastructure (Sprint 1)
-- [ ] Initialize repository with TypeScript 5, Tailwind CSS, and strict ESLint rules.
-- [ ] Provision PostgreSQL 16 database and define Prisma schemas for \`${d.primaryEntities.join(", ")}\`.
-- [ ] Implement JWT/OAuth 2.0 authentication endpoints with RS256 token signing and refresh rotation.
-- [ ] Author database migration scripts and seed scripts for mock testing data.
+### Milestone 1: Environment Setup & Data Layer (Sprint 1)
+- [ ] Initialize repository with \`${configFile}\` and configured linting/formatting rules.
+- [ ] Provision **${stack.database}** and establish initial database schemas for \`${d.primaryEntities.join(", ")}\`.
+- [ ] Implement **${stack.auth}** security handlers with asymmetric token validation.
+- [ ] Author automated database migration scripts and test fixtures.
 
-### Milestone 2: Core Domain Logic & REST Endpoints (Sprint 2)
-- [ ] Build CRUD controllers under \`${d.apiPrefix}\` with Zod input validation schemas.
-- [ ] Implement business logic for **${d.primaryActions[0]}** and **${d.primaryActions[1]}**.
-- [ ] Integrate Redis cache-aside caching with 5-minute TTL on queries.
-- [ ] Configure distributed lock mechanics on critical mutation workflows to prevent race conditions.
+### Milestone 2: Core Domain Logic & API Implementation (Sprint 2)
+- [ ] Build high-throughput controllers under \`${d.apiPrefix}\` using **${stack.backend}**.
+- [ ] Implement business logic rules for **${d.primaryActions[0]}** and **${d.primaryActions[1]}**.
+- [ ] Integrate **${stack.caching}** caching and distributed locks to prevent race conditions.
+- [ ] Author comprehensive OpenAPI 3.1 specifications and schema documentation.
 
-### Milestone 3: Real-Time Telemetry & Event Subsystem (Sprint 3)
-- [ ] Implement WebSocket / SSE streaming server for live updates.
-- [ ] Implement event dispatch triggers for **${d.primaryActions[2]}**.
-- [ ] Setup distributed token bucket rate limiting (120 req/min) via Redis.
-- [ ] Build administrative telemetry, health probes, and audit logging endpoints.
+### Milestone 3: Real-Time Telemetry & Event Subsystems (Sprint 3)
+- [ ] Implement real-time streaming pipeline for live updates and notifications.
+- [ ] Implement event triggers and automated handlers for **${d.primaryActions[2]}**.
+- [ ] Configure distributed rate limiting (120 req/min) at the API gateway layer.
+- [ ] Expose Prometheus metrics (\`/metrics\`) and health probes (\`/healthz\`, \`/ready\`).
 
-### Milestone 4: Quality Assurance, Security Hardening & Production Release (Sprint 4)
-- [ ] Author Vitest unit tests achieving >85% code coverage across domain services.
-- [ ] Author Playwright E2E master tests verifying critical user paths.
-- [ ] Execute OWASP ZAP vulnerability audit and harden Docker configuration.
-- [ ] Configure GitHub Actions CI/CD deploying to Kubernetes (EKS/GKE) cluster.
+### Milestone 4: QA, Security Hardening & Deployment (Sprint 4)
+- [ ] Author test suites achieving >85% code coverage across domain services.
+- [ ] Conduct vulnerability audit, container hardening, and secret scanning.
+- [ ] Author declarative deployment manifests for **${stack.deployment}**.
+- [ ] Configure GitHub Actions CI/CD deploying to staging and production environments.
 `;
 }
 
 // Stage 3: 03_TESTING_STRATEGY.md
 function generateTestingStrategy(prompt: string, stack: TechStackPreferences, d: DomainContext): string {
+  const isPython = stack.backend.toLowerCase().includes("python") || stack.backend.toLowerCase().includes("fastapi");
+  const isRust = stack.backend.toLowerCase().includes("rust");
+  const isGo = stack.backend.toLowerCase().includes("go");
+
+  const testFramework = isPython ? "pytest + pytest-asyncio" : isRust ? "cargo test" : isGo ? "go test ./..." : "Vitest + Playwright";
+
   return `# 03_TESTING_STRATEGY.md: Quality Assurance & Test Automation Matrix
 
 ## 1. Test Pyramid & Target Coverage Commitments
 
-| Test Tier | Scope & Focus | Target Coverage | Tooling & Framework |
+| Test Tier | Scope & Focus | Target Coverage | Framework & Tooling |
 | :--- | :--- | :---: | :--- |
-| **Unit Tests** | Domain business logic, entity helpers, validation schemas. | **> 85%** | Vitest / Jest |
-| **Integration Tests** | REST API endpoints, SQL transactions, Redis lock mechanics. | **> 80%** | Supertest / Vitest |
-| **End-to-End (E2E)** | Critical user journeys for ${d.primaryEntities[0]}. | **100% Core** | Playwright (Headless Chrome) |
+| **Unit Tests** | Domain models, business logic functions, validation schemas. | **> 85%** | ${testFramework} |
+| **Integration Tests** | REST API endpoints, transactions in ${stack.database.split("+")[0].trim()}, cache operations. | **> 80%** | Integration Test Runner |
+| **End-to-End (E2E)** | Critical user workflows for ${d.primaryEntities[0]}. | **100% Core** | Playwright / Headless Browser |
 | **Load Testing** | Concurrency bottlenecks under peak traffic. | **10,000 RPS** | k6 / Artillery |
 
 ---
 
-## 2. Playwright End-to-End (E2E) Master Test Script
+## 2. Master Test Suite Specification
 
 \`\`\`typescript
 import { test, expect } from "@playwright/test";
@@ -652,8 +655,7 @@ test.describe("${d.title} - Critical User Workflow", () => {
     await page.goto("/");
   });
 
-  test("TC-01: Successfully authenticate and navigate to workspace", async ({ page }) => {
-    // Fill credentials
+  test("TC-01: Successfully authenticate with ${stack.auth.split("/")[0].trim()}", async ({ page }) => {
     await page.fill('[data-testid="input-email"]', "admin@${d.shortName.toLowerCase()}.io");
     await page.fill('[data-testid="input-password"]', "SecurePassword123!");
     await page.click('[data-testid="btn-submit"]');
@@ -700,8 +702,8 @@ function generateSecurityCompliance(prompt: string, stack: TechStackPreferences,
 | OWASP Vulnerability | Technical Defense-in-Depth Mitigation |
 | :--- | :--- |
 ${d.securityFocus.map((s) => `| **${s.area}** | ${s.mitigation} |`).join("\n")}
-| **Cryptographic Failures** | TLS 1.3 enforced in transit; AES-256-GCM at rest via AWS KMS; Argon2id for password hashing. |
-| **Security Misconfiguration** | Hardened multi-stage Docker running as non-root user (\`appuser:10001\`). |
+| **Cryptographic Failures** | TLS 1.3 enforced in transit; AES-256-GCM at rest; secure token signing via ${stack.auth}. |
+| **Security Misconfiguration** | Hardened container running as non-root user (\`appuser:10001\`) on ${stack.deployment}. |
 
 ---
 
@@ -709,63 +711,118 @@ ${d.securityFocus.map((s) => `| **${s.area}** | ${s.mitigation} |`).join("\n")}
 
 | Variable Name | Sensitivity | Description |
 | :--- | :---: | :--- |
-| \`NODE_ENV\` | Public | Runtime mode (\`production\` / \`development\`). |
-| \`DATABASE_URL\` | **Secret** | PostgreSQL 16 connection string with TLS required. |
-| \`REDIS_URL\` | **Secret** | Redis cluster connection string. |
-| \`JWT_SECRET_KEY\` | **Secret** | 256-bit cryptographic key for signing user tokens. |
-| \`ENCRYPTION_KEY_AES256\` | **Secret** | Master key for AES-256 field-level data encryption. |
+| \`APP_ENV\` | Public | Runtime environment mode (\`production\` / \`staging\` / \`development\`). |
+| \`DATABASE_URL\` | **Secret** | Connection string for ${stack.database} with TLS required. |
+| \`REDIS_URL\` | **Secret** | Connection string for ${stack.caching}. |
+| \`AUTH_SECRET_KEY\` | **Secret** | Cryptographic key for signing and verifying ${stack.auth} tokens. |
+| \`MASTER_ENCRYPTION_KEY\` | **Secret** | 256-bit master key for field-level data encryption at rest. |
 `;
 }
 
 // Stage 5: 05_DEPLOYMENT_DEVOPS.md
 function generateDeploymentDevops(prompt: string, stack: TechStackPreferences, d: DomainContext): string {
+  const isPython = stack.backend.toLowerCase().includes("python") || stack.backend.toLowerCase().includes("fastapi");
+  const isRust = stack.backend.toLowerCase().includes("rust");
+  const isGo = stack.backend.toLowerCase().includes("go");
+
+  let dockerfileSnippet = "";
+  if (isPython) {
+    dockerfileSnippet = `FROM python:3.11-slim AS runner
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+COPY . .
+EXPOSE 8000
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]`;
+  } else if (isRust) {
+    dockerfileSnippet = `FROM rust:1.75-alpine AS builder
+WORKDIR /app
+COPY Cargo.* ./
+COPY src ./src
+RUN cargo build --release
+
+FROM alpine:3.19 AS runner
+WORKDIR /app
+COPY --from=builder /app/target/release/${d.shortName.toLowerCase()} ./app
+EXPOSE 8080
+CMD ["./app"]`;
+  } else if (isGo) {
+    dockerfileSnippet = `FROM golang:1.22-alpine AS builder
+WORKDIR /app
+COPY go.* ./
+RUN go mod download
+COPY . .
+RUN CGO_ENABLED=0 go build -o server ./cmd/server
+
+FROM alpine:3.19 AS runner
+WORKDIR /app
+COPY --from=builder /app/server ./server
+EXPOSE 8080
+CMD ["./server"]`;
+  } else {
+    dockerfileSnippet = `FROM node:20-alpine AS runner
+WORKDIR /app
+ENV NODE_ENV=production
+COPY package*.json ./
+RUN npm ci --only=production
+COPY . .
+EXPOSE 3000
+CMD ["node", "server.js"]`;
+  }
+
   return `# 05_DEPLOYMENT_DEVOPS.md: Infrastructure, CI/CD & Operations Blueprint
 
-## 1. Multi-Stage Production Hardened Dockerfile
+## 1. Hardened Production Dockerfile
 
 \`\`\`dockerfile
-# ----------------------------------------------------
-# Stage 1: Build & Dependencies
-# ----------------------------------------------------
-FROM node:20-alpine AS builder
-WORKDIR /app
-
-RUN apk add --no-cache libc6-compat
-COPY package*.json ./
-RUN npm ci --prefer-offline --no-audit
-
-COPY . .
-RUN npm run build
-
-# ----------------------------------------------------
-# Stage 2: Minimal Hardened Production Runtime
-# ----------------------------------------------------
-FROM node:20-alpine AS runner
-WORKDIR /app
-
-ENV NODE_ENV=production
-ENV PORT=3000
-
-# Create non-root system user for security hardening
-RUN addgroup --system --gid 1001 nodejs && \
-    adduser --system --uid 1001 appuser
-
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/.next/standalone ./
-COPY --from=builder /app/.next/static ./.next/static
-
-USER appuser
-EXPOSE 3000
-
-HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1
-
-CMD ["node", "server.js"]
+${dockerfileSnippet}
 \`\`\`
 
 ---
 
-## 2. GitHub Actions CI/CD Pipeline (\`.github/workflows/deploy.yml\`)
+## 2. Infrastructure & Orchestration (${stack.deployment})
+
+\`\`\`yaml
+version: "3.8"
+
+services:
+  app:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - APP_ENV=production
+      - DATABASE_URL=postgres://user:password@db:5432/${d.shortName.toLowerCase()}
+      - CACHE_URL=redis://cache:6379
+    depends_on:
+      - db
+      - cache
+
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${d.shortName.toLowerCase()}
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  cache:
+    image: redis:7-alpine
+    restart: unless-stopped
+    volumes:
+      - redisdata:/data
+
+volumes:
+  pgdata:
+  redisdata:
+\`\`\`
+
+---
+
+## 3. GitHub Actions CI/CD Pipeline (\`.github/workflows/deploy.yml\`)
 
 \`\`\`yaml
 name: Production CI/CD Pipeline
@@ -779,23 +836,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: 'npm'
-      - run: npm ci
-      - run: npm run lint
-      - run: npm test
+      - name: Run Automated Test Suites
+        run: echo "Running automated lint and unit test suites..."
 
   deploy:
     needs: validate
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Build Container
-        run: docker build -t ${d.shortName.toLowerCase()}:latest -f docker/Dockerfile.production .
-      - name: Deploy to Production Cluster
-        run: echo "Deployed ${d.shortName} container to Kubernetes cluster."
+      - name: Build & Deploy Container to ${stack.deployment}
+        run: echo "Deploying ${d.shortName} to ${stack.deployment}..."
 \`\`\`
 `;
 }
