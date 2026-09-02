@@ -7,6 +7,7 @@ import { WorkspaceViewer } from "@/components/WorkspaceViewer";
 import { ModelSettingsModal } from "@/components/ModelSettingsModal";
 import { ExportModal } from "@/components/ExportModal";
 import { DiffViewerModal } from "@/components/DiffViewerModal";
+import { CopilotDrawer } from "@/components/CopilotDrawer";
 import { STAGES, StageState, TechStackPreferences, LLMConfig, SSEEvent } from "@/lib/types";
 import { TEMPLATES } from "@/lib/templates";
 import { exportSpecificationZip } from "@/lib/zip-exporter";
@@ -58,12 +59,21 @@ export default function DashboardPage() {
   });
   const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
   const [isExportOpen, setIsExportOpen] = useState<boolean>(false);
+  const [isCopilotOpen, setIsCopilotOpen] = useState<boolean>(false);
   const [diffModal, setDiffModal] = useState<{
     isOpen: boolean;
     fileName: string;
     original: string;
     current: string;
   }>({ isOpen: false, fileName: "", original: "", current: "" });
+
+  const handleApplyRefactor = (stageIndex: number, addition: string) => {
+    setStages((prev) =>
+      prev.map((s) =>
+        s.index === stageIndex ? { ...s, content: s.content + "\n" + addition } : s
+      )
+    );
+  };
 
   const abortControllerRef = useRef<AbortController | null>(null);
 
@@ -318,6 +328,7 @@ export default function DashboardPage() {
         llmConfig={llmConfig}
         onOpenSettings={() => setIsSettingsOpen(true)}
         onOpenExport={() => setIsExportOpen(true)}
+        onOpenCopilot={() => setIsCopilotOpen(true)}
         onQuickDownloadZip={handleQuickDownloadZip}
         onShareLink={handleShareLink}
         isGenerating={isGenerating}
@@ -353,6 +364,7 @@ export default function DashboardPage() {
             selectedStageIndex={selectedStageIndex}
             onSelectStageIndex={setSelectedStageIndex}
             onUpdateStageContent={handleUpdateStageContent}
+            onOpenCopilot={() => setIsCopilotOpen(true)}
             onOpenDiff={(fileName: string, orig: string, curr: string) => {
               setDiffModal({ isOpen: true, fileName, original: orig, current: curr });
             }}
@@ -363,7 +375,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Modals */}
+      {/* Modals & Drawers */}
       <ModelSettingsModal
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
@@ -384,6 +396,15 @@ export default function DashboardPage() {
         fileName={diffModal.fileName}
         originalContent={diffModal.original}
         currentContent={diffModal.current}
+      />
+
+      <CopilotDrawer
+        isOpen={isCopilotOpen}
+        onClose={() => setIsCopilotOpen(false)}
+        activeStageIndex={selectedStageIndex}
+        stages={stages}
+        techStack={techStack}
+        onApplyRefactor={handleApplyRefactor}
       />
     </div>
   );
