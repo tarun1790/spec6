@@ -12,6 +12,7 @@ import { STAGES, StageState, TechStackPreferences, LLMConfig, SSEEvent } from "@
 import { TEMPLATES } from "@/lib/templates";
 import { exportSpecificationZip } from "@/lib/zip-exporter";
 import { generateMockStageContent } from "@/lib/mock-generator";
+import { streamStageContent } from "@/lib/llm-providers";
 
 import { detectOptimalTechStack } from "@/lib/stack-detector";
 
@@ -251,21 +252,34 @@ export default function DashboardPage() {
           );
 
           const stageStartTime = Date.now();
-          const content = generateMockStageContent(i, prompt, techStack, accumulatedContext);
-          accumulatedContext[STAGES[i].fileName] = content;
+          let stageContent = "";
 
-          const chunkSize = 160;
-          for (let j = 0; j < content.length; j += chunkSize) {
-            if (abortController.signal.aborted) break;
-            const chunk = content.slice(j, j + chunkSize);
+          try {
+            for await (const chunk of streamStageContent(
+              i,
+              prompt,
+              techStack,
+              llmConfig,
+              accumulatedContext,
+              abortController.signal
+            )) {
+              if (abortController.signal.aborted) break;
+              stageContent += chunk;
+              setStages((prev) =>
+                prev.map((s) => (s.index === i ? { ...s, content: s.content + chunk } : s))
+              );
+            }
+          } catch (streamErr) {
+            console.warn("Direct stream error, falling back to synthesizer:", streamErr);
+            stageContent = generateMockStageContent(i, prompt, techStack, accumulatedContext);
             setStages((prev) =>
-              prev.map((s) => (s.index === i ? { ...s, content: s.content + chunk } : s))
+              prev.map((s) => (s.index === i ? { ...s, content: stageContent } : s))
             );
-            await new Promise((r) => setTimeout(r, 12));
           }
 
+          accumulatedContext[STAGES[i].fileName] = stageContent;
           const durationMs = Date.now() - stageStartTime;
-          const tokens = Math.round(content.length / 4);
+          const tokens = Math.round(stageContent.length / 4);
           runningTokens += tokens;
 
           setStages((prev) =>
@@ -354,6 +368,8 @@ export default function DashboardPage() {
             onRegenerateStage={(idx: number) => handleStartGeneration(idx)}
             onSelectStageTab={(idx: number) => setSelectedStageIndex(idx)}
             onQuickDownloadZip={handleQuickDownloadZip}
+            llmConfig={llmConfig}
+            onOpenSettings={() => setIsSettingsOpen(true)}
           />
         </div>
 
