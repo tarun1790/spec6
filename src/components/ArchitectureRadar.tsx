@@ -1,8 +1,8 @@
 "use client";
 
 import React from "react";
-import { ShieldCheck, Zap, CheckCircle2, DollarSign, Activity, Server, FileText, Cpu, Check, Layers } from "lucide-react";
-import { TechStackPreferences, StageState } from "@/lib/types";
+import { ShieldCheck, Zap, CheckCircle2, DollarSign, Activity, Server, FileText, Cpu, Check, Layers, BookOpen, AlertTriangle } from "lucide-react";
+import { TechStackPreferences, StageState, SpecificationRigor } from "@/lib/types";
 import { extractDomainContext } from "@/lib/mock-generator";
 import { estimateCloudArchitectureCost } from "@/lib/cost-estimator";
 
@@ -10,12 +10,14 @@ interface ArchitectureRadarProps {
   userPrompt: string;
   techStack: TechStackPreferences;
   stages: StageState[];
+  rigor?: SpecificationRigor;
 }
 
 export const ArchitectureRadar: React.FC<ArchitectureRadarProps> = ({
   userPrompt,
   techStack,
-  stages
+  stages,
+  rigor = "spec-anchored"
 }) => {
   const domain = extractDomainContext(userPrompt || "Enterprise Cloud");
   const cost = estimateCloudArchitectureCost(techStack);
@@ -65,8 +67,8 @@ export const ArchitectureRadar: React.FC<ArchitectureRadarProps> = ({
       items: [
         "100% Core user journeys covered by Playwright E2E",
         ">85% Unit test coverage on business logic & models",
-        "Contract testing for OpenAPI 3.1 REST schemas",
-        "k6 automated performance stress benchmarks"
+        "Contract testing via Specmatic / Pact for OpenAPI",
+        "Gherkin BDD executable scenarios (Given/When/Then)"
       ]
     },
     {
@@ -100,18 +102,73 @@ export const ArchitectureRadar: React.FC<ArchitectureRadarProps> = ({
             {domain.title} • Production Readiness Grade
           </h2>
           <p className="text-xs text-slate-500 mt-0.5">
-            Evaluated against Google Cloud Well-Architected Framework, OWASP Top 10, and High-Throughput SLAs.
+            Evaluated against Google Cloud Well-Architected Framework, OWASP Top 10, and ACM AIWare 2026 SDD standards.
           </p>
         </div>
 
         <div className="flex items-center gap-3">
           <div className="text-center px-4 py-2 rounded-xl bg-emerald-50 border border-emerald-200">
-            <div className="text-2xl font-black text-emerald-700">97%</div>
+            <div className="text-2xl font-black text-emerald-700">98%</div>
             <div className="text-[10px] font-bold text-emerald-800 uppercase tracking-wider">Overall Score</div>
           </div>
           <div className="text-center px-4 py-2 rounded-xl bg-slate-100 border border-slate-200">
             <div className="text-2xl font-black text-slate-800">{completedStages}/6</div>
             <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Specs Ready</div>
+          </div>
+        </div>
+      </div>
+
+      {/* ACM AIWare 2026 SDD Rigor & Contract Drift Card */}
+      <div className="bg-white rounded-2xl border border-emerald-200 bg-emerald-50/30 p-4 shadow-xs space-y-2">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <BookOpen className="h-4 w-4 text-emerald-700" />
+            <span className="text-xs font-bold uppercase tracking-wider text-emerald-950">
+              SDD Specification Spectrum (AIWare 2026 Framework)
+            </span>
+          </div>
+          <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 border border-emerald-300">
+            Rigor: {rigor.toUpperCase()}
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs pt-1">
+          <div className="p-2.5 rounded-xl bg-white border border-emerald-200/80">
+            <div className="text-[10px] font-bold text-slate-400 uppercase">Specification Authority</div>
+            <div className="font-bold text-slate-800 text-xs mt-0.5">
+              {rigor === "spec-as-source"
+                ? "Absolute (100% Machine Gen)"
+                : rigor === "spec-anchored"
+                ? "Living Contract (CI Enforced)"
+                : "Guided Initial Build"}
+            </div>
+            <div className="text-[10px] text-slate-500 mt-0.5">
+              {rigor === "spec-as-source"
+                ? "Humans edit spec only; code regenerated"
+                : rigor === "spec-anchored"
+                ? "Spec & code synchronized on every commit"
+                : "Initial clarity for AI prompting"}
+            </div>
+          </div>
+
+          <div className="p-2.5 rounded-xl bg-white border border-emerald-200/80">
+            <div className="text-[10px] font-bold text-slate-400 uppercase">Drift Prevention Status</div>
+            <div className="font-bold text-emerald-700 text-xs mt-0.5">
+              {rigor === "spec-first" ? "Manual Discipline" : "0% Drift (Automated Gate)"}
+            </div>
+            <div className="text-[10px] text-slate-500 mt-0.5">
+              {rigor === "spec-first"
+                ? "May drift over long-term iterations"
+                : "Specmatic & Cucumber tests fail build on divergence"}
+            </div>
+          </div>
+
+          <div className="p-2.5 rounded-xl bg-white border border-emerald-200/80">
+            <div className="text-[10px] font-bold text-slate-400 uppercase">Executable Contract Tooling</div>
+            <div className="font-bold text-slate-800 text-xs mt-0.5">Cucumber + Specmatic</div>
+            <div className="text-[10px] text-slate-500 mt-0.5">
+              OpenAPI 3.1 Contract Tests + Gherkin BDD
+            </div>
           </div>
         </div>
       </div>

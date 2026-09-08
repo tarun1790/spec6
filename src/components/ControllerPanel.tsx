@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
-import { Play, Square, RotateCcw, CheckCircle2, Download, Layers, ChevronDown, ChevronUp, Sparkles, Cpu, Key } from "lucide-react";
-import { StageState, STAGES, TechStackPreferences, LLMConfig } from "@/lib/types";
+import { Play, Square, RotateCcw, CheckCircle2, Download, Layers, ChevronDown, ChevronUp, Sparkles, Cpu, Key, BookOpen, HelpCircle, FileText } from "lucide-react";
+import { StageState, STAGES, TechStackPreferences, LLMConfig, SpecificationRigor } from "@/lib/types";
 import { STACK_PRESETS } from "@/lib/stack-detector";
 
 interface ControllerPanelProps {
@@ -20,6 +20,10 @@ interface ControllerPanelProps {
   onQuickDownloadZip?: () => void;
   llmConfig?: LLMConfig;
   onOpenSettings?: () => void;
+  rigor?: SpecificationRigor;
+  setRigor?: (r: SpecificationRigor) => void;
+  onOpenRigorAdvisor?: () => void;
+  onOpenPaperModal?: () => void;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any;
 }
@@ -61,7 +65,11 @@ export const ControllerPanel: React.FC<ControllerPanelProps> = ({
   onSelectStageTab,
   onQuickDownloadZip,
   llmConfig,
-  onOpenSettings
+  onOpenSettings,
+  rigor = "spec-anchored",
+  setRigor,
+  onOpenRigorAdvisor,
+  onOpenPaperModal
 }) => {
   const [isStackExpanded, setIsStackExpanded] = useState(false);
   const hasCompletedAny = stages.some((s) => s.status === "completed" || (s.content && s.content.trim().length > 0));
@@ -71,6 +79,13 @@ export const ControllerPanel: React.FC<ControllerPanelProps> = ({
   };
 
   const isRealLLM = llmConfig && llmConfig.provider !== "mock" && Boolean(llmConfig.apiKey || llmConfig.provider === "ollama");
+
+  const phases = [
+    { name: "Phase 1: Specify (What)", stages: [0] },
+    { name: "Phase 2: Plan (How)", stages: [1] },
+    { name: "Phase 3: Implement (Build)", stages: [2] },
+    { name: "Phase 4: Validate (Verify)", stages: [3, 4, 5] }
+  ];
 
   return (
     <div className="h-full flex flex-col bg-slate-50 border-r border-slate-200 p-4 space-y-3.5 overflow-y-auto">
@@ -102,7 +117,67 @@ export const ControllerPanel: React.FC<ControllerPanelProps> = ({
         )}
       </div>
 
-      {/* 2. Realtime Prompt Console */}
+      {/* 2. Specification Spectrum & Rigor Selector (AIWare 2026 Figure 1) */}
+      <div className="rounded-xl border border-slate-200 bg-white p-2.5 shadow-xs space-y-1.5">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-1.5">
+            <BookOpen className="h-3.5 w-3.5 text-emerald-600" />
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-800">
+              Specification Rigor
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            {onOpenPaperModal && (
+              <button
+                type="button"
+                onClick={onOpenPaperModal}
+                className="text-[10px] text-blue-700 hover:text-blue-900 flex items-center gap-0.5 font-semibold"
+                title="View ACM AIWare 2026 Academic Research Paper (8 Pages)"
+              >
+                <FileText className="h-3 w-3" />
+                <span>Paper</span>
+              </button>
+            )}
+            {onOpenRigorAdvisor && (
+              <button
+                type="button"
+                onClick={onOpenRigorAdvisor}
+                className="text-[10px] text-emerald-700 hover:text-emerald-900 flex items-center gap-0.5 font-semibold"
+              >
+                <HelpCircle className="h-3 w-3" />
+                <span>Advisor</span>
+              </button>
+            )}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-3 gap-1">
+          {[
+            { id: "spec-first", label: "Spec-First", desc: "Guided" },
+            { id: "spec-anchored", label: "Spec-Anchored", desc: "Living (Sweet Spot)" },
+            { id: "spec-as-source", label: "Spec-as-Source", desc: "100% Gen" }
+          ].map((r) => {
+            const isSelected = rigor === r.id;
+            return (
+              <button
+                key={r.id}
+                type="button"
+                onClick={() => setRigor && setRigor(r.id as SpecificationRigor)}
+                className={`py-1 px-1.5 rounded-lg text-center transition-all border ${
+                  isSelected
+                    ? "bg-emerald-50 text-emerald-900 border-emerald-500 font-bold shadow-xs"
+                    : "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100"
+                }`}
+              >
+                <div className="text-[10px] font-bold">{r.label}</div>
+                <div className="text-[9px] text-slate-400 truncate">{r.desc}</div>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* 3. Realtime Prompt Console */}
       <div className="space-y-1.5">
         <div className="flex items-center justify-between">
           <label className="text-xs font-bold text-slate-800 uppercase tracking-wide">
@@ -131,12 +206,12 @@ export const ControllerPanel: React.FC<ControllerPanelProps> = ({
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
           placeholder="Describe your application idea, features, target users, hardware or business logic..."
-          rows={6}
+          rows={5}
           className="w-full p-3 rounded-xl border border-slate-200 bg-white text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 leading-relaxed resize-y font-sans transition-all shadow-xs"
         />
       </div>
 
-      {/* 3. Interactive Tech Stack Selector & Presets */}
+      {/* 4. Interactive Tech Stack Selector & Presets */}
       <div className="rounded-xl border border-slate-200 bg-white p-3 space-y-2.5 shadow-xs">
         <div
           onClick={() => setIsStackExpanded(!isStackExpanded)}
@@ -228,7 +303,7 @@ export const ControllerPanel: React.FC<ControllerPanelProps> = ({
         )}
       </div>
 
-      {/* 4. Generation Action Controls */}
+      {/* 5. Generation Action Controls */}
       <div className="flex items-center gap-2">
         {isGenerating ? (
           <button
@@ -263,66 +338,72 @@ export const ControllerPanel: React.FC<ControllerPanelProps> = ({
         </button>
       </div>
 
-      {/* 5. Realtime SDLC Stages */}
-      <div className="space-y-1.5 pt-2 border-t border-slate-200 flex-1">
-        <div className="flex items-center justify-between mb-2">
+      {/* 6. Phased SDD Workflow Stages (Figure 2: Specify -> Plan -> Implement -> Validate) */}
+      <div className="space-y-3 pt-2 border-t border-slate-200 flex-1">
+        <div className="flex items-center justify-between">
           <label className="text-xs font-bold text-slate-800 uppercase tracking-wide block">
-            SDLC Lifecycle Stages
+            SDD Workflow Pipeline
           </label>
+          <span className="text-[10px] text-slate-400">Figure 2 Architecture</span>
         </div>
 
-        {STAGES.map((s) => {
-          const stageState = stages.find((st) => st.index === s.index);
-          const isDone = stageState?.status === "completed";
-          const isCurrent = isGenerating && stageState?.status === "generating";
-          const isFailed = stageState?.status === "failed";
-          const isActiveTab = activeStageIndex === s.index;
+        {phases.map((ph, phIdx) => (
+          <div key={phIdx} className="space-y-1">
+            <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-1">
+              {ph.name}
+            </div>
+            {ph.stages.map((stIdx) => {
+              const s = STAGES[stIdx];
+              const stageState = stages.find((st) => st.index === s.index);
+              const isDone = stageState?.status === "completed";
+              const isCurrent = isGenerating && stageState?.status === "generating";
+              const isFailed = stageState?.status === "failed";
+              const isActiveTab = activeStageIndex === s.index;
 
-          return (
-            <div
-              key={s.index}
-              onClick={() => onSelectStageTab(s.index)}
-              className={`p-2.5 rounded-xl border transition-all cursor-pointer select-none flex items-center justify-between ${
-                isActiveTab
-                  ? "bg-emerald-50/60 border-emerald-500 shadow-xs"
-                  : "bg-white border-slate-200 hover:border-slate-300"
-              }`}
-            >
-              <div className="flex items-center gap-2.5 min-w-0">
+              return (
                 <div
-                  className={`h-6 w-6 rounded-lg flex items-center justify-center text-[11px] font-bold ${
-                    isDone
-                      ? "bg-emerald-600 text-white"
-                      : isCurrent
-                      ? "bg-emerald-100 text-emerald-800 animate-pulse border border-emerald-300"
-                      : isFailed
-                      ? "bg-red-600 text-white"
-                      : "bg-slate-100 text-slate-500"
+                  key={s.index}
+                  onClick={() => onSelectStageTab(s.index)}
+                  className={`p-2 rounded-xl border transition-all cursor-pointer select-none flex items-center justify-between ${
+                    isActiveTab
+                      ? "bg-emerald-50/60 border-emerald-500 shadow-xs"
+                      : "bg-white border-slate-200 hover:border-slate-300"
                   }`}
                 >
-                  {isDone ? <CheckCircle2 className="h-3.5 w-3.5" /> : s.index}
-                </div>
-                <div className="min-w-0">
-                  <div className="text-xs font-semibold text-slate-800 truncate">
-                    {s.fileName}
+                  <div className="flex items-center gap-2 min-w-0">
+                    <div
+                      className={`h-5 w-5 rounded-md flex items-center justify-center text-[10px] font-bold ${
+                        isDone
+                          ? "bg-emerald-600 text-white"
+                          : isCurrent
+                          ? "bg-emerald-100 text-emerald-800 animate-pulse border border-emerald-300"
+                          : isFailed
+                          ? "bg-red-600 text-white"
+                          : "bg-slate-100 text-slate-500"
+                      }`}
+                    >
+                      {isDone ? <CheckCircle2 className="h-3 w-3" /> : s.index}
+                    </div>
+                    <div className="min-w-0">
+                      <div className="text-xs font-semibold text-slate-800 truncate">
+                        {s.fileName}
+                      </div>
+                    </div>
                   </div>
-                  <div className="text-[10px] text-slate-400 truncate">
-                    {s.shortDescription}
-                  </div>
-                </div>
-              </div>
 
-              {stageState?.tokensGenerated && stageState.tokensGenerated > 0 ? (
-                <div className="text-[10px] font-mono text-slate-400">
-                  {stageState.tokensGenerated} tok
+                  {stageState?.tokensGenerated && stageState.tokensGenerated > 0 ? (
+                    <div className="text-[10px] font-mono text-slate-400">
+                      {stageState.tokensGenerated} tok
+                    </div>
+                  ) : null}
                 </div>
-              ) : null}
-            </div>
-          );
-        })}
+              );
+            })}
+          </div>
+        ))}
       </div>
 
-      {/* 6. Quick Download Zip Button */}
+      {/* 7. Quick Download Zip Button */}
       {hasCompletedAny && onQuickDownloadZip && (
         <div className="pt-2 border-t border-slate-200">
           <button

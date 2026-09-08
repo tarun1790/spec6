@@ -8,7 +8,9 @@ import { ModelSettingsModal } from "@/components/ModelSettingsModal";
 import { ExportModal } from "@/components/ExportModal";
 import { DiffViewerModal } from "@/components/DiffViewerModal";
 import { CopilotDrawer } from "@/components/CopilotDrawer";
-import { STAGES, StageState, TechStackPreferences, LLMConfig, SSEEvent } from "@/lib/types";
+import { SddDecisionModal } from "@/components/SddDecisionModal";
+import { AiwarePaperModal } from "@/components/AiwarePaperModal";
+import { STAGES, StageState, TechStackPreferences, LLMConfig, SSEEvent, SpecificationRigor } from "@/lib/types";
 import { TEMPLATES } from "@/lib/templates";
 import { exportSpecificationZip } from "@/lib/zip-exporter";
 import { generateMockStageContent } from "@/lib/mock-generator";
@@ -67,6 +69,9 @@ export default function DashboardPage() {
     original: string;
     current: string;
   }>({ isOpen: false, fileName: "", original: "", current: "" });
+  const [rigor, setRigor] = useState<SpecificationRigor>("spec-anchored");
+  const [isRigorAdvisorOpen, setIsRigorAdvisorOpen] = useState<boolean>(false);
+  const [isPaperModalOpen, setIsPaperModalOpen] = useState<boolean>(false);
 
   const handleApplyRefactor = (stageIndex: number, addition: string) => {
     setStages((prev) =>
@@ -325,7 +330,7 @@ export default function DashboardPage() {
   };
 
   const handleQuickDownloadZip = async () => {
-    await exportSpecificationZip("SpecFlow-Project", stages, prompt);
+    await exportSpecificationZip("SpecFlow-Project", stages, prompt, techStack, rigor);
   };
 
   const handleShareLink = () => {
@@ -343,6 +348,9 @@ export default function DashboardPage() {
         onOpenSettings={() => setIsSettingsOpen(true)}
         onOpenExport={() => setIsExportOpen(true)}
         onOpenCopilot={() => setIsCopilotOpen(true)}
+        onOpenRigorAdvisor={() => setIsRigorAdvisorOpen(true)}
+        onOpenPaperModal={() => setIsPaperModalOpen(true)}
+        rigor={rigor}
         onQuickDownloadZip={handleQuickDownloadZip}
         onShareLink={handleShareLink}
         isGenerating={isGenerating}
@@ -370,6 +378,10 @@ export default function DashboardPage() {
             onQuickDownloadZip={handleQuickDownloadZip}
             llmConfig={llmConfig}
             onOpenSettings={() => setIsSettingsOpen(true)}
+            rigor={rigor}
+            setRigor={setRigor}
+            onOpenRigorAdvisor={() => setIsRigorAdvisorOpen(true)}
+            onOpenPaperModal={() => setIsPaperModalOpen(true)}
           />
         </div>
 
@@ -386,6 +398,7 @@ export default function DashboardPage() {
             }}
             isGenerating={isGenerating}
             techStack={techStack}
+            rigor={rigor}
             userPrompt={prompt}
           />
         </div>
@@ -421,6 +434,20 @@ export default function DashboardPage() {
         stages={stages}
         techStack={techStack}
         onApplyRefactor={handleApplyRefactor}
+      />
+
+      <SddDecisionModal
+        isOpen={isRigorAdvisorOpen}
+        onClose={() => setIsRigorAdvisorOpen(false)}
+        currentRigor={rigor}
+        onSelectRigor={setRigor}
+      />
+
+      <AiwarePaperModal
+        isOpen={isPaperModalOpen}
+        onClose={() => setIsPaperModalOpen(false)}
+        onSelectRigor={setRigor}
+        onOpenAdvisor={() => setIsRigorAdvisorOpen(true)}
       />
     </div>
   );

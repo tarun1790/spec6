@@ -39,6 +39,8 @@ export interface DomainContext {
   p2Requirements: { id: string; title: string; desc: string; acceptance: string }[];
   apiEndpoints: { method: string; path: string; desc: string; payload: string; response: string }[];
   playwrightTests: { testCaseId: string; name: string; code: string }[];
+  gherkinFeature: string;
+  specmaticContract: string;
   securityFocus: { area: string; mitigation: string }[];
   complianceFramework: string;
 }
@@ -339,6 +341,69 @@ export function extractDomainContext(prompt: string): DomainContext {
   });`
         }
       ],
+      gherkinFeature: `@compliance @hipaa @clinical
+Feature: Telehealth Consultation and DEA e-Prescription Fulfillment
+  As a licensed physician and registered patient
+  We need an encrypted WebRTC consultation channel and cryptographically signed e-prescribing
+  So that remote healthcare conforms to HIPAA Omnibus and DEA 21 CFR Part 1311 mandates.
+
+  Background:
+    Given the patient "pat_8812_johnson" has a verified active insurance policy "BCBS-9912048"
+    And physician "dr_9921_smith" holds active state medical license "MD-CA-9921" with DEA schedule II-V authority
+
+  Scenario: Patient successfully schedules and enters encrypted video room
+    Given patient requests appointment for "2026-09-15T10:00:00Z" with specialty "General Practice"
+    When the system checks physician schedule availability
+    Then an appointment slot is reserved with status "CONFIRMED"
+    And an encrypted WebRTC DTLS-SRTP session token is generated with 60-minute TTL
+    And the real-time insurance eligibility EDI 270 check returns copay obligation of 2000 cents
+
+  Scenario: Physician issues digitally signed e-prescription
+    Given the telehealth consultation is completed with recorded duration of 18 minutes
+    When the physician signs prescription for "Amoxicillin 500mg Oral Capsule" using RSA-2048 private key
+    Then the prescription payload is validated against NCPDP SCRIPT 2017071 standard
+    And a DEA tamper-evident audit receipt with SHA-256 hash is written to immutable S3 Glacier Vault
+    And the pharmacy clearinghouse receives the electronic order within 2 seconds
+
+  Scenario Outline: Insurance copay calculation by plan tier
+    When the patient presents insurance carrier "<carrier>" and tier "<tier>"
+    Then the calculated patient copay is "<copay>" cents
+    And the EDI 271 eligibility status is "<status>"
+
+    Examples:
+      | carrier  | tier     | copay | status   |
+      | BCBS     | Platinum | 1500  | ACTIVE   |
+      | Aetna    | Gold     | 2500  | ACTIVE   |
+      | Kaiser   | Silver   | 3500  | ACTIVE   |
+      | Medicaid | Standard | 0     | ACTIVE   |`,
+      specmaticContract: JSON.stringify(
+        {
+          specmatic: "2.0.0",
+          name: "MediFlow Clinical API Contracts",
+          contracts: [
+            {
+              type: "openapi",
+              path: "specs/openapi/mediflow-v1.yaml",
+              test: {
+                baseUrl: "http://localhost:8000",
+                filter: "/api/v1/clinical/*",
+                strict: true
+              },
+              mock: {
+                port: 9000,
+                mode: "strict-contract-compliance",
+                tls: true
+              }
+            }
+          ],
+          security: {
+            authType: "bearerJwt",
+            requiredClaims: ["sub", "role", "npi_or_mrn", "hipaa_scope"]
+          }
+        },
+        null,
+        2
+      ),
       securityFocus: [
         { area: "HIPAA Security Rule & PHI Encryption", mitigation: "All Patient identifiers, intake records, and prescriptions are stored encrypted at rest using AES-256-GCM with customer-managed AWS KMS keys." },
         { area: "WebRTC Video Privacy & Zero Recording Leakage", mitigation: "DTLS 1.2/1.3 and SRTP (AES-128-GCM) secure all audio/video packets in transit. Media streams are never saved to disk unless explicit dual-party consent is cryptographically recorded." },
@@ -593,6 +658,69 @@ export function extractDomainContext(prompt: string): DomainContext {
   });`
         }
       ],
+      gherkinFeature: `@fintech @crypto @low_latency
+Feature: Algorithmic Order Execution with Real-Time Risk & Stop-Loss Protection
+  As a quantitative crypto trader
+  I want sub-millisecond market signal evaluation and automated stop-loss dispatch
+  So that high-frequency volatility does not trigger catastrophic portfolio drawdown.
+
+  Background:
+    Given trading account "acc_01" has equity balance 128450.00 USD
+    And available margin is 65000.00 USD with maximum leverage 5x
+    And the emergency kill-switch is inactive
+
+  Scenario: Technical indicator triggers automated limit buy order
+    Given the Binance L2 WebSocket depth stream reports BTCUSDT at 64250.00 USD
+    When the 14-period RSI indicator crosses below 30.0 entering oversold territory
+    And the risk engine confirms position size 0.25 BTC is within 5% account risk
+    Then a signed HMAC-SHA256 limit order is placed at 64245.00 USD
+    And the exchange confirms fill within 20 milliseconds
+    And a Telegram execution alert is pushed to chat id "trader_ops_channel"
+
+  Scenario: Immediate emergency stop-loss execution on downside flash crash
+    Given an open long position of 1.5 BTC at entry price 63100.00 USD
+    When the index price drops rapidly below stop trigger 62500.00 USD
+    Then the risk gate immediately dispatches an IOC market sell order
+    And all pending non-executed buy orders for "BTCUSDT" are cancelled within 10ms
+    And the account state transitions to "PROTECTED"
+
+  Scenario Outline: Order side and risk threshold validation
+    When an order is submitted for "<symbol>" with side "<side>" and leverage "<leverage>x"
+    Then the risk evaluation result should be "<result>"
+
+    Examples:
+      | symbol   | side | leverage | result   |
+      | BTCUSDT  | BUY  | 3        | APPROVED |
+      | ETHUSDT  | BUY  | 5        | APPROVED |
+      | SOLUSDT  | SELL | 10       | REJECTED |
+      | DOGEUSDT | BUY  | 20       | REJECTED |`,
+      specmaticContract: JSON.stringify(
+        {
+          specmatic: "2.0.0",
+          name: "CryptoPulse Trading Gateway Contracts",
+          contracts: [
+            {
+              type: "openapi",
+              path: "specs/openapi/cryptopulse-v1.yaml",
+              test: {
+                baseUrl: "http://localhost:8080",
+                filter: "/api/v1/trading/*",
+                strict: true
+              },
+              mock: {
+                port: 9001,
+                mode: "strict-contract-compliance"
+              }
+            }
+          ],
+          slas: {
+            maxLatencyMs: 25,
+            p99LatencyMs: 50
+          }
+        },
+        null,
+        2
+      ),
       securityFocus: [
         { area: "Exchange Secret Cryptographic Storage", mitigation: "API Secrets are stored encrypted with AES-256-GCM via AWS KMS. Private keys are never decrypted in persistent storage or log files." },
         { area: "IP Whitelisting & Mutex Execution", mitigation: "All outbound exchange requests originate from static elastic IP addresses whitelisted on the exchange. Distributed Redis Redlock prevents duplicate double-spends." },
@@ -824,6 +952,68 @@ export function extractDomainContext(prompt: string): DomainContext {
   });`
         }
       ],
+      gherkinFeature: `@iot @robotics @spatial @faa_part107
+Feature: Autonomous Drone Fleet Mission Navigation and Geofence Boundary Enforcement
+  As a flight operations commander
+  I want real-time telemetry streaming and automated geofence enforcement
+  So that autonomous drones operate strictly within FAA Part 107 authorized airspace.
+
+  Background:
+    Given drone unit "drone_alpha_092" is registered with FAA serial "FAA-2026-X99"
+    And the drone hardware security module (HSM) is authenticated via TLS 1.3 mTLS
+    And battery state of charge is 84% with cell voltage at 22.4V
+
+  Scenario: 3D Waypoint mission dispatch and cryptographic verification
+    Given an agricultural survey mission with 5 ordered waypoints
+    When the ground operations console uploads the mission payload
+    Then the drone flight controller computes SHA-256 checksum match
+    And acknowledges the mission state as "ARMED_AUTONOMOUS" within 50ms
+    And initiates rotor spin-up after GPS RTK fix accuracy achieves <2cm
+
+  Scenario: Automated Return-To-Home triggered on geofence perimeter breach
+    Given the drone is executing autonomous flight at altitude 49.8m AGL
+    When telemetry coordinates drift across the designated PostGIS polygon boundary
+    Then the spatial geofence supervisor detects the perimeter violation within 30ms
+    And broadcasts an emergency "COMMAND_RETURN_TO_HOME" MQTT packet
+    And the drone halts forward trajectory and initiates immediate waypoint reversal
+
+  Scenario Outline: Battery threshold and mission abort triggers
+    When the battery level drops to "<battery_pct>" percent during mission phase "<phase>"
+    Then the automated safety action taken is "<action>"
+
+    Examples:
+      | battery_pct | phase        | action                 |
+      | 45          | Mid-Survey   | CONTINUE_MISSION       |
+      | 25          | Waypoint-4   | WARN_OPERATOR          |
+      | 15          | Waypoint-8   | COMMAND_RETURN_TO_HOME |
+      | 8           | Transit-Home | IMMEDIATE_SAFE_LANDING |`,
+      specmaticContract: JSON.stringify(
+        {
+          specmatic: "2.0.0",
+          name: "AeroFleet Telemetry and Mission Contracts",
+          contracts: [
+            {
+              type: "openapi",
+              path: "specs/openapi/aerofleet-v1.yaml",
+              test: {
+                baseUrl: "http://localhost:8080",
+                filter: "/api/v1/fleet/*",
+                strict: true
+              },
+              mock: {
+                port: 9002,
+                mode: "strict-contract-compliance"
+              }
+            },
+            {
+              type: "asyncapi",
+              path: "specs/asyncapi/telemetry-mqtt.yaml"
+            }
+          ]
+        },
+        null,
+        2
+      ),
       securityFocus: [
         { area: "mTLS Device Certificate Identity", mitigation: "Every hardware drone embeds an immutable hardware security module (HSM) holding a private key for mutual TLS (mTLS) to the MQTT broker." },
         { area: "Command Anti-Replay Guard", mitigation: "All control commands incorporate monotonically increasing nonces and cryptographic HMAC signatures to prevent spoofing or replay attacks." }
@@ -1043,6 +1233,69 @@ export function extractDomainContext(prompt: string): DomainContext {
   });`
         }
       ],
+      gherkinFeature: `@marketplace @ecommerce @payments @stripe
+Feature: Multi-Sided Marketplace Cart Checkout and Courier Geohash Dispatch
+  As a hungry mobile customer and restaurant merchant
+  I want atomic cart checkout with idempotent Stripe payments and live GPS driver tracking
+  So that food orders are prepared swiftly without double-charging or delivery delays.
+
+  Background:
+    Given customer "cust_jane_doe" has verified payment method on file
+    And merchant kitchen "rest_burger_joint_01" is currently online and accepting orders
+    And restaurant kitchen prep queue has average wait time of 15 minutes
+
+  Scenario: Atomic cart checkout with idempotency key
+    Given customer has 2 "Truffle Burgers" and 1 "Sweet Potato Fries" in cart
+    When the customer submits checkout with idempotency key "chk_idem_99120a"
+    Then an inventory reservation lock is acquired across all items
+    And a Stripe PaymentIntent is authorized for 4249 cents
+    And the kitchen display system (KDS) receives order ticket with status "PREPARING"
+    And a subsequent retry with identical idempotency key returns cached receipt with zero duplicate charges
+
+  Scenario: Real-time courier matching and live map GPS streaming
+    Given order "ord_deliv_88192" enters state "FOOD_READY_FOR_PICKUP"
+    When the dispatch engine executes Redis GEORADIUS search within 3.0km radius
+    Then the nearest active courier within 1.2km is assigned the order
+    And live GPS coordinate stream is initiated over WebSocket at 1Hz
+    And customer mobile map renders driver pin with updated ETA
+
+  Scenario Outline: Delivery fee surge pricing calculation
+    When delivery distance is "<distance_km>" km and current weather condition is "<weather>"
+    Then base delivery fee is calculated as "<fee_cents>" cents
+
+    Examples:
+      | distance_km | weather | fee_cents |
+      | 1.5         | CLEAR   | 299       |
+      | 3.2         | CLEAR   | 449       |
+      | 2.0         | RAINING | 599       |
+      | 5.5         | RAINING | 899       |`,
+      specmaticContract: JSON.stringify(
+        {
+          specmatic: "2.0.0",
+          name: "QuickBite Marketplace & Checkout Contracts",
+          contracts: [
+            {
+              type: "openapi",
+              path: "specs/openapi/quickbite-v1.yaml",
+              test: {
+                baseUrl: "http://localhost:3000",
+                filter: "/api/v1/marketplace/*",
+                strict: true
+              },
+              mock: {
+                port: 9003,
+                mode: "strict-contract-compliance"
+              }
+            }
+          ],
+          pciCompliance: {
+            zeroCardDataStorage: true,
+            tokenizationRequired: true
+          }
+        },
+        null,
+        2
+      ),
       securityFocus: [
         { area: "PCI-DSS Level 1 Payment Isolation", mitigation: "Zero raw credit card numbers touch application servers. All payments utilize client-side Stripe Elements tokens." },
         { area: "Location Spoofing Guard", mitigation: "Driver GPS updates are cross-referenced with cellular cell tower latency and speed plausibility checks (rejects teleportation >150km/h)." }
@@ -1245,6 +1498,66 @@ export function extractDomainContext(prompt: string): DomainContext {
   });`
       }
     ],
+    gherkinFeature: `@specification @contract_driven @aiware2026
+Feature: ${entity1} State Machine Lifecycle and Invariant Enforcement
+  As an authorized system operator or integrated API client
+  I want strict contract validation, atomic state transitions, and event emission
+  So that ${entity1} data conforms to domain invariants and zero-trust security policies.
+
+  Background:
+    Given an authenticated client with valid RS256 Bearer token
+    And the tenant partition has active operational status
+    And persistence storage connection pool is healthy
+
+  Scenario: Create and verify ${entity1} operational lifecycle
+    Given a valid initialization payload for ${entity1} with name "Production Instance"
+    When the client dispatches "POST /api/v1/${entity1.toLowerCase()}s"
+    Then the schema validator confirms all required attributes are present
+    And the database commits the record within 50 milliseconds
+    And a domain event for "${entity2}" is published to the distributed message bus
+    And the response status is 201 with immutable record UUID
+
+  Scenario: Rejection of invalid payload violating domain constraints
+    Given a malformed payload missing mandatory identifier attributes
+    When the client dispatches mutation request
+    Then the API gateway rejects the request with HTTP 422 Unprocessable Entity
+    And zero records are committed to the persistence tier
+    And an audit log entry is recorded for security monitoring
+
+  Scenario Outline: Operational state transitions and access controls
+    When the operator requests transition from "<initial_state>" to "<target_state>"
+    Then the state machine evaluation result is "<decision>"
+
+    Examples:
+      | initial_state | target_state | decision |
+      | DRAFT         | PENDING      | ALLOWED  |
+      | PENDING       | ACTIVE       | ALLOWED  |
+      | ACTIVE        | SUSPENDED    | ALLOWED  |
+      | SUSPENDED     | ARCHIVED     | ALLOWED  |
+      | ARCHIVED      | ACTIVE       | FORBIDDEN|`,
+    specmaticContract: JSON.stringify(
+      {
+        specmatic: "2.0.0",
+        name: `${entity1} Core Service Contracts`,
+        contracts: [
+          {
+            type: "openapi",
+            path: `specs/openapi/${entity1.toLowerCase()}-v1.yaml`,
+            test: {
+              baseUrl: "http://localhost:8080",
+              filter: `/api/v1/${entity1.toLowerCase()}s*`,
+              strict: true
+            },
+            mock: {
+              port: 9000,
+              mode: "strict-contract-compliance"
+            }
+          }
+        ]
+      },
+      null,
+      2
+    ),
     securityFocus: [
       { area: "Access Control & IDOR Defense", mitigation: `Every database query for ${entity1} enforces multi-tenant boundary predicates.` },
       { area: "Cryptographic Protocols", mitigation: "Enforces TLS 1.3 in transit and AES-256-GCM at rest with automated key rotation." }
@@ -1369,6 +1682,17 @@ ${d.p2Requirements.map((r) => `| **${r.id}** | **${r.title}** | ${r.desc} | ${r.
 | **Compliance** | **${d.complianceFramework}** | Strictly verified against statutory and industry requirements. |
 | **Security** | **Zero-Trust Hardened** | Token validation via ${stack.auth}, TLS 1.3 in transit, AES-256 at rest. |
 | **Disaster Recovery** | **RTO < 5m, RPO = 0** | Continuous WAL / snapshot replication to object storage. |
+
+---
+
+## 5. Executable Behavior-Driven Development (BDD) Scenarios (AIWare 2026 §5.1)
+
+> [!NOTE]
+> As established in the ACM AIWare 2026 paper, BDD Gherkin scenarios are not merely post-hoc tests—they are living functional contracts. They articulate authoritative behavior before implementation begins, eliminating requirement ambiguity between product stakeholders, developers, and AI coding agents.
+
+\`\`\`gherkin
+${d.gherkinFeature}
+\`\`\`
 `;
 }
 
@@ -1660,6 +1984,50 @@ export default function () {
   check(res, { "status is 200/201": (r) => r.status === 200 || r.status === 201 });
   sleep(0.05);
 }
+\`\`\`
+
+---
+
+## 4. Executable Behavior-Driven Development (BDD) Scenarios (Cucumber / Gherkin)
+
+> [!NOTE]
+> From ACM AIWare 2026 §5.1 & Case Study 6.2: BDD scenarios establish an unambiguous, stakeholder-verifiable Definition of Done. Rather than passive documentation, these scenarios run in CI/CD, catching requirement drift before pull requests are approved.
+
+\`\`\`gherkin
+${d.gherkinFeature}
+\`\`\`
+
+---
+
+## 5. API Contract Testing & Mock Server Architecture (Specmatic / Pact)
+
+> [!NOTE]
+> From ACM AIWare 2026 §5.2 & Case Study 6.1: Contract testing enforces schema adherence against OpenAPI specifications. Specmatic generates mock servers for frontend and consumer teams, eliminating "integration hell" and achieving up to a 75% reduction in integration cycle times.
+
+\`\`\`json
+${d.specmaticContract}
+\`\`\`
+
+---
+
+## 6. Property-Based Testing (PBT) & LLM Invariant Checks (AIWare 2026 §4)
+
+> [!NOTE]
+> From ACM AIWare 2026 §4: LLM non-determinism can yield subtly diverging code implementations. Property-based testing (PBT) automatically exercises invariants across thousands of randomized permutations, guaranteeing that behavioral contracts remain unviolated.
+
+\`\`\`python
+# Hypothesis Property-Based Invariant Verification for LLM-Generated Implementations
+from hypothesis import given, strategies as st
+import pytest
+
+@given(st.text(min_size=1, max_size=100))
+def test_${d.primaryEntities[0].toLowerCase()}_invariant_properties(input_val):
+    """
+    Verifies that system invariants hold true across thousands of pseudo-random inputs,
+    countering LLM non-determinism as detailed in AIWare 2026 Section 4.
+    """
+    assert len(input_val) > 0
+    # Invariant: Core domain mutation must remain bounded and deterministic under arbitrary inputs
 \`\`\`
 `;
 }

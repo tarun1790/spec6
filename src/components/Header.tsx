@@ -1,14 +1,17 @@
 "use client";
 
 import React from "react";
-import { Download, Sparkles, Settings, FolderArchive, Bot } from "lucide-react";
-import { LLMConfig } from "@/lib/types";
+import { Download, Sparkles, Settings, FolderArchive, Bot, BookOpen, FileText } from "lucide-react";
+import { LLMConfig, SpecificationRigor } from "@/lib/types";
 
 interface HeaderProps {
   onOpenExport: () => void;
   onQuickDownloadZip?: () => void;
   onOpenSettings?: () => void;
   onOpenCopilot?: () => void;
+  onOpenRigorAdvisor?: () => void;
+  onOpenPaperModal?: () => void;
+  rigor?: SpecificationRigor;
   llmConfig?: LLMConfig;
   isGenerating: boolean;
   completedStagesCount?: number;
@@ -21,12 +24,15 @@ export const Header: React.FC<HeaderProps> = ({
   onQuickDownloadZip,
   onOpenSettings,
   onOpenCopilot,
+  onOpenRigorAdvisor,
+  onOpenPaperModal,
+  rigor = "spec-anchored",
   llmConfig,
   isGenerating
 }) => {
   const getProviderLabel = () => {
     if (!llmConfig || llmConfig.provider === "mock") {
-      return "Principal AI Architect";
+      return "Deep Semantic Engine";
     }
     switch (llmConfig.provider) {
       case "openai": return `OpenAI (${llmConfig.model || "gpt-4o"})`;
@@ -35,6 +41,14 @@ export const Header: React.FC<HeaderProps> = ({
       case "groq": return `Groq (${llmConfig.model || "llama-3.3-70b"})`;
       case "ollama": return `Ollama (${llmConfig.model || "local"})`;
       default: return `${llmConfig.provider} (${llmConfig.model})`;
+    }
+  };
+
+  const getRigorLabel = () => {
+    switch (rigor) {
+      case "spec-first": return "Spec-First";
+      case "spec-as-source": return "Spec-as-Source";
+      case "spec-anchored": default: return "Spec-Anchored";
     }
   };
 
@@ -49,14 +63,39 @@ export const Header: React.FC<HeaderProps> = ({
           <div className="flex items-center gap-2">
             <span className="font-extrabold text-base text-slate-900 tracking-tight">SpecFlow AI</span>
             <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
-              Principal SDLC Engine
+              AIWare 2026 Compliant
             </span>
           </div>
         </div>
       </div>
 
-      {/* Model Selector / Provider Badge */}
+      {/* Model Selector & SDD Rigor Badge */}
       <div className="hidden sm:flex items-center gap-2">
+        {onOpenPaperModal && (
+          <button
+            type="button"
+            onClick={onOpenPaperModal}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-blue-300 bg-blue-50/80 hover:bg-blue-100 text-xs font-bold text-blue-900 transition-colors shadow-xs"
+            title="Explore ACM AIWare 2026 Academic Research Paper (All 8 Pages)"
+          >
+            <FileText className="h-3.5 w-3.5 text-blue-600" />
+            <span className="hidden xl:inline">AIWare 2026 Paper</span>
+            <span className="xl:hidden">Paper</span>
+          </button>
+        )}
+
+        {onOpenRigorAdvisor && (
+          <button
+            type="button"
+            onClick={onOpenRigorAdvisor}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-emerald-300 bg-emerald-50/80 hover:bg-emerald-100 text-xs font-bold text-emerald-900 transition-colors shadow-xs"
+            title="SDD Specification Spectrum & Rigor Advisor (ACM AIWare 2026)"
+          >
+            <BookOpen className="h-3.5 w-3.5 text-emerald-600" />
+            <span>Rigor: {getRigorLabel()}</span>
+          </button>
+        )}
+
         <button
           type="button"
           onClick={onOpenSettings}

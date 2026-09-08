@@ -1,7 +1,12 @@
+export type SpecificationRigor = "spec-first" | "spec-anchored" | "spec-as-source";
+
+export type SddPhase = "specify" | "plan" | "implement" | "validate";
+
 export interface StageInfo {
   index: number;
   fileName: string;
   title: string;
+  sddPhase: SddPhase;
   sdlcPhase: string;
   shortDescription: string;
   badge: string;
@@ -15,9 +20,10 @@ export const STAGES: StageInfo[] = [
     index: 0,
     fileName: "00_PROJECT_BRIEF.md",
     title: "Project Scope & Requirements",
+    sddPhase: "specify",
     sdlcPhase: "SDLC Phase 1: Requirements Analysis",
     shortDescription: "Scope boundaries, user personas, P0/P1/P2 matrix, SLAs & business value",
-    badge: "1. Requirements",
+    badge: "1. Specify",
     iconName: "FileText",
     color: "emerald",
     requiredSections: [
@@ -32,9 +38,10 @@ export const STAGES: StageInfo[] = [
     index: 1,
     fileName: "01_SYSTEM_ARCHITECTURE.md",
     title: "System Architecture & Contracts",
+    sddPhase: "plan",
     sdlcPhase: "SDLC Phase 2: System & Schema Design",
     shortDescription: "Mermaid topology, ERD schemas, REST/GraphQL API contracts & sequence flows",
-    badge: "2. Architecture",
+    badge: "2. Plan",
     iconName: "Layers",
     color: "teal",
     requiredSections: [
@@ -49,9 +56,10 @@ export const STAGES: StageInfo[] = [
     index: 2,
     fileName: "02_IMPLEMENTATION_PLAN.md",
     title: "Implementation Plan & Breakdown",
+    sddPhase: "implement",
     sdlcPhase: "SDLC Phase 3: Software Development",
     shortDescription: "Directory tree, 4-phase milestone breakdown, actionable task checklist",
-    badge: "3. Development",
+    badge: "3. Implement",
     iconName: "GitMerge",
     color: "indigo",
     requiredSections: [
@@ -65,9 +73,10 @@ export const STAGES: StageInfo[] = [
     index: 3,
     fileName: "03_TESTING_STRATEGY.md",
     title: "Testing Strategy & QA Matrix",
+    sddPhase: "validate",
     sdlcPhase: "SDLC Phase 4: Quality Assurance & Testing",
     shortDescription: "Unit coverage >80%, API mock suites, Playwright E2E flows & edge cases",
-    badge: "4. Testing & QA",
+    badge: "4. Validate (QA)",
     iconName: "CheckSquare",
     color: "red",
     requiredSections: [
@@ -81,9 +90,10 @@ export const STAGES: StageInfo[] = [
     index: 4,
     fileName: "04_SECURITY_COMPLIANCE.md",
     title: "Security & Compliance Blueprint",
+    sddPhase: "validate",
     sdlcPhase: "SDLC Phase 5: Security & Hardening",
     shortDescription: "JWT/OAuth2/RBAC, OWASP Top 10 mitigations, encryption & env vars",
-    badge: "5. Security",
+    badge: "5. Validate (Sec)",
     iconName: "ShieldCheck",
     color: "rose",
     requiredSections: [
@@ -97,9 +107,10 @@ export const STAGES: StageInfo[] = [
     index: 5,
     fileName: "05_DEPLOYMENT_DEVOPS.md",
     title: "Deployment & DevOps Spec",
+    sddPhase: "validate",
     sdlcPhase: "SDLC Phase 6: Deployment & Operations",
     shortDescription: "Multi-stage Dockerfile, docker-compose, CI/CD deploy.yml, IaC & observability",
-    badge: "6. Deployment",
+    badge: "6. Validate (Ops)",
     iconName: "Terminal",
     color: "emerald-dark",
     requiredSections: [

@@ -1,13 +1,14 @@
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
-import { StageState, STAGES, TechStackPreferences } from "./types";
+import { StageState, STAGES, TechStackPreferences, SpecificationRigor } from "./types";
 import { extractDomainContext } from "./mock-generator";
 
 export async function exportSpecificationZip(
   projectName: string,
   stages: StageState[],
   userPrompt: string,
-  techStack?: TechStackPreferences
+  techStack?: TechStackPreferences,
+  rigor: SpecificationRigor = "spec-anchored"
 ) {
   const zip = new JSZip();
   const domain = extractDomainContext(userPrompt || "Enterprise Cloud Application");
@@ -58,8 +59,20 @@ export async function exportSpecificationZip(
     readmeIndex += `| **${stageDef.index.toString().padStart(2, "0")}** | [\`${stageDef.fileName}\`](./.specs/${stageDef.fileName}) | ${stageDef.shortDescription} |\n`;
   });
 
+  readmeIndex += `\n## 📐 Specification Rigor: **${rigor.toUpperCase()}**\n\n`;
+  readmeIndex += `> Engineered according to the **ACM AIWare 2026** paper *"Spec-Driven Development: From Code to Contract in the Age of AI Coding Assistants"*.\n\n`;
+  readmeIndex += `* **Executable BDD Scenarios:** [\`specs/features/${domain.shortName.toLowerCase()}.feature\`](./specs/features/${domain.shortName.toLowerCase()}.feature)\n`;
+  readmeIndex += `* **Contract Testing Config:** [\`specmatic.json\`](./specmatic.json)\n`;
+  readmeIndex += `* **OpenAPI 3.1 Spec:** [\`openapi.json\`](./openapi.json)\n\n`;
+
   // Add root README.md
   zip.file("README.md", readmeIndex);
+
+  // 1.5. Add Executable Gherkin BDD Feature
+  zip.file(`specs/features/${domain.shortName.toLowerCase()}.feature`, domain.gherkinFeature);
+
+  // 1.6. Add Specmatic Contract Testing Configuration
+  zip.file("specmatic.json", domain.specmaticContract);
 
   // 2. Generate Stack Scaffolding Files
   if (isPython) {
