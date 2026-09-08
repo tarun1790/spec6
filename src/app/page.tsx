@@ -18,28 +18,33 @@ import { streamStageContent } from "@/lib/llm-providers";
 
 import { detectOptimalTechStack } from "@/lib/stack-detector";
 
-const initialTechStack: TechStackPreferences = TEMPLATES[0].defaultTechStack || {
-  frontend: "Next.js 14 (App Router) + Tailwind CSS",
-  backend: "FastAPI / Node.js Microservices",
-  database: "PostgreSQL 16 + Redis Cluster",
-  architecture: "Event-Driven Microservices with Message Bus",
-  deployment: "Kubernetes (EKS) + Docker + Terraform",
-  auth: "OAuth 2.0 / JWT + RBAC",
-  caching: "Redis Cluster with Cache-Aside"
-};
+const initialPrompt = "A HIPAA-compliant doctor appointment booking platform with encrypted WebRTC video visits, patient EHR medical history (HL7 FHIR R4), electronic prescription management with digital signing, and automated EDI 270/271 insurance eligibility verification.";
 
-const initialStages: StageState[] = STAGES.map((s) => ({
-  index: s.index,
-  fileName: s.fileName,
-  status: "idle",
-  content: "",
-  tokensGenerated: 0,
-  durationMs: 0
-}));
+const initialTechStack: TechStackPreferences = detectOptimalTechStack(initialPrompt);
+
+const initialStages: StageState[] = STAGES.map((s) => {
+  const content = generateMockStageContent(s.index, initialPrompt, initialTechStack, {});
+  return {
+    index: s.index,
+    fileName: s.fileName,
+    status: "completed" as const,
+    content,
+    tokensGenerated: Math.round(content.length / 4),
+    durationMs: 40
+  };
+});
+
+const initialTotalTokens = initialStages.reduce((acc, s) => acc + s.tokensGenerated, 0);
 
 export default function DashboardPage() {
-  const [prompt, setPrompt] = useState<string>("");
+  const [prompt, setPrompt] = useState<string>(initialPrompt);
   const [techStack, setTechStack] = useState<TechStackPreferences>(initialTechStack);
+  const [stages, setStages] = useState<StageState[]>(initialStages);
+  const [activeStageIndex, setActiveStageIndex] = useState<number>(0);
+  const [selectedStageIndex, setSelectedStageIndex] = useState<number>(0);
+  const [isGenerating, setIsGenerating] = useState<boolean>(false);
+  const [totalTokens, setTotalTokens] = useState<number>(initialTotalTokens);
+  const [liveSync, setLiveSync] = useState<boolean>(true);
 
   const handlePromptChange = (newPrompt: string) => {
     setPrompt(newPrompt);
@@ -48,11 +53,6 @@ export default function DashboardPage() {
       setTechStack(detected);
     }
   };
-  const [stages, setStages] = useState<StageState[]>(initialStages);
-  const [activeStageIndex, setActiveStageIndex] = useState<number>(0);
-  const [selectedStageIndex, setSelectedStageIndex] = useState<number>(0);
-  const [isGenerating, setIsGenerating] = useState<boolean>(false);
-  const [totalTokens, setTotalTokens] = useState<number>(0);
 
   // Settings & Modals
   const [llmConfig, setLlmConfig] = useState<LLMConfig>({
@@ -63,6 +63,32 @@ export default function DashboardPage() {
   const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
   const [isExportOpen, setIsExportOpen] = useState<boolean>(false);
   const [isCopilotOpen, setIsCopilotOpen] = useState<boolean>(false);
+
+  // Real-time reactive synchronization: as the user edits or types the description,
+  // all 6 specification stages automatically update in real-time!
+  useEffect(() => {
+    if (!liveSync || isGenerating || llmConfig.provider !== "mock") return;
+    if (!prompt || prompt.trim().length < 5) return;
+
+    const timer = setTimeout(() => {
+      const updated = STAGES.map((s) => {
+        const content = generateMockStageContent(s.index, prompt, techStack, {});
+        return {
+          index: s.index,
+          fileName: s.fileName,
+          status: "completed" as const,
+          content,
+          tokensGenerated: Math.round(content.length / 4),
+          durationMs: 15
+        };
+      });
+      setStages(updated);
+      const sumTokens = updated.reduce((acc, st) => acc + st.tokensGenerated, 0);
+      setTotalTokens(sumTokens);
+    }, 180);
+
+    return () => clearTimeout(timer);
+  }, [prompt, techStack, liveSync, isGenerating, llmConfig.provider]);
   const [diffModal, setDiffModal] = useState<{
     isOpen: boolean;
     fileName: string;
@@ -317,7 +343,16 @@ export default function DashboardPage() {
 
   const handleReset = () => {
     handleStopGeneration();
-    setStages(initialStages);
+    setPrompt("");
+    const emptyStages: StageState[] = STAGES.map((s) => ({
+      index: s.index,
+      fileName: s.fileName,
+      status: "idle",
+      content: "",
+      tokensGenerated: 0,
+      durationMs: 0
+    }));
+    setStages(emptyStages);
     setActiveStageIndex(0);
     setSelectedStageIndex(0);
     setTotalTokens(0);
@@ -382,6 +417,8 @@ export default function DashboardPage() {
             setRigor={setRigor}
             onOpenRigorAdvisor={() => setIsRigorAdvisorOpen(true)}
             onOpenPaperModal={() => setIsPaperModalOpen(true)}
+            liveSync={liveSync}
+            setLiveSync={setLiveSync}
           />
         </div>
 

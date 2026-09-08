@@ -14,13 +14,17 @@ import {
   Sparkles,
   BookmarkCheck,
   Play,
-  FileCode
+  FileCode,
+  Database,
+  ShieldCheck
 } from "lucide-react";
 import { StageState, STAGES, TechStackPreferences, SpecificationRigor } from "@/lib/types";
 import { MarkdownRenderer } from "./MarkdownRenderer";
 import { CodeEditor } from "./CodeEditor";
 import { ApiPlayground } from "./ApiPlayground";
 import { ArchitectureRadar } from "./ArchitectureRadar";
+import { SchemaVisualizer } from "./SchemaVisualizer";
+import { SddVerificationRunner } from "./SddVerificationRunner";
 import { extractDomainContext } from "@/lib/mock-generator";
 import { saveAs } from "file-saver";
 import { exportSpecificationZip } from "@/lib/zip-exporter";
@@ -39,7 +43,7 @@ interface WorkspaceViewerProps {
   [key: string]: any;
 }
 
-type ViewMode = "preview" | "split" | "editor" | "gherkin" | "playground" | "radar";
+type ViewMode = "preview" | "split" | "editor" | "schema" | "verify" | "gherkin" | "playground" | "radar";
 
 export const WorkspaceViewer: React.FC<WorkspaceViewerProps> = ({
   stages,
@@ -179,6 +183,32 @@ export const WorkspaceViewer: React.FC<WorkspaceViewerProps> = ({
             >
               <Code2 className="h-3 w-3" />
               <span>Edit</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode("schema")}
+              className={`flex items-center gap-1 px-2 py-1 rounded-md text-xs transition-all ${
+                viewMode === "schema"
+                  ? "bg-white text-emerald-800 font-bold shadow-xs"
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
+              title="Interactive Relational Schema & ERD Visualizer"
+            >
+              <Database className="h-3 w-3 text-purple-600" />
+              <span>Schema ERD</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode("verify")}
+              className={`flex items-center gap-1 px-2 py-1 rounded-md text-xs transition-all ${
+                viewMode === "verify"
+                  ? "bg-white text-emerald-800 font-bold shadow-xs"
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
+              title="4-Phase SDD Continuous Verification Gate Runner"
+            >
+              <ShieldCheck className="h-3 w-3 text-emerald-600" />
+              <span>Verify Gates</span>
             </button>
             <button
               type="button"
@@ -325,6 +355,20 @@ export const WorkspaceViewer: React.FC<WorkspaceViewerProps> = ({
               onChange={(newVal) => onUpdateStageContent(selectedStageIndex, newVal)}
               readOnly={isGenerating}
             />
+          </div>
+        )}
+
+        {/* Mode: Interactive Schema & ERD Visualizer */}
+        {viewMode === "schema" && (
+          <div className="h-full overflow-y-auto">
+            <SchemaVisualizer domain={domain} />
+          </div>
+        )}
+
+        {/* Mode: 4-Phase SDD Continuous Verification Gate */}
+        {viewMode === "verify" && (
+          <div className="h-full overflow-y-auto">
+            <SddVerificationRunner domain={domain} rigor={rigor} />
           </div>
         )}
 

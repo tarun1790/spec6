@@ -1304,8 +1304,803 @@ Feature: Multi-Sided Marketplace Cart Checkout and Courier Geohash Dispatch
     };
   }
 
-  // 5. UNIVERSAL INTELLIGENT DECOMPILER (ANY OTHER CUSTOM TOPIC)
-  // Extracts actual prompt nouns and verbs to produce a 100% custom specification!
+  // 5. ELECTRIC VEHICLE (EV) CHARGING NETWORK & SMART GRID
+  if (p.includes("ev") || p.includes("charger") || p.includes("charging") || p.includes("station") || p.includes("tariff") || p.includes("grid") || p.includes("kwh") || p.includes("ocpp")) {
+    return {
+      title: "Autonomous EV Charging Network & Smart Grid Orchestrator",
+      shortName: "GridCharge",
+      category: "CleanTech & Smart Energy Grid",
+      userPromptRaw: prompt,
+      executiveSummary: "A distributed energy and EV mobility orchestration system managing high-capacity DC fast chargers over OCPP 2.0.1. Features dynamic electricity tariff calculation, peak demand load balancing, real-time stall reservation with NFC digital key pairing, and automated battery degradation diagnostics.",
+      extractedKeywords: ["EVCharging", "OCPP201", "SmartGrid", "DynamicTariff", "BatteryHealth", "LoadBalancing"],
+      primaryEntities: ["ChargingStation", "ChargingStall", "ChargingSession", "TariffSchedule", "VehicleAccount", "GridLoadTelemetry"],
+      erdEntities: [
+        {
+          name: "ChargingStation",
+          description: "Physical DC fast-charging hub location with grid connection.",
+          fields: [
+            { name: "id", type: "uuid", key: "PK" },
+            { name: "station_code", type: "string", key: "UK" },
+            { name: "grid_substation_id", type: "string" },
+            { name: "max_capacity_kw", type: "decimal" },
+            { name: "total_stalls", type: "integer" },
+            { name: "is_operational", type: "boolean" }
+          ]
+        },
+        {
+          name: "ChargingStall",
+          description: "Individual CCS / NACS charging dispenser connector.",
+          fields: [
+            { name: "id", type: "uuid", key: "PK" },
+            { name: "station_id", type: "uuid", key: "FK" },
+            { name: "stall_number", type: "integer" },
+            { name: "connector_type", type: "string" },
+            { name: "current_status", type: "string" },
+            { name: "power_output_kw", type: "decimal" }
+          ]
+        },
+        {
+          name: "ChargingSession",
+          description: "Active or completed vehicle charging transaction.",
+          fields: [
+            { name: "id", type: "uuid", key: "PK" },
+            { name: "stall_id", type: "uuid", key: "FK" },
+            { name: "vehicle_vin", type: "string" },
+            { name: "energy_delivered_kwh", type: "decimal" },
+            { name: "peak_kw_recorded", type: "decimal" },
+            { name: "total_cost_usd", type: "decimal" },
+            { name: "started_at", type: "timestamp" }
+          ]
+        },
+        {
+          name: "TariffSchedule",
+          description: "Dynamic time-of-use (TOU) electricity pricing tiers.",
+          fields: [
+            { name: "id", type: "uuid", key: "PK" },
+            { name: "grid_zone_code", type: "string" },
+            { name: "effective_hour_start", type: "integer" },
+            { name: "effective_hour_end", type: "integer" },
+            { name: "rate_per_kwh_cents", type: "integer" }
+          ]
+        },
+        {
+          name: "VehicleAccount",
+          description: "Registered electric vehicle with ISO 15118 Plug & Charge cert.",
+          fields: [
+            { name: "id", type: "uuid", key: "PK" },
+            { name: "vin_number", type: "string", key: "UK" },
+            { name: "make_model", type: "string" },
+            { name: "battery_pack_kwh", type: "decimal" },
+            { name: "iso15118_cert_sha256", type: "string" }
+          ]
+        }
+      ],
+      erdRelations: [
+        { from: "ChargingStation", to: "ChargingStall", cardinality: "||--o{", label: "hosts" },
+        { from: "ChargingStall", to: "ChargingSession", cardinality: "||--o{", label: "records" },
+        { from: "VehicleAccount", to: "ChargingSession", cardinality: "||--o{", label: "initiates" },
+        { from: "ChargingStation", to: "TariffSchedule", cardinality: "||--o{", label: "applies" }
+      ],
+      sequenceFlow: `sequenceDiagram
+    autonumber
+    actor Driver as EV Driver / Vehicle
+    participant Stall as OCPP 2.0.1 DC Dispenser
+    participant Gateway as Smart Grid Ingress Gateway
+    participant Tariff as Dynamic TOU Tariff Engine
+    participant Grid as Grid Utility Load Balancer
+    participant Billing as Settlement Engine
+
+    Driver->>Stall: Connect NACS Cable (ISO 15118 Handshake)
+    Stall->>Gateway: OCPP BootNotification & AuthorizeRequest(VIN)
+    Gateway->>Tariff: Fetch Current Real-Time Grid Rate ($0.28/kWh)
+    Gateway->>Grid: Reserve 150kW Power Allocation
+    Grid-->>Gateway: Power Allocation Confirmed (Substation Load 68%)
+    Gateway-->>Stall: StartTransactionResponse (TransactionId: tx_99182)
+    Stall->>Driver: Dispense 800V DC Current (400A ramp-up)
+    Note over Stall,Driver: 15-minute 10% to 80% Fast Charge Delivered
+    Driver->>Stall: Disconnect Cable / StopTransaction
+    Stall->>Gateway: StopTransaction (48.5 kWh Delivered)
+    Gateway->>Billing: Authorize Settlement ($13.58 via Stripe)`,
+      services: [
+        "OCPP 2.0.1 WebSocket Telemetry Ingestion Broker",
+        "Dynamic Time-of-Use (TOU) Grid Tariff Pricing Worker",
+        "Substation Peak-Shaving & Microgrid Load Balancer",
+        "ISO 15118 Plug & Charge Cryptographic Signer",
+        "Automated Battery Degradation & SOH Analyzer"
+      ],
+      apiPrefix: "/api/v1/energy",
+      personas: [
+        {
+          role: "EV Fleet Operator / Driver",
+          description: "Charges commercial delivery vans and private vehicles requiring high-speed turnaround.",
+          coreNeed: "Instant 1-plug handshake without opening third-party mobile apps and predictable charging speeds.",
+          painPoint: "Stall offline failures, unexpected surge pricing, and throttled charging speeds."
+        },
+        {
+          role: "Grid Utility Energy Controller",
+          description: "Manages municipal substation peak electricity demand and load balancing.",
+          coreNeed: "Sub-second curtailment signals to dynamically scale down EV stall amperage during grid stress.",
+          painPoint: "Transformer overload brownouts caused by uncoordinated simultaneous fast charging."
+        }
+      ],
+      p0Requirements: [
+        {
+          id: "REQ-EV-01",
+          title: "OCPP 2.0.1 Full-Duplex Dispenser Management",
+          desc: "Full protocol implementation of OCPP 2.0.1 supporting BootNotification, Heartbeat, StatusNotification, and MeterValues.",
+          acceptance: "Processes OCPP meter packets in <15ms; maintains heartbeat persistence across 5,000 active chargers."
+        },
+        {
+          id: "REQ-EV-02",
+          title: "Dynamic Smart-Grid Load Throttling",
+          desc: "Automated amperage curtailment adjusting stall output from 350kW down to 50kW when substation exceeds 85% load.",
+          acceptance: "Applies curtailment directive to stalls within 250ms of utility grid threshold event."
+        },
+        {
+          id: "REQ-EV-03",
+          title: "ISO 15118 Plug & Charge Cryptographic Handshake",
+          desc: "Vehicle identification and automated billing via ECDSA digital certificate verification over PLC interface.",
+          acceptance: "Authenticates vehicle identity and starts charging session within 3.5 seconds of cable insertion."
+        }
+      ],
+      p1Requirements: [
+        {
+          id: "REQ-EV-04",
+          title: "Battery Health & Degradation Analytics",
+          desc: "Computes internal pack resistance and temperature curves to detect lithium plating risk.",
+          acceptance: "Generates battery health report after every session delivering >30 kWh."
+        }
+      ],
+      p2Requirements: [
+        {
+          id: "REQ-EV-05",
+          title: "Vehicle-to-Grid (V2G) Bi-Directional Power Discharge",
+          desc: "Allows vehicles to discharge stored energy back to the grid during peak tariff hours.",
+          acceptance: "Synchronizes AC phase inversion with local grid inverter in <50ms."
+        }
+      ],
+      apiEndpoints: [
+        {
+          method: "POST",
+          path: "/api/v1/energy/sessions/start",
+          desc: "Initiate fast charging session with ISO 15118 certificate handshake",
+          payload: JSON.stringify({
+            stall_id: "stall_sf_downtown_04",
+            vin_number: "5YJSA1E28MF001928",
+            requested_max_kw: 250.0,
+            payment_token: "tok_plug_charge_88bc"
+          }, null, 2),
+          response: JSON.stringify({
+            status: "charging",
+            transaction_id: "tx_ev_2026_0901_88",
+            allocated_power_kw: 242.5,
+            current_rate_per_kwh_usd: 0.28,
+            estimated_full_minutes: 18
+          }, null, 2)
+        }
+      ],
+      playwrightTests: [
+        {
+          testCaseId: "TC-EV-01",
+          name: "Initiate Fast Charge and Receive Power Allocation",
+          code: `test("Vehicle initiates fast charging session and receives grid power allocation", async ({ request }) => {
+    const res = await request.post("/api/v1/energy/sessions/start", {
+      data: {
+        stall_id: "stall_test_01",
+        vin_number: "TEST-VIN-001",
+        requested_max_kw: 150.0
+      }
+    });
+    expect(res.status()).toBe(200);
+    const body = await res.json();
+    expect(body.status).toBe("charging");
+    expect(body.transaction_id).toBeDefined();
+    expect(body.allocated_power_kw).toBeGreaterThan(0);
+  });`
+        }
+      ],
+      gherkinFeature: `@cleantech @energy @ocpp @iso15118
+Feature: Autonomous EV Charging Session and Smart Grid Load Balancing
+  As an EV driver and municipal grid utility operator
+  We need automated ISO 15118 vehicle authentication and dynamic tariff rate computation
+  So that high-power DC fast charging operates without overloading local substations.
+
+  Background:
+    Given charging stall "stall_sf_downtown_04" has operational status "AVAILABLE"
+    And the regional electric grid zone has active real-time tariff rate of 28 cents per kWh
+    And substation transformer capacity headroom is currently 35%
+
+  Scenario: Successful Plug and Charge session initialization
+    Given an electric vehicle with VIN "5YJSA1E28MF001928" connects to the dispenser
+    When the vehicle exchanges ISO 15118 ECDSA cryptographic certificates
+    Then the session status transitions to "CHARGING"
+    And power output ramps up to 242.5 kW within 15 seconds
+    And dynamic metering stream starts reporting energy delivery at 1Hz
+
+  Scenario: Grid demand response curtailment event
+    Given an active charging session delivering 250 kW power
+    When the municipal utility broadcasts a PEAK_GRID_DEMAND curtailment event
+    Then the charging controller throttles dispenser output to 75 kW within 250ms
+    And a notification receipt is transmitted to the vehicle telematics bus
+
+  Scenario Outline: Time-of-use pricing rate by hour
+    When a charging session starts at hour "<hour>" in zone "<zone>"
+    Then the calculated tariff rate is "<rate>" cents per kWh
+
+    Examples:
+      | hour | zone        | rate |
+      | 02   | Residential | 14   |
+      | 08   | Commercial  | 24   |
+      | 18   | Peak-Urban  | 48   |
+      | 23   | Industrial  | 18   |`,
+      specmaticContract: JSON.stringify(
+        {
+          specmatic: "2.0.0",
+          name: "GridCharge Energy API Contracts",
+          contracts: [
+            {
+              type: "openapi",
+              path: "specs/openapi/gridcharge-v1.yaml",
+              test: {
+                baseUrl: "http://localhost:8000",
+                filter: "/api/v1/energy/*",
+                strict: true
+              },
+              mock: {
+                port: 9004,
+                mode: "strict-contract-compliance"
+              }
+            }
+          ]
+        },
+        null,
+        2
+      ),
+      securityFocus: [
+        { area: "ISO 15118 V2G PKI Infrastructure", mitigation: "Every vehicle and charging station authenticates via mutual TLS using dedicated OEM certificates validated against the trusted EV PKI root." },
+        { area: "OCPP Tamper Protection", mitigation: "All remote command and firmware update payloads are digitally signed with RSA-3072 / ECDSA P-256." }
+      ],
+      complianceFramework: "ISO 15118, OCPP 2.0.1, NERC-CIP Grid Security Standards"
+    };
+  }
+
+  // 6. CYBERSECURITY SIEM & SOAR THREAT OPERATIONS
+  if (p.includes("security") || p.includes("siem") || p.includes("soar") || p.includes("threat") || p.includes("firewall") || p.includes("cve") || p.includes("malware") || p.includes("soc") || p.includes("incident") || p.includes("mitre")) {
+    return {
+      title: "eBPF-Powered SIEM & Automated SOAR Threat Response Engine",
+      shortName: "ThreatShield",
+      category: "Cybersecurity & Security Operations (SecOps)",
+      userPromptRaw: prompt,
+      executiveSummary: "A cloud-native Security Information and Event Management (SIEM) and Security Orchestration, Automation, and Response (SOAR) platform. Ingests Linux eBPF kernel telemetry at millions of events per second, matches Sigma rules against the MITRE ATT&CK framework, and dispatches automated zero-trust host isolation playbooks.",
+      extractedKeywords: ["SIEM", "SOAR", "eBPFTelemetry", "SigmaRules", "MITRE_ATTACK", "ZeroTrustIsolation"],
+      primaryEntities: ["SecurityIncident", "ThreatIndicatorIoC", "EBPFKernelEvent", "ContainmentPlaybook", "FirewallPolicy", "SocAnalyst"],
+      erdEntities: [
+        {
+          name: "SecurityIncident",
+          description: "High-priority security breach or anomaly investigation case.",
+          fields: [
+            { name: "id", type: "uuid", key: "PK" },
+            { name: "incident_ticket", type: "string", key: "UK" },
+            { name: "severity_level", type: "string" },
+            { name: "mitre_tactic_id", type: "string" },
+            { name: "impacted_host_ip", type: "string" },
+            { name: "containment_status", type: "string" },
+            { name: "detected_at", type: "timestamp" }
+          ]
+        },
+        {
+          name: "EBPFKernelEvent",
+          description: "Sub-microsecond kernel syscall telemetry emitted by eBPF probe.",
+          fields: [
+            { name: "id", type: "uuid", key: "PK" },
+            { name: "incident_id", type: "uuid", key: "FK" },
+            { name: "syscall_name", type: "string" },
+            { name: "process_pid", type: "integer" },
+            { name: "process_binary_path", type: "string" },
+            { name: "process_sha256", type: "string" },
+            { name: "egress_destination_ip", type: "string" }
+          ]
+        },
+        {
+          name: "ThreatIndicatorIoC",
+          description: "Indicator of Compromise (IoC) matched against threat feeds.",
+          fields: [
+            { name: "id", type: "uuid", key: "PK" },
+            { name: "ioc_hash_or_ip", type: "string", key: "UK" },
+            { name: "threat_feed_source", type: "string" },
+            { name: "confidence_score_pct", type: "integer" },
+            { name: "cve_reference", type: "string" }
+          ]
+        },
+        {
+          name: "ContainmentPlaybook",
+          description: "Automated SOAR remediation playbook executed on breach.",
+          fields: [
+            { name: "id", type: "uuid", key: "PK" },
+            { name: "playbook_name", type: "string" },
+            { name: "action_type", type: "string" },
+            { name: "quarantine_duration_minutes", type: "integer" },
+            { name: "is_automated_approval", type: "boolean" }
+          ]
+        }
+      ],
+      erdRelations: [
+        { from: "SecurityIncident", to: "EBPFKernelEvent", cardinality: "||--o{", label: "traces" },
+        { from: "SecurityIncident", to: "ThreatIndicatorIoC", cardinality: "||--o{", label: "matches" },
+        { from: "SecurityIncident", to: "ContainmentPlaybook", cardinality: "||--o{", label: "triggers" }
+      ],
+      sequenceFlow: `sequenceDiagram
+    autonumber
+    participant Probe as Host eBPF Kernel Probe
+    participant Ingest as SIEM Event Stream (Kafka)
+    participant Sigma as Sigma Rule Detection Worker
+    participant SOAR as Automated SOAR Orchestrator
+    participant Cloud as AWS Security Group / VPC
+    participant SOC as Slack / PagerDuty Alert Worker
+
+    Probe->>Ingest: Stream Syscall: execve(/bin/nc -e /bin/sh)
+    Ingest->>Sigma: Match against MITRE T1059.004 (Reverse Shell)
+    Sigma->>Sigma: Match Confidence 99.8% (IoC Severity CRITICAL)
+    Sigma->>SOAR: Trigger Incident INC-2026-9921
+    SOAR->>Cloud: Execute Quarantine (Revoke Security Group Egress in 45ms)
+    Cloud-->>SOAR: Host 10.0.4.18 ISOLATED
+    SOAR->>SOC: Push Critical Alert to SOC Duty Channel with Forensic PCAP`,
+      services: [
+        "Distributed eBPF Kernel Telemetry Ingestion Gateway",
+        "Real-Time Sigma Rule & MITRE ATT&CK Evaluation Engine",
+        "Automated SOAR Host Quarantine & Isolation Worker",
+        "Threat Intelligence MISP / AlienVault Feed Syncer",
+        "Forensic Memory & Ephemeral PCAP Snapshot Vault"
+      ],
+      apiPrefix: "/api/v1/soc",
+      personas: [
+        {
+          role: "Tier 3 Incident Response Lead",
+          description: "Investigates advanced persistent threats (APTs) and malware lateral movement.",
+          coreNeed: "Sub-second process tree lineage graph and 1-click network containment.",
+          painPoint: "Alert fatigue from noisy false positives and manual firewall ticket delays."
+        }
+      ],
+      p0Requirements: [
+        {
+          id: "REQ-SEC-01",
+          title: "Kernel-Level eBPF Telemetry Ingestion",
+          desc: "Ingests raw process execution, socket connect, and file mutation telemetry directly from Linux kernel probes.",
+          acceptance: "Processes 200,000 syscall events/sec per node with <1% CPU overhead."
+        },
+        {
+          id: "REQ-SEC-02",
+          title: "Automated Host Isolation Playbook",
+          desc: "Dispatches AWS VPC / iptables network isolation command to sever lateral movement within 100ms.",
+          acceptance: "Quarantines compromised instance in <100ms; generates tamper-evident forensics receipt."
+        }
+      ],
+      p1Requirements: [
+        {
+          id: "REQ-SEC-03",
+          title: "Sigma Rule Compilation to In-Memory AST",
+          desc: "Compiles open-source Sigma detection rules into high-speed memory matchers.",
+          acceptance: "Evaluates incoming event stream against 1,200 rules in <4ms."
+        }
+      ],
+      p2Requirements: [
+        {
+          id: "REQ-SEC-04",
+          title: "AI Threat Hunt Query Generator",
+          desc: "Converts natural language questions into structured KQL / SQL search queries across data lakes.",
+          acceptance: "Translates prompt to valid query with zero syntax hallucination."
+        }
+      ],
+      apiEndpoints: [
+        {
+          method: "POST",
+          path: "/api/v1/soc/incidents/contain",
+          desc: "Execute emergency automated zero-trust host network quarantine",
+          payload: JSON.stringify({
+            incident_id: "inc_2026_0901_8812",
+            target_host_ip: "10.0.4.18",
+            isolation_level: "FULL_NETWORK_SEVER",
+            reason: "Active reverse shell detected via eBPF probe"
+          }, null, 2),
+          response: JSON.stringify({
+            status: "quarantined",
+            containment_receipt: "rec_sha256_88ba20182",
+            latency_ms: 38,
+            firewall_rule_id: "fw_drop_10_0_4_18"
+          }, null, 2)
+        }
+      ],
+      playwrightTests: [
+        {
+          testCaseId: "TC-SEC-01",
+          name: "Execute Host Containment Playbook",
+          code: `test("SOC operator triggers emergency host quarantine and receives firewall receipt", async ({ request }) => {
+    const res = await request.post("/api/v1/soc/incidents/contain", {
+      data: {
+        incident_id: "inc_test_01",
+        target_host_ip: "10.0.0.99",
+        isolation_level: "FULL_NETWORK_SEVER"
+      }
+    });
+    expect(res.status()).toBe(200);
+    const body = await res.json();
+    expect(body.status).toBe("quarantined");
+    expect(body.latency_ms).toBeLessThan(100);
+  });`
+        }
+      ],
+      gherkinFeature: `@cybersecurity @soc @soar @mitre
+Feature: eBPF Kernel Threat Detection and Automated SOAR Firewall Containment
+  As a SOC incident response engineer
+  I want automated kernel-level syscall evaluation and sub-second network containment
+  So that lateral malware movement is halted before sensitive exfiltration occurs.
+
+  Background:
+    Given the eBPF kernel agent is active on cluster node "ip-10-0-4-18"
+    And the Sigma detection engine has 1200 active MITRE ATT&CK rules loaded
+    And automated SOAR quarantine is authorized for critical severity incidents
+
+  Scenario: Automated host quarantine on reverse shell detection
+    Given an unauthorized process "nc" is spawned from "/tmp" with reverse socket to external IP
+    When the eBPF probe detects syscall "execve" matching Sigma rule "T1059.004"
+    Then an incident is generated with severity "CRITICAL"
+    And the SOAR orchestrator revokes VPC security group egress within 100ms
+    And the host network status enters "QUARANTINED"
+    And a forensics memory snapshot is uploaded to encrypted cold storage
+
+  Scenario Outline: Incident severity and escalation path
+    When an IoC alert occurs with MITRE tactic "<tactic>" and confidence "<confidence>" percent
+    Then the assigned severity is "<severity>" and containment action is "<action>"
+
+    Examples:
+      | tactic             | confidence | severity | action                |
+      | Initial Access     | 95         | HIGH     | WARN_ANALYST          |
+      | Execution          | 99         | CRITICAL | AUTOMATED_QUARANTINE  |
+      | Privilege Escalation| 90        | HIGH     | REVOKE_USER_SESSION   |
+      | Exfiltration       | 98         | CRITICAL | TERMINATE_PROCESS     |`,
+      specmaticContract: JSON.stringify(
+        {
+          specmatic: "2.0.0",
+          name: "ThreatShield SOC Contracts",
+          contracts: [
+            {
+              type: "openapi",
+              path: "specs/openapi/threatshield-v1.yaml",
+              test: {
+                baseUrl: "http://localhost:8000",
+                filter: "/api/v1/soc/*",
+                strict: true
+              },
+              mock: {
+                port: 9005,
+                mode: "strict-contract-compliance"
+              }
+            }
+          ]
+        },
+        null,
+        2
+      ),
+      securityFocus: [
+        { area: "Kernel Boundary Isolation", mitigation: "All eBPF code undergoes the strict Linux kernel in-kernel BPF verifier guaranteeing zero memory panics or kernel race conditions." },
+        { area: "Tamper-Proof Forensic Storage", mitigation: "Forensic PCAP captures and process trees are signed with Ed25519 keys and written to WORM (Write Once Read Many) storage." }
+      ],
+      complianceFramework: "SOC 2 Type II, ISO 27001, NIST SP 800-53, MITRE ATT&CK"
+    };
+  }
+
+  // 7. AUTONOMOUS AI MULTI-AGENT & VECTOR RAG PLATFORM
+  if (p.includes("agent") || p.includes("rag") || p.includes("llm") || p.includes("vector") || p.includes("embedding") || p.includes("langchain") || p.includes("qdrant") || p.includes("prompt") || p.includes("sandbox")) {
+    return {
+      title: "Autonomous Multi-Agent AI Orchestration & Vector RAG Platform",
+      shortName: "AgentForge",
+      category: "Artificial Intelligence & Autonomous Agents",
+      userPromptRaw: prompt,
+      executiveSummary: "An enterprise-grade autonomous AI multi-agent orchestration architecture featuring Qdrant HNSW vector memory, LangGraph stateful DAG execution, isolated Docker gVisor tool sandboxes, streaming SSE response chunking, and cryptographic human-in-the-loop consensus gates.",
+      extractedKeywords: ["AIAgents", "VectorRAG", "LangGraph", "ToolSandbox", "HNSWVector", "HumanInTheLoop"],
+      primaryEntities: ["AgentInstance", "VectorEmbeddingDoc", "ExecutionTask", "ToolSandbox", "HumanApprovalGate", "AgentConsensusVote"],
+      erdEntities: [
+        {
+          name: "AgentInstance",
+          description: "Autonomous specialized AI worker configured with system prompt and tools.",
+          fields: [
+            { name: "id", type: "uuid", key: "PK" },
+            { name: "agent_handle", type: "string", key: "UK" },
+            { name: "foundation_model", type: "string" },
+            { name: "temperature", type: "decimal" },
+            { name: "max_tool_iterations", type: "integer" },
+            { name: "status", type: "string" }
+          ]
+        },
+        {
+          name: "VectorEmbeddingDoc",
+          description: "High-dimensional vector chunk indexed with Qdrant Cosine distance.",
+          fields: [
+            { name: "id", type: "uuid", key: "PK" },
+            { name: "document_hash_sha256", type: "string", key: "UK" },
+            { name: "chunk_text_content", type: "text" },
+            { name: "embedding_dim", type: "integer" },
+            { name: "vector_collection_name", type: "string" },
+            { name: "indexed_at", type: "timestamp" }
+          ]
+        },
+        {
+          name: "ExecutionTask",
+          description: "User goal partitioned into directed acyclic graph (DAG) tasks.",
+          fields: [
+            { name: "id", type: "uuid", key: "PK" },
+            { name: "agent_id", type: "uuid", key: "FK" },
+            { name: "task_goal_prompt", type: "text" },
+            { name: "execution_state", type: "string" },
+            { name: "token_usage_total", type: "integer" },
+            { name: "execution_cost_usd", type: "decimal" }
+          ]
+        },
+        {
+          name: "ToolSandbox",
+          description: "gVisor isolated container environment executing Python/shell tools.",
+          fields: [
+            { name: "id", type: "uuid", key: "PK" },
+            { name: "task_id", type: "uuid", key: "FK" },
+            { name: "sandbox_container_id", type: "string", key: "UK" },
+            { name: "memory_limit_mb", type: "integer" },
+            { name: "is_network_isolated", type: "boolean" }
+          ]
+        }
+      ],
+      erdRelations: [
+        { from: "AgentInstance", to: "ExecutionTask", cardinality: "||--o{", label: "executes" },
+        { from: "ExecutionTask", to: "ToolSandbox", cardinality: "||--||", label: "spawns" },
+        { from: "ExecutionTask", to: "VectorEmbeddingDoc", cardinality: "||--o{", label: "queries" }
+      ],
+      sequenceFlow: `sequenceDiagram
+    autonumber
+    actor User as User / Enterprise Client
+    participant Gateway as Agent Ingress API Gateway
+    participant Orchestrator as LangGraph DAG Orchestrator
+    participant Qdrant as Qdrant Vector Memory Store
+    participant Agent as Specialized Worker Agent (Claude/GPT)
+    participant Sandbox as gVisor Ephemeral Tool Sandbox
+    participant Gate as Human-in-the-Loop Sign-off Gate
+
+    User->>Gateway: POST /api/v1/agents/tasks/dispatch (Objective, Constraints)
+    Gateway->>Orchestrator: Initialize Stateful Task DAG
+    Orchestrator->>Qdrant: Hybrid BM25 + Dense Cosine Semantic Search
+    Qdrant-->>Orchestrator: Return 5 Most Relevant Context Chunks
+    Orchestrator->>Agent: Construct Super-Prompt (Context + Tools)
+    Agent->>Sandbox: Execute Tool Call: Run Python Data Modeling
+    Sandbox-->>Agent: Execution Result (Exit Code 0, Plot Image Generated)
+    alt Action is High-Risk Mutation (e.g. Production DB Write)
+        Agent->>Gate: Request Human Cryptographic Approval
+        Gate-->>Agent: Human Admin Approved via Passkey
+    end
+    Agent-->>Gateway: Stream Synthesis Response via SSE
+    Gateway-->>User: Markdown + Diagram Output Stream Completed`,
+      services: [
+        "LangGraph Multi-Agent DAG State Machine Orchestrator",
+        "Qdrant High-Density Vector Embedding Retrieval Worker",
+        "Ephemeral gVisor Secure Tool Execution Sandbox",
+        "Cryptographic Human-in-the-Loop Approval Gateway",
+        "Real-Time Server-Sent Events (SSE) Streaming Gateway"
+      ],
+      apiPrefix: "/api/v1/agents",
+      personas: [
+        {
+          role: "Enterprise AI Solutions Architect",
+          description: "Deploys autonomous research workflows across proprietary corporate knowledge bases.",
+          coreNeed: "Strict hallucination boundaries, vector provenance tracing, and cost controls.",
+          painPoint: "Runaway LLM looping, ungrounded answers, and secret leakage through tool calls."
+        }
+      ],
+      p0Requirements: [
+        {
+          id: "REQ-AI-01",
+          title: "Hybrid Dense & Sparse Vector RAG Retrieval",
+          desc: "Combines 1536-dim dense embeddings with BM25 sparse keyword ranking via Reciprocal Rank Fusion.",
+          acceptance: "Completes vector search across 10,000,000 chunks in <35ms; delivers top-5 recall >94%."
+        },
+        {
+          id: "REQ-AI-02",
+          title: "Isolated Ephemeral Tool Execution Sandbox",
+          desc: "Executes model-generated Python and bash scripts in rootless gVisor sandbox with CPU/RAM limits.",
+          acceptance: "Enforces 100% network isolation unless domain is explicitly whitelisted; kills processes after 15s."
+        }
+      ],
+      p1Requirements: [
+        {
+          id: "REQ-AI-03",
+          title: "Human-in-the-Loop Approval Sign-off",
+          desc: "Blocks execution of destructive actions until signed approval token is provided by operator.",
+          acceptance: "Suspends DAG state indefinitely with zero memory loss until approval webhook received."
+        }
+      ],
+      p2Requirements: [
+        {
+          id: "REQ-AI-04",
+          title: "Multi-Agent Debate Consensus Voting",
+          desc: "Spawns 3 diverse models to cross-examine factual claims and vote on final output synthesis.",
+          acceptance: "Reduces factual hallucinations by >60% compared to single-agent prompts."
+        }
+      ],
+      apiEndpoints: [
+        {
+          method: "POST",
+          path: "/api/v1/agents/tasks/dispatch",
+          desc: "Dispatch autonomous agent task with RAG memory grounding",
+          payload: JSON.stringify({
+            agent_handle: "research_agent_v1",
+            task_prompt: "Analyze quarterly earnings and cross-reference with SEC 10-K filings",
+            max_iterations: 5,
+            require_human_gate: true
+          }, null, 2),
+          response: JSON.stringify({
+            status: "dispatched",
+            task_id: "task_agent_2026_0901_44",
+            dag_steps: 4,
+            stream_url: "/api/v1/agents/tasks/task_agent_2026_0901_44/stream"
+          }, null, 2)
+        }
+      ],
+      playwrightTests: [
+        {
+          testCaseId: "TC-AI-01",
+          name: "Dispatch Multi-Agent Task and Verify SSE Stream",
+          code: `test("Operator dispatches agent workflow and receives streaming progress", async ({ request }) => {
+    const res = await request.post("/api/v1/agents/tasks/dispatch", {
+      data: {
+        agent_handle: "research_agent_v1",
+        task_prompt: "Summarize financial metrics"
+      }
+    });
+    expect(res.status()).toBe(200);
+    const body = await res.json();
+    expect(body.status).toBe("dispatched");
+    expect(body.task_id).toBeDefined();
+  });`
+        }
+      ],
+      gherkinFeature: `@ai @agents @rag @qdrant @langgraph
+Feature: Multi-Agent Consensus Orchestration and Tool Execution Sandbox Isolation
+  As an enterprise AI solutions architect
+  I want autonomous agent task decomposition with isolated sandboxes and human review
+  So that generative AI produces verified facts without unconstrained host execution.
+
+  Background:
+    Given the Qdrant vector collection "sec_filings_2026" has 2.4 million indexed chunks
+    And gVisor sandbox daemon is healthy with resource limits 512MB RAM and 1 CPU
+    And foundation model endpoint "gemini-2.0-flash" is responsive with p95 < 200ms
+
+  Scenario: Autonomous research task execution with RAG retrieval
+    Given a research goal prompt requiring financial summary
+    When the orchestrator queries Qdrant with hybrid BM25 and cosine embeddings
+    Then top 5 factual citation chunks are retrieved in less than 35 milliseconds
+    And the agent executes calculation tool in gVisor sandbox with network blocked
+    And returns verified balance sheet summary with 100% citation provenance
+
+  Scenario: High-risk mutation triggers human-in-the-loop pause
+    Given the agent proposes executing SQL drop table on staging environment
+    When the safety guard evaluates the proposed tool call
+    Then execution state transitions to "WAITING_FOR_HUMAN_APPROVAL"
+    And an authenticated Slack notification is dispatched to admin duty role
+    And the tool call remains paused until digital signature token is provided
+
+  Scenario Outline: Model temperature and iteration budget limits
+    When task is configured with model "<model>" and budget "<iterations>"
+    Then maximum allowed runtime is "<runtime_sec>" seconds
+
+    Examples:
+      | model           | iterations | runtime_sec |
+      | fast-planner    | 3          | 15          |
+      | deep-reasoner   | 8          | 45          |
+      | code-generator  | 5          | 30          |`,
+      specmaticContract: JSON.stringify(
+        {
+          specmatic: "2.0.0",
+          name: "AgentForge AI Platform Contracts",
+          contracts: [
+            {
+              type: "openapi",
+              path: "specs/openapi/agentforge-v1.yaml",
+              test: {
+                baseUrl: "http://localhost:8000",
+                filter: "/api/v1/agents/*",
+                strict: true
+              },
+              mock: {
+                port: 9006,
+                mode: "strict-contract-compliance"
+              }
+            }
+          ]
+        },
+        null,
+        2
+      ),
+      securityFocus: [
+        { area: "Prompt Injection & Jailbreak Defense", mitigation: "All input user prompts and retrieved RAG context pass through dual-stage semantic guardrail models before reaching reasoning LLMs." },
+        { area: "gVisor Kernel Sandbox Isolation", mitigation: "Tool execution containers run with dedicated virtualized user-space kernels, preventing container escape attacks." }
+      ],
+      complianceFramework: "EU AI Act High-Risk Tier, OWASP Top 10 for LLMs, SOC 2 Type II"
+    };
+  }
+
+function generateSmartFields(entityName: string, parentEntity?: string): ErdField[] {
+  const e = entityName.toLowerCase();
+  const baseFields: ErdField[] = [
+    { name: "id", type: "uuid", key: "PK", comment: "Primary key identifier" }
+  ];
+
+  if (parentEntity && parentEntity.toLowerCase() !== e) {
+    baseFields.push({
+      name: `${parentEntity.toLowerCase()}_id`,
+      type: "uuid",
+      key: "FK",
+      comment: `Foreign key referencing ${parentEntity}`
+    });
+  }
+
+  if (e.includes("user") || e.includes("member") || e.includes("account") || e.includes("driver") || e.includes("pilot") || e.includes("author") || e.includes("operator")) {
+    baseFields.push(
+      { name: "email", type: "string", key: "UK", comment: "Normalized unique email address" },
+      { name: "hashed_password", type: "string", comment: "Argon2id cryptographic digest" },
+      { name: "display_name", type: "string", comment: "User handle or full name" },
+      { name: "account_status", type: "string", comment: "ACTIVE, SUSPENDED, PENDING" },
+      { name: "role_tier", type: "string", comment: "STANDARD, ADMIN, AUDITOR" },
+      { name: "last_login_at", type: "timestamp", comment: "Recent access timestamp" }
+    );
+  } else if (e.includes("order") || e.includes("booking") || e.includes("ticket") || e.includes("invoice") || e.includes("payment") || e.includes("checkout") || e.includes("charge")) {
+    baseFields.push(
+      { name: "reference_code", type: "string", key: "UK", comment: "Idempotent transaction code" },
+      { name: "total_amount_cents", type: "integer", comment: "Monetary amount in smallest unit" },
+      { name: "currency_iso", type: "string", comment: "ISO-4217 3-letter currency code" },
+      { name: "settlement_status", type: "string", comment: "PENDING, SETTLED, FAILED" },
+      { name: "payment_method_id", type: "string", comment: "Tokenized payment gateway identifier" },
+      { name: "processed_at", type: "timestamp", comment: "Payment settlement timestamp" }
+    );
+  } else if (e.includes("device") || e.includes("drone") || e.includes("vehicle") || e.includes("sensor") || e.includes("charger") || e.includes("station") || e.includes("node")) {
+    baseFields.push(
+      { name: "serial_number", type: "string", key: "UK", comment: "Manufacturer hardware serial" },
+      { name: "firmware_version", type: "string", comment: "Active firmware release" },
+      { name: "telemetry_state", type: "string", comment: "ONLINE, OFFLINE, DEGRADED" },
+      { name: "latitude_geo", type: "decimal", comment: "WGS-84 coordinate latitude" },
+      { name: "longitude_geo", type: "decimal", comment: "WGS-84 coordinate longitude" },
+      { name: "battery_soc_pct", type: "decimal", comment: "State of charge percentage" },
+      { name: "last_heartbeat_at", type: "timestamp", comment: "Recent MQTT heartbeat" }
+    );
+  } else if (e.includes("log") || e.includes("event") || e.includes("alert") || e.includes("incident") || e.includes("telemetry") || e.includes("metric")) {
+    baseFields.push(
+      { name: "event_signature", type: "string", comment: "SHA-256 fingerprint hash" },
+      { name: "severity_level", type: "string", comment: "INFO, WARN, CRITICAL, SEV-0" },
+      { name: "payload_blob", type: "json", comment: "Structured event payload" },
+      { name: "source_ip", type: "string", comment: "Host origin IP address" },
+      { name: "recorded_at", type: "timestamp", comment: "Sub-millisecond event timestamp" }
+    );
+  } else if (e.includes("config") || e.includes("setting") || e.includes("policy") || e.includes("rule")) {
+    baseFields.push(
+      { name: "policy_key", type: "string", key: "UK", comment: "Unique configuration key" },
+      { name: "policy_value", type: "json", comment: "Parsed JSON rule definition" },
+      { name: "is_enforced", type: "boolean", comment: "Whether policy is actively enforced" },
+      { name: "effective_from", type: "timestamp", comment: "Policy activation timestamp" }
+    );
+  } else {
+    baseFields.push(
+      { name: "identifier_code", type: "string", key: "UK", comment: "Human-readable unique identifier" },
+      { name: "status_state", type: "string", comment: "Lifecycle status" },
+      { name: "attributes_json", type: "json", comment: "Dynamic schema metadata" },
+      { name: "version_sequence", type: "integer", comment: "Optimistic locking counter" }
+    );
+  }
+
+  baseFields.push(
+    { name: "created_at", type: "timestamp", comment: "Creation timestamp (UTC)" },
+    { name: "updated_at", type: "timestamp", comment: "Last modification timestamp" }
+  );
+
+  return baseFields;
+}
+
+  // 8. UNIVERSAL INTELLIGENT DECOMPILER (ANY OTHER CUSTOM TOPIC)
+  // Extracts actual prompt nouns and verbs to dynamically synthesize a 100% custom specification!
   const rawWords = prompt.replace(/[.,/#!$%^&*;:{}=\-_`~()?"'<>]/g, " ").split(/\s+/).filter(Boolean);
   const meaningfulWords = rawWords.filter((w) => w.length > 2 && !STOP_WORDS.has(w.toLowerCase()));
   const concepts = Array.from(new Set(meaningfulWords.map(cleanPascalCase))).filter((c) => c.length > 2);
@@ -1315,6 +2110,21 @@ Feature: Multi-Sided Marketplace Cart Checkout and Courier Geohash Dispatch
   const entity3 = concepts[2] || "WorkflowItem";
   const entity4 = concepts[3] || "ConfigurationSetting";
   const entity5 = concepts[4] || "AuditLog";
+
+  // Dynamic compliance framework determination based on prompt keywords
+  let compliance = "SOC 2 Type II, ISO 27001, OWASP Top 10";
+  const pLower = prompt.toLowerCase();
+  if (pLower.includes("health") || pLower.includes("patient") || pLower.includes("medical") || pLower.includes("hipaa")) {
+    compliance = "HIPAA Omnibus, HITECH, HL7 FHIR R4, DEA Title 21";
+  } else if (pLower.includes("bank") || pLower.includes("card") || pLower.includes("pay") || pLower.includes("fintech") || pLower.includes("pci")) {
+    compliance = "PCI-DSS v4.0 Level 1, SOC 1/2, FinCEN AML/KYC";
+  } else if (pLower.includes("drone") || pLower.includes("aviation") || pLower.includes("flight")) {
+    compliance = "FAA Part 107, Remote ID, ASTM F3411, ISO 21384";
+  } else if (pLower.includes("car") || pLower.includes("vehicle") || pLower.includes("charger") || pLower.includes("grid")) {
+    compliance = "ISO 15118 Plug & Charge, OCPP 2.0.1, OpenADR 2.0b";
+  } else if (pLower.includes("security") || pLower.includes("threat") || pLower.includes("siem") || pLower.includes("cve")) {
+    compliance = "NIST SP 800-53, MITRE ATT&CK, FedRAMP High";
+  }
 
   const derivedTitle = concepts.slice(0, 3).join(" ") || "Custom Cloud Architecture";
 
@@ -1330,53 +2140,27 @@ Feature: Multi-Sided Marketplace Cart Checkout and Courier Geohash Dispatch
       {
         name: entity1,
         description: `Primary operational entity directly modeling core requirements for ${entity1}.`,
-        fields: [
-          { name: "id", type: "uuid", key: "PK" },
-          { name: "identifier_code", type: "string", key: "UK" },
-          { name: "status_state", type: "string" },
-          { name: "payload_data", type: "json" },
-          { name: "created_at", type: "timestamp" }
-        ]
+        fields: generateSmartFields(entity1)
       },
       {
         name: entity2,
         description: `Real-time transactional and event telemetry record for ${entity2}.`,
-        fields: [
-          { name: "id", type: "uuid", key: "PK" },
-          { name: `${entity1.toLowerCase()}_id`, type: "uuid", key: "FK" },
-          { name: "event_type", type: "string" },
-          { name: "metric_value", type: "decimal" },
-          { name: "recorded_at", type: "timestamp" }
-        ]
+        fields: generateSmartFields(entity2, entity1)
       },
       {
         name: entity3,
         description: `State machine transition and operational task record for ${entity3}.`,
-        fields: [
-          { name: "id", type: "uuid", key: "PK" },
-          { name: `${entity1.toLowerCase()}_id`, type: "uuid", key: "FK" },
-          { name: "task_priority", type: "string" },
-          { name: "execution_result", type: "string" }
-        ]
+        fields: generateSmartFields(entity3, entity1)
       },
       {
         name: entity4,
         description: `Tenant configuration, policy rules, and thresholds for ${entity4}.`,
-        fields: [
-          { name: "id", type: "uuid", key: "PK" },
-          { name: "config_key", type: "string", key: "UK" },
-          { name: "config_value", type: "json" }
-        ]
+        fields: generateSmartFields(entity4)
       },
       {
         name: entity5,
         description: `Immutable audit trace capturing access and mutation history.`,
-        fields: [
-          { name: "id", type: "uuid", key: "PK" },
-          { name: "actor_id", type: "uuid" },
-          { name: "action_name", type: "string" },
-          { name: "timestamp", type: "timestamp" }
-        ]
+        fields: generateSmartFields(entity5, entity1)
       }
     ],
     erdRelations: [
@@ -1562,7 +2346,7 @@ Feature: ${entity1} State Machine Lifecycle and Invariant Enforcement
       { area: "Access Control & IDOR Defense", mitigation: `Every database query for ${entity1} enforces multi-tenant boundary predicates.` },
       { area: "Cryptographic Protocols", mitigation: "Enforces TLS 1.3 in transit and AES-256-GCM at rest with automated key rotation." }
     ],
-    complianceFramework: "SOC 2 Type II, ISO 27001, OWASP Top 10"
+    complianceFramework: compliance
   };
 }
 

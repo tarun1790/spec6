@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useState } from "react";
-import { Play, Square, RotateCcw, CheckCircle2, Download, Layers, ChevronDown, ChevronUp, Sparkles, Cpu, Key, BookOpen, HelpCircle, FileText } from "lucide-react";
+import { Play, Square, RotateCcw, CheckCircle2, Download, Layers, ChevronDown, ChevronUp, Sparkles, Cpu, Key, BookOpen, HelpCircle, FileText, Zap } from "lucide-react";
 import { StageState, STAGES, TechStackPreferences, LLMConfig, SpecificationRigor } from "@/lib/types";
 import { STACK_PRESETS } from "@/lib/stack-detector";
+import { extractDomainContext } from "@/lib/mock-generator";
 
 interface ControllerPanelProps {
   prompt: string;
@@ -24,6 +25,8 @@ interface ControllerPanelProps {
   setRigor?: (r: SpecificationRigor) => void;
   onOpenRigorAdvisor?: () => void;
   onOpenPaperModal?: () => void;
+  liveSync?: boolean;
+  setLiveSync?: (val: boolean) => void;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any;
 }
@@ -32,6 +35,18 @@ const DOMAIN_STARTERS = [
   {
     name: "🩺 Telehealth & EHR",
     prompt: "A HIPAA-compliant doctor appointment booking platform with encrypted WebRTC video visits, patient EHR medical history (HL7 FHIR R4), electronic prescription management with digital signing, and automated EDI 270/271 insurance eligibility verification."
+  },
+  {
+    name: "⚡ EV Smart Grid",
+    prompt: "An intelligent Electric Vehicle (EV) fast-charging network and dynamic grid load balancer. Connects OCPP 2.0.1 DC fast chargers, ISO 15118 Plug & Charge cryptographic PKI authentication, OpenADR 2.0b demand-response pricing, and fleet telematics."
+  },
+  {
+    name: "🛡️ SIEM/SOAR ThreatOps",
+    prompt: "An enterprise SIEM and autonomous SOAR cybersecurity operations platform ingesting 100,000 EPS Linux eBPF kernel telemetry and AWS CloudTrail audit logs. Evaluates real-time Sigma rules, MITRE ATT&CK kill-chain correlation, and automated network quarantine."
+  },
+  {
+    name: "🤖 AI Multi-Agent RAG",
+    prompt: "An autonomous AI multi-agent research and reasoning engine. Features LangGraph DAG execution pipelines, Qdrant vector database hybrid semantic search, tool-use sandboxes, streaming completions, and human-in-the-loop review gates."
   },
   {
     name: "📈 Crypto Algo Bot",
@@ -44,10 +59,6 @@ const DOMAIN_STARTERS = [
   {
     name: "🍔 Food Delivery App",
     prompt: "An on-demand food delivery marketplace connecting hungry customers, restaurant kitchens, and couriers. Features cart checkout with idempotent Stripe payments, live GPS courier tracking with sub-second WebSocket updates, and kitchen ticket dispatch."
-  },
-  {
-    name: "🤖 Multi-Agent RAG",
-    prompt: "An autonomous AI research agent platform with vector search in Qdrant, document chunking pipeline, tool execution sandboxes, streaming chat responses, and human-in-the-loop review gates."
   }
 ];
 
@@ -69,8 +80,11 @@ export const ControllerPanel: React.FC<ControllerPanelProps> = ({
   rigor = "spec-anchored",
   setRigor,
   onOpenRigorAdvisor,
-  onOpenPaperModal
+  onOpenPaperModal,
+  liveSync = true,
+  setLiveSync
 }) => {
+  const domain = extractDomainContext(prompt || "Clinical Telehealth & EHR Platform");
   const [isStackExpanded, setIsStackExpanded] = useState(false);
   const hasCompletedAny = stages.some((s) => s.status === "completed" || (s.content && s.content.trim().length > 0));
 
@@ -209,6 +223,41 @@ export const ControllerPanel: React.FC<ControllerPanelProps> = ({
           rows={5}
           className="w-full p-3 rounded-xl border border-slate-200 bg-white text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 leading-relaxed resize-y font-sans transition-all shadow-xs"
         />
+
+        {/* Live Prompt Intelligence Inspector */}
+        <div className="rounded-xl border border-emerald-200/80 bg-gradient-to-br from-emerald-50/70 to-teal-50/40 p-2.5 space-y-2 text-xs shadow-2xs">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1.5 font-bold text-emerald-900 text-[11px]">
+              <Sparkles className="h-3 w-3 text-emerald-600 animate-pulse" />
+              <span>Prompt Intelligence</span>
+            </div>
+            <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
+              {domain.category}
+            </span>
+          </div>
+
+          <div className="text-[11px] text-slate-600 line-clamp-2 leading-relaxed">
+            <span className="font-semibold text-slate-800">{domain.title}: </span>
+            {domain.executiveSummary}
+          </div>
+
+          <div className="flex flex-wrap items-center gap-1 pt-1">
+            <span className="text-[10px] text-slate-500 font-semibold">Identified Entities:</span>
+            {domain.primaryEntities.slice(0, 5).map((ent) => (
+              <span
+                key={ent}
+                className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-white text-slate-800 border border-slate-200 shadow-2xs"
+              >
+                {ent}
+              </span>
+            ))}
+          </div>
+
+          <div className="flex items-center justify-between text-[10px] pt-1.5 border-t border-emerald-100/80 text-emerald-950 font-medium">
+            <span>Standard: <strong>{domain.complianceFramework.split(",")[0]}</strong></span>
+            <span>Target SLA: <strong>99.99% Uptime</strong></span>
+          </div>
+        </div>
       </div>
 
       {/* 4. Interactive Tech Stack Selector & Presets */}
@@ -324,6 +373,22 @@ export const ControllerPanel: React.FC<ControllerPanelProps> = ({
           >
             <Play className="h-3.5 w-3.5 fill-white" />
             <span>Generate Specifications</span>
+          </button>
+        )}
+
+        {setLiveSync && (
+          <button
+            type="button"
+            onClick={() => setLiveSync(!liveSync)}
+            className={`px-2.5 py-2.5 rounded-xl text-xs font-semibold transition-all border flex items-center gap-1 shadow-xs ${
+              liveSync
+                ? "bg-emerald-100 text-emerald-900 border-emerald-400 font-bold"
+                : "bg-white text-slate-500 border-slate-200 hover:bg-slate-50"
+            }`}
+            title={liveSync ? "Live Reactive Sync is ON (Instantly updates as you type)" : "Live Reactive Sync is OFF (Manual click required)"}
+          >
+            <Zap className={`h-3.5 w-3.5 ${liveSync ? "text-emerald-600 fill-emerald-600 animate-pulse" : "text-slate-400"}`} />
+            <span className="text-[10px]">Live</span>
           </button>
         )}
 
