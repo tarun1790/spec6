@@ -16,7 +16,8 @@ import {
   Play,
   FileCode,
   Database,
-  ShieldCheck
+  ShieldCheck,
+  FolderTree
 } from "lucide-react";
 import { StageState, STAGES, TechStackPreferences, SpecificationRigor } from "@/lib/types";
 import { MarkdownRenderer } from "./MarkdownRenderer";
@@ -25,6 +26,8 @@ import { ApiPlayground } from "./ApiPlayground";
 import { ArchitectureRadar } from "./ArchitectureRadar";
 import { SchemaVisualizer } from "./SchemaVisualizer";
 import { SddVerificationRunner } from "./SddVerificationRunner";
+import { MonorepoStudio } from "./MonorepoStudio";
+import { InteractiveTerminal } from "./InteractiveTerminal";
 import { extractDomainContext } from "@/lib/mock-generator";
 import { saveAs } from "file-saver";
 import { exportSpecificationZip } from "@/lib/zip-exporter";
@@ -43,7 +46,7 @@ interface WorkspaceViewerProps {
   [key: string]: any;
 }
 
-type ViewMode = "preview" | "split" | "editor" | "schema" | "verify" | "gherkin" | "playground" | "radar";
+type ViewMode = "preview" | "split" | "editor" | "schema" | "monorepo" | "terminal" | "verify" | "gherkin" | "playground" | "radar";
 
 export const WorkspaceViewer: React.FC<WorkspaceViewerProps> = ({
   stages,
@@ -196,6 +199,32 @@ export const WorkspaceViewer: React.FC<WorkspaceViewerProps> = ({
             >
               <Database className="h-3 w-3 text-purple-600" />
               <span>Schema ERD</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode("monorepo")}
+              className={`flex items-center gap-1 px-2 py-1 rounded-md text-xs transition-all ${
+                viewMode === "monorepo"
+                  ? "bg-white text-emerald-800 font-bold shadow-xs"
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
+              title="Virtual Monorepo Multi-File Code Studio (TypeScript, Python, Go, Rust)"
+            >
+              <FolderTree className="h-3 w-3 text-blue-500" />
+              <span>Code Studio</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode("terminal")}
+              className={`flex items-center gap-1 px-2 py-1 rounded-md text-xs transition-all ${
+                viewMode === "terminal"
+                  ? "bg-white text-emerald-800 font-bold shadow-xs"
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
+              title="DevSecOps Automated Test & Chaos CLI Terminal"
+            >
+              <Terminal className="h-3 w-3 text-emerald-500" />
+              <span>CLI Terminal</span>
             </button>
             <button
               type="button"
@@ -362,6 +391,20 @@ export const WorkspaceViewer: React.FC<WorkspaceViewerProps> = ({
         {viewMode === "schema" && (
           <div className="h-full overflow-y-auto">
             <SchemaVisualizer domain={domain} />
+          </div>
+        )}
+
+        {/* Mode: Virtual Monorepo Code Studio */}
+        {viewMode === "monorepo" && (
+          <div className="h-full min-h-[680px]">
+            <MonorepoStudio domain={domain} techStack={techStack} />
+          </div>
+        )}
+
+        {/* Mode: DevSecOps Interactive Terminal */}
+        {viewMode === "terminal" && (
+          <div className="h-full min-h-[620px]">
+            <InteractiveTerminal domain={domain} />
           </div>
         )}
 

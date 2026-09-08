@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Play, Square, RotateCcw, CheckCircle2, Download, Layers, ChevronDown, ChevronUp, Sparkles, Cpu, Key, BookOpen, HelpCircle, FileText, Zap } from "lucide-react";
+import { Play, Square, RotateCcw, CheckCircle2, Download, Layers, ChevronDown, ChevronUp, Sparkles, Cpu, Key, BookOpen, HelpCircle, FileText, Zap, Mic, MicOff } from "lucide-react";
 import { StageState, STAGES, TechStackPreferences, LLMConfig, SpecificationRigor } from "@/lib/types";
 import { STACK_PRESETS } from "@/lib/stack-detector";
 import { extractDomainContext } from "@/lib/mock-generator";
@@ -86,6 +86,52 @@ export const ControllerPanel: React.FC<ControllerPanelProps> = ({
 }) => {
   const domain = extractDomainContext(prompt || "Clinical Telehealth & EHR Platform");
   const [isStackExpanded, setIsStackExpanded] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const recognitionRef = React.useRef<any>(null);
+
+  const toggleVoiceInput = () => {
+    if (isListening) {
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+      }
+      setIsListening(false);
+      return;
+    }
+
+    const SpeechRec = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRec) {
+      alert("Voice input is not supported in this browser. Please use Google Chrome, Microsoft Edge, or Safari.");
+      return;
+    }
+
+    try {
+      const rec = new SpeechRec();
+      recognitionRef.current = rec;
+      rec.continuous = true;
+      rec.interimResults = true;
+      rec.lang = "en-US";
+
+      rec.onstart = () => setIsListening(true);
+      rec.onresult = (event: any) => {
+        let transcript = "";
+        for (let i = 0; i < event.results.length; i++) {
+          transcript += event.results[i][0].transcript;
+        }
+        if (transcript.trim()) {
+          setPrompt(transcript.trim());
+        }
+      };
+      rec.onerror = (e: any) => {
+        console.warn("Speech recognition error:", e);
+        setIsListening(false);
+      };
+      rec.onend = () => setIsListening(false);
+      rec.start();
+    } catch (err) {
+      console.warn("Speech recognition failed to start:", err);
+      setIsListening(false);
+    }
+  };
   const hasCompletedAny = stages.some((s) => s.status === "completed" || (s.content && s.content.trim().length > 0));
 
   const handleApplyPreset = (presetStack: TechStackPreferences) => {
@@ -194,10 +240,28 @@ export const ControllerPanel: React.FC<ControllerPanelProps> = ({
       {/* 3. Realtime Prompt Console */}
       <div className="space-y-1.5">
         <div className="flex items-center justify-between">
-          <label className="text-xs font-bold text-slate-800 uppercase tracking-wide">
-            Project Description
+          <label className="text-xs font-bold text-slate-800 uppercase tracking-wide flex items-center gap-2">
+            <span>Project Description</span>
+            {isListening && (
+              <span className="flex items-center gap-1 text-[10px] text-rose-600 font-bold animate-pulse">
+                <span className="h-1.5 w-1.5 rounded-full bg-rose-600 animate-ping" />
+                Listening...
+              </span>
+            )}
           </label>
-          <span className="text-[10px] text-slate-400">Natural Language Prompt</span>
+          <button
+            type="button"
+            onClick={toggleVoiceInput}
+            className={`flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-bold transition-all border shadow-xs ${
+              isListening
+                ? "bg-rose-50 text-rose-700 border-rose-300 animate-pulse font-bold"
+                : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50 hover:text-slate-900"
+            }`}
+            title={isListening ? "Stop voice listening" : "Click to speak your prompt (Voice-to-Spec)"}
+          >
+            {isListening ? <MicOff className="h-3 w-3 text-rose-600" /> : <Mic className="h-3 w-3 text-emerald-600" />}
+            <span>{isListening ? "Stop Mic" : "Voice Input"}</span>
+          </button>
         </div>
 
         {/* Quick Domain Starters */}
