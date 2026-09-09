@@ -17,7 +17,8 @@ import {
   FileCode,
   Database,
   ShieldCheck,
-  FolderTree
+  FolderTree,
+  ShieldAlert
 } from "lucide-react";
 import { StageState, STAGES, TechStackPreferences, SpecificationRigor } from "@/lib/types";
 import { MarkdownRenderer } from "./MarkdownRenderer";
@@ -28,6 +29,8 @@ import { SchemaVisualizer } from "./SchemaVisualizer";
 import { SddVerificationRunner } from "./SddVerificationRunner";
 import { MonorepoStudio } from "./MonorepoStudio";
 import { InteractiveTerminal } from "./InteractiveTerminal";
+import { TopologyCanvas } from "./TopologyCanvas";
+import { StrideThreatModel } from "./StrideThreatModel";
 import { extractDomainContext } from "@/lib/mock-generator";
 import { saveAs } from "file-saver";
 import { exportSpecificationZip } from "@/lib/zip-exporter";
@@ -46,7 +49,7 @@ interface WorkspaceViewerProps {
   [key: string]: any;
 }
 
-type ViewMode = "preview" | "split" | "editor" | "schema" | "monorepo" | "terminal" | "verify" | "gherkin" | "playground" | "radar";
+type ViewMode = "preview" | "split" | "editor" | "schema" | "monorepo" | "terminal" | "topology" | "threat" | "verify" | "gherkin" | "playground" | "radar";
 
 export const WorkspaceViewer: React.FC<WorkspaceViewerProps> = ({
   stages,
@@ -228,6 +231,32 @@ export const WorkspaceViewer: React.FC<WorkspaceViewerProps> = ({
             </button>
             <button
               type="button"
+              onClick={() => setViewMode("topology")}
+              className={`flex items-center gap-1 px-2 py-1 rounded-md text-xs transition-all ${
+                viewMode === "topology"
+                  ? "bg-white text-emerald-800 font-bold shadow-xs"
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
+              title="Interactive Microservices Topology & Live Chaos Mesh Canvas"
+            >
+              <Activity className="h-3 w-3 text-emerald-600" />
+              <span>Topology</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode("threat")}
+              className={`flex items-center gap-1 px-2 py-1 rounded-md text-xs transition-all ${
+                viewMode === "threat"
+                  ? "bg-white text-emerald-800 font-bold shadow-xs"
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
+              title="Automated STRIDE Threat Modeling & Security Audit Matrix"
+            >
+              <ShieldAlert className="h-3 w-3 text-rose-600" />
+              <span>Threat Model</span>
+            </button>
+            <button
+              type="button"
               onClick={() => setViewMode("verify")}
               className={`flex items-center gap-1 px-2 py-1 rounded-md text-xs transition-all ${
                 viewMode === "verify"
@@ -405,6 +434,20 @@ export const WorkspaceViewer: React.FC<WorkspaceViewerProps> = ({
         {viewMode === "terminal" && (
           <div className="h-full min-h-[620px]">
             <InteractiveTerminal domain={domain} />
+          </div>
+        )}
+
+        {/* Mode: Interactive Microservices Topology Canvas */}
+        {viewMode === "topology" && (
+          <div className="h-full min-h-[660px]">
+            <TopologyCanvas domain={domain} techStack={techStack} />
+          </div>
+        )}
+
+        {/* Mode: Automated STRIDE Threat Modeling */}
+        {viewMode === "threat" && (
+          <div className="h-full overflow-y-auto">
+            <StrideThreatModel domain={domain} />
           </div>
         )}
 

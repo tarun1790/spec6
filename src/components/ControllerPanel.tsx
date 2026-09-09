@@ -134,6 +134,16 @@ export const ControllerPanel: React.FC<ControllerPanelProps> = ({
   };
   const hasCompletedAny = stages.some((s) => s.status === "completed" || (s.content && s.content.trim().length > 0));
 
+  const handleSuperPromptEnhance = () => {
+    const current = prompt.trim();
+    if (!current) {
+      setPrompt("An enterprise-grade, high-throughput cloud platform featuring sub-100ms API response SLAs, event-driven pub/sub message brokering, 3NF-normalized PostgreSQL persistence, zero-trust token authentication, and full compliance auditing.");
+      return;
+    }
+    const enhanced = `${current} The architecture mandates strictly typed OpenAPI 3.1 contracts, sub-80ms p95 read latency, idempotent mutations, horizontal autoscaling on Kubernetes, zero-trust cryptographic token verification, and automated continuous verification gates.`;
+    setPrompt(enhanced);
+  };
+
   const handleApplyPreset = (presetStack: TechStackPreferences) => {
     setTechStack(presetStack);
   };
@@ -264,6 +274,22 @@ export const ControllerPanel: React.FC<ControllerPanelProps> = ({
           </button>
         </div>
 
+        {/* Prompt Super-Enhancer */}
+        <div className="flex items-center justify-between pb-1">
+          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">
+            Domain Starters
+          </span>
+          <button
+            type="button"
+            onClick={handleSuperPromptEnhance}
+            className="text-[10px] font-bold text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200 px-2 py-0.5 rounded-lg flex items-center gap-1 shadow-2xs transition-all active:scale-95"
+            title="Automatically expand your prompt with enterprise constraints, SLAs, and security requirements"
+          >
+            <Sparkles className="h-3 w-3 text-purple-600 animate-pulse" />
+            <span>⚡ Enhance with Rigor</span>
+          </button>
+        </div>
+
         {/* Quick Domain Starters */}
         <div className="flex flex-wrap gap-1 pb-1">
           {DOMAIN_STARTERS.map((starter, idx) => (
@@ -344,8 +370,39 @@ export const ControllerPanel: React.FC<ControllerPanelProps> = ({
           </button>
         </div>
 
+        {/* Architectural Paradigm Switcher */}
+        <div className="space-y-1">
+          <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">
+            Architectural Pattern
+          </div>
+          <div className="grid grid-cols-2 gap-1">
+            {[
+              "Event-Driven Microservices",
+              "Modular Monolith (DDD)",
+              "CQRS + Event Sourcing",
+              "Serverless Edge & Workers"
+            ].map((pattern) => {
+              const isSelected = techStack.architecture.includes(pattern.split(" ")[0]);
+              return (
+                <button
+                  key={pattern}
+                  type="button"
+                  onClick={() => setTechStack({ ...techStack, architecture: pattern })}
+                  className={`px-2 py-1 rounded-md text-[10px] font-semibold border transition-all truncate text-left ${
+                    isSelected
+                      ? "bg-emerald-50 text-emerald-900 border-emerald-500 font-bold shadow-2xs"
+                      : "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100"
+                  }`}
+                >
+                  {pattern}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
         {/* Stack Preset Pills */}
-        <div className="flex flex-wrap gap-1">
+        <div className="flex flex-wrap gap-1 pt-1 border-t border-slate-100">
           {STACK_PRESETS.map((preset) => {
             const isSelected = techStack.backend === preset.stack.backend;
             return (
