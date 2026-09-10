@@ -11,6 +11,7 @@ import { CopilotDrawer } from "@/components/CopilotDrawer";
 import { SddDecisionModal } from "@/components/SddDecisionModal";
 import { AiwarePaperModal } from "@/components/AiwarePaperModal";
 import { ChatGptAstraStudio } from "@/components/ChatGptAstraStudio";
+import { Astra6NexusStudio } from "@/components/Astra6NexusStudio";
 import { STAGES, StageState, TechStackPreferences, LLMConfig, SSEEvent, SpecificationRigor } from "@/lib/types";
 import { TEMPLATES } from "@/lib/templates";
 import { exportSpecificationZip } from "@/lib/zip-exporter";
@@ -107,6 +108,15 @@ export default function DashboardPage() {
       prev.map((s) =>
         s.index === stageIndex ? { ...s, content: s.content + "\n" + addition } : s
       )
+    );
+  };
+
+  const handleAtomicMultiStageUpdate = (updates: { stageIndex: number; contentAddition: string }[]) => {
+    setStages((prev) =>
+      prev.map((s) => {
+        const match = updates.find((u) => u.stageIndex === s.index);
+        return match ? { ...s, content: s.content + "\n" + match.contentAddition } : s;
+      })
     );
   };
 
@@ -433,6 +443,7 @@ export default function DashboardPage() {
             selectedStageIndex={selectedStageIndex}
             onSelectStageIndex={setSelectedStageIndex}
             onUpdateStageContent={handleUpdateStageContent}
+            onAtomicMultiStageUpdate={handleAtomicMultiStageUpdate}
             onOpenCopilot={() => setIsCopilotOpen(true)}
             onOpenDiff={(fileName: string, orig: string, curr: string) => {
               setDiffModal({ isOpen: true, fileName, original: orig, current: curr });
@@ -491,22 +502,23 @@ export default function DashboardPage() {
         onOpenAdvisor={() => setIsRigorAdvisorOpen(true)}
       />
 
-      {/* Fullscreen ChatGPT Astra 4.00 GB Studio Modal */}
+      {/* Fullscreen Astra-6 Nexus OS (4.00 GB Virtual Space) Modal */}
       {isAstraModalOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-2 sm:p-6 select-none animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-2 sm:p-6 select-none animate-in fade-in duration-200">
           <div className="relative w-full max-w-7xl h-[92vh] rounded-2xl overflow-hidden shadow-2xl border border-slate-700 flex flex-col bg-slate-950">
             <button
               onClick={() => setIsAstraModalOpen(false)}
               className="absolute top-3 right-4 z-50 p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-colors"
-              title="Close Astra Studio"
+              title="Close Astra-6 Studio"
             >
               <X className="h-4 w-4" />
             </button>
-            <ChatGptAstraStudio
+            <Astra6NexusStudio
               domain={extractDomainContext(prompt || "Enterprise Cloud Platform")}
               techStack={techStack}
               stages={stages}
               onApplyRefactor={handleApplyRefactor}
+              onAtomicMultiStageUpdate={handleAtomicMultiStageUpdate}
             />
           </div>
         </div>

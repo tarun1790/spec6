@@ -35,6 +35,7 @@ import { TopologyCanvas } from "./TopologyCanvas";
 import { StrideThreatModel } from "./StrideThreatModel";
 import { AiChatWorkspace } from "./AiChatWorkspace";
 import { ChatGptAstraStudio } from "./ChatGptAstraStudio";
+import { Astra6NexusStudio } from "./Astra6NexusStudio";
 import { extractDomainContext } from "@/lib/mock-generator";
 import { saveAs } from "file-saver";
 import { exportSpecificationZip } from "@/lib/zip-exporter";
@@ -44,6 +45,7 @@ interface WorkspaceViewerProps {
   selectedStageIndex: number;
   onSelectStageIndex: (idx: number) => void;
   onUpdateStageContent: (stageIndex: number, newContent: string) => void;
+  onAtomicMultiStageUpdate?: (updates: { stageIndex: number; contentAddition: string }[]) => void;
   isGenerating: boolean;
   userPrompt?: string;
   techStack: TechStackPreferences;
@@ -60,6 +62,7 @@ export const WorkspaceViewer: React.FC<WorkspaceViewerProps> = ({
   selectedStageIndex,
   onSelectStageIndex,
   onUpdateStageContent,
+  onAtomicMultiStageUpdate,
   isGenerating,
   userPrompt = "",
   techStack,
@@ -262,15 +265,15 @@ export const WorkspaceViewer: React.FC<WorkspaceViewerProps> = ({
             <button
               type="button"
               onClick={() => setViewMode("astra")}
-              className={`flex items-center gap-1 px-2 py-1 rounded-md text-xs font-bold transition-all ${
+              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-black transition-all ${
                 viewMode === "astra"
-                  ? "bg-gradient-to-r from-emerald-600 to-cyan-600 text-white shadow-xs"
-                  : "text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300"
+                  ? "bg-gradient-to-r from-cyan-500 via-emerald-400 to-indigo-600 text-slate-950 shadow-xs"
+                  : "text-cyan-900 bg-cyan-50 hover:bg-cyan-100 border border-cyan-300"
               }`}
-              title="ChatGPT Astra Multimodal Studio with 4.00 GB Local Virtual Memory Quota"
+              title="Astra-6 Nexus AI Operating System (Better Than Astra 6 with 4.00 GB Virtual Space)"
             >
-              <Zap className="h-3 w-3 fill-current" />
-              <span>Astra Omni (4GB)</span>
+              <Zap className="h-3.5 w-3.5 fill-current" />
+              <span>Astra-6 OS (4GB)</span>
             </button>
             <button
               type="button"
@@ -481,14 +484,15 @@ export const WorkspaceViewer: React.FC<WorkspaceViewerProps> = ({
           </div>
         )}
 
-        {/* Mode: ChatGPT Astra Multimodal Studio (4.00 GB Virtual Sandbox) */}
+        {/* Mode: Astra-6 Nexus AI Operating System (4.00 GB Virtual Space) */}
         {viewMode === "astra" && (
           <div className="h-full min-h-[680px]">
-            <ChatGptAstraStudio
+            <Astra6NexusStudio
               domain={domain}
               techStack={techStack}
               stages={stages}
               onApplyRefactor={onUpdateStageContent}
+              onAtomicMultiStageUpdate={onAtomicMultiStageUpdate}
             />
           </div>
         )}
