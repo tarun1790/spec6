@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Download, Sparkles, Settings, FolderArchive, Bot, BookOpen, FileText } from "lucide-react";
+import { Download, Sparkles, Settings, FolderArchive, Bot, BookOpen, FileText, Zap } from "lucide-react";
 import { LLMConfig, SpecificationRigor } from "@/lib/types";
 
 interface HeaderProps {
@@ -9,6 +9,7 @@ interface HeaderProps {
   onQuickDownloadZip?: () => void;
   onOpenSettings?: () => void;
   onOpenCopilot?: () => void;
+  onOpenAstra?: () => void;
   onOpenRigorAdvisor?: () => void;
   onOpenPaperModal?: () => void;
   rigor?: SpecificationRigor;
@@ -24,6 +25,7 @@ export const Header: React.FC<HeaderProps> = ({
   onQuickDownloadZip,
   onOpenSettings,
   onOpenCopilot,
+  onOpenAstra,
   onOpenRigorAdvisor,
   onOpenPaperModal,
   rigor = "spec-anchored",
@@ -117,6 +119,18 @@ export const Header: React.FC<HeaderProps> = ({
 
       {/* Right Controls */}
       <div className="flex items-center gap-2">
+        {onOpenAstra && (
+          <button
+            type="button"
+            onClick={onOpenAstra}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-500 hover:to-cyan-500 text-white text-xs font-extrabold transition-all shadow-xs"
+            title="Open ChatGPT Astra Multimodal Studio (4 GB Space)"
+          >
+            <Zap className="h-3.5 w-3.5 fill-white" />
+            <span className="hidden sm:inline">Astra 4GB</span>
+          </button>
+        )}
+
         {onOpenCopilot && (
           <button
             type="button"

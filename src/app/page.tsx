@@ -10,11 +10,13 @@ import { DiffViewerModal } from "@/components/DiffViewerModal";
 import { CopilotDrawer } from "@/components/CopilotDrawer";
 import { SddDecisionModal } from "@/components/SddDecisionModal";
 import { AiwarePaperModal } from "@/components/AiwarePaperModal";
+import { ChatGptAstraStudio } from "@/components/ChatGptAstraStudio";
 import { STAGES, StageState, TechStackPreferences, LLMConfig, SSEEvent, SpecificationRigor } from "@/lib/types";
 import { TEMPLATES } from "@/lib/templates";
 import { exportSpecificationZip } from "@/lib/zip-exporter";
-import { generateMockStageContent } from "@/lib/mock-generator";
+import { generateMockStageContent, extractDomainContext } from "@/lib/mock-generator";
 import { streamStageContent } from "@/lib/llm-providers";
+import { X } from "lucide-react";
 
 import { detectOptimalTechStack } from "@/lib/stack-detector";
 
@@ -98,6 +100,7 @@ export default function DashboardPage() {
   const [rigor, setRigor] = useState<SpecificationRigor>("spec-anchored");
   const [isRigorAdvisorOpen, setIsRigorAdvisorOpen] = useState<boolean>(false);
   const [isPaperModalOpen, setIsPaperModalOpen] = useState<boolean>(false);
+  const [isAstraModalOpen, setIsAstraModalOpen] = useState<boolean>(false);
 
   const handleApplyRefactor = (stageIndex: number, addition: string) => {
     setStages((prev) =>
@@ -383,6 +386,7 @@ export default function DashboardPage() {
         onOpenSettings={() => setIsSettingsOpen(true)}
         onOpenExport={() => setIsExportOpen(true)}
         onOpenCopilot={() => setIsCopilotOpen(true)}
+        onOpenAstra={() => setIsAstraModalOpen(true)}
         onOpenRigorAdvisor={() => setIsRigorAdvisorOpen(true)}
         onOpenPaperModal={() => setIsPaperModalOpen(true)}
         rigor={rigor}
@@ -486,6 +490,27 @@ export default function DashboardPage() {
         onSelectRigor={setRigor}
         onOpenAdvisor={() => setIsRigorAdvisorOpen(true)}
       />
+
+      {/* Fullscreen ChatGPT Astra 4.00 GB Studio Modal */}
+      {isAstraModalOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-2 sm:p-6 select-none animate-in fade-in duration-200">
+          <div className="relative w-full max-w-7xl h-[92vh] rounded-2xl overflow-hidden shadow-2xl border border-slate-700 flex flex-col bg-slate-950">
+            <button
+              onClick={() => setIsAstraModalOpen(false)}
+              className="absolute top-3 right-4 z-50 p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-colors"
+              title="Close Astra Studio"
+            >
+              <X className="h-4 w-4" />
+            </button>
+            <ChatGptAstraStudio
+              domain={extractDomainContext(prompt || "Enterprise Cloud Platform")}
+              techStack={techStack}
+              stages={stages}
+              onApplyRefactor={handleApplyRefactor}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

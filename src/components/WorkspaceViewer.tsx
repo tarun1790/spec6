@@ -18,7 +18,9 @@ import {
   Database,
   ShieldCheck,
   FolderTree,
-  ShieldAlert
+  ShieldAlert,
+  Bot,
+  Zap
 } from "lucide-react";
 import { StageState, STAGES, TechStackPreferences, SpecificationRigor } from "@/lib/types";
 import { MarkdownRenderer } from "./MarkdownRenderer";
@@ -31,6 +33,8 @@ import { MonorepoStudio } from "./MonorepoStudio";
 import { InteractiveTerminal } from "./InteractiveTerminal";
 import { TopologyCanvas } from "./TopologyCanvas";
 import { StrideThreatModel } from "./StrideThreatModel";
+import { AiChatWorkspace } from "./AiChatWorkspace";
+import { ChatGptAstraStudio } from "./ChatGptAstraStudio";
 import { extractDomainContext } from "@/lib/mock-generator";
 import { saveAs } from "file-saver";
 import { exportSpecificationZip } from "@/lib/zip-exporter";
@@ -49,7 +53,7 @@ interface WorkspaceViewerProps {
   [key: string]: any;
 }
 
-type ViewMode = "preview" | "split" | "editor" | "schema" | "monorepo" | "terminal" | "topology" | "threat" | "verify" | "gherkin" | "playground" | "radar";
+type ViewMode = "preview" | "split" | "editor" | "schema" | "monorepo" | "terminal" | "topology" | "threat" | "astra" | "chat" | "verify" | "gherkin" | "playground" | "radar";
 
 export const WorkspaceViewer: React.FC<WorkspaceViewerProps> = ({
   stages,
@@ -257,6 +261,32 @@ export const WorkspaceViewer: React.FC<WorkspaceViewerProps> = ({
             </button>
             <button
               type="button"
+              onClick={() => setViewMode("astra")}
+              className={`flex items-center gap-1 px-2 py-1 rounded-md text-xs font-bold transition-all ${
+                viewMode === "astra"
+                  ? "bg-gradient-to-r from-emerald-600 to-cyan-600 text-white shadow-xs"
+                  : "text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300"
+              }`}
+              title="ChatGPT Astra Multimodal Studio with 4.00 GB Local Virtual Memory Quota"
+            >
+              <Zap className="h-3 w-3 fill-current" />
+              <span>Astra Omni (4GB)</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode("chat")}
+              className={`flex items-center gap-1 px-2 py-1 rounded-md text-xs transition-all ${
+                viewMode === "chat"
+                  ? "bg-white text-emerald-800 font-bold shadow-xs"
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
+              title="Interactive AI Systems Architect Chat"
+            >
+              <Bot className="h-3 w-3 text-emerald-600" />
+              <span>AI Chat</span>
+            </button>
+            <button
+              type="button"
               onClick={() => setViewMode("verify")}
               className={`flex items-center gap-1 px-2 py-1 rounded-md text-xs transition-all ${
                 viewMode === "verify"
@@ -448,6 +478,30 @@ export const WorkspaceViewer: React.FC<WorkspaceViewerProps> = ({
         {viewMode === "threat" && (
           <div className="h-full overflow-y-auto">
             <StrideThreatModel domain={domain} />
+          </div>
+        )}
+
+        {/* Mode: ChatGPT Astra Multimodal Studio (4.00 GB Virtual Sandbox) */}
+        {viewMode === "astra" && (
+          <div className="h-full min-h-[680px]">
+            <ChatGptAstraStudio
+              domain={domain}
+              techStack={techStack}
+              stages={stages}
+              onApplyRefactor={onUpdateStageContent}
+            />
+          </div>
+        )}
+
+        {/* Mode: Conversational AI Systems Architect Chat */}
+        {viewMode === "chat" && (
+          <div className="h-full min-h-[660px]">
+            <AiChatWorkspace
+              domain={domain}
+              techStack={techStack}
+              stages={stages}
+              onApplyRefactor={onUpdateStageContent}
+            />
           </div>
         )}
 
