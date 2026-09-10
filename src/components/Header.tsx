@@ -9,7 +9,6 @@ interface HeaderProps {
   onQuickDownloadZip?: () => void;
   onOpenSettings?: () => void;
   onOpenCopilot?: () => void;
-  onOpenAstra?: () => void;
   onOpenRigorAdvisor?: () => void;
   onOpenPaperModal?: () => void;
   rigor?: SpecificationRigor;
@@ -25,7 +24,6 @@ export const Header: React.FC<HeaderProps> = ({
   onQuickDownloadZip,
   onOpenSettings,
   onOpenCopilot,
-  onOpenAstra,
   onOpenRigorAdvisor,
   onOpenPaperModal,
   rigor = "spec-anchored",
@@ -119,18 +117,6 @@ export const Header: React.FC<HeaderProps> = ({
 
       {/* Right Controls */}
       <div className="flex items-center gap-2">
-        {onOpenAstra && (
-          <button
-            type="button"
-            onClick={onOpenAstra}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-cyan-600 via-emerald-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500 text-white text-xs font-black transition-all shadow-md shadow-cyan-900/20"
-            title="Open Astra-6 Nexus AI Operating System (Better Than Astra 6 with 4.00 GB Space)"
-          >
-            <Zap className="h-3.5 w-3.5 fill-white" />
-            <span className="hidden sm:inline">Astra-6 OS (4GB)</span>
-          </button>
-        )}
-
         {onOpenCopilot && (
           <button
             type="button"

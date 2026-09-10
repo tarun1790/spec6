@@ -52,9 +52,13 @@ const config: Config = {
         ],
       },
       boxShadow: {
+        "2xs": "0 1px 2px 0 rgba(0, 0, 0, 0.04)",
+        xs: "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
         card: "0 1px 3px 0 rgba(0, 0, 0, 0.06), 0 1px 2px 0 rgba(0, 0, 0, 0.03)",
         "card-hover": "0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04)",
         "emerald-glow": "0 0 20px -3px rgba(16, 185, 129, 0.25)",
+        "cyan-glow": "0 0 20px -3px rgba(6, 182, 212, 0.3)",
+        "purple-glow": "0 0 20px -3px rgba(168, 85, 247, 0.3)",
         "red-glow": "0 0 20px -3px rgba(239, 68, 68, 0.25)",
       },
     },

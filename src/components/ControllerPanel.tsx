@@ -274,11 +274,23 @@ export const ControllerPanel: React.FC<ControllerPanelProps> = ({
           </button>
         </div>
 
-        {/* Prompt Super-Enhancer */}
+        {/* Prompt Super-Enhancer & Clear */}
         <div className="flex items-center justify-between pb-1">
-          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">
-            Domain Starters
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">
+              Domain Starters
+            </span>
+            {prompt.trim().length > 0 && (
+              <button
+                type="button"
+                onClick={() => setPrompt("")}
+                className="text-[10px] font-semibold text-rose-600 hover:text-rose-800 bg-rose-50 hover:bg-rose-100 border border-rose-200 px-1.5 py-0.5 rounded-md transition-colors"
+                title="Clear description"
+              >
+                ✕ Clear
+              </button>
+            )}
+          </div>
           <button
             type="button"
             onClick={handleSuperPromptEnhance}
@@ -309,7 +321,7 @@ export const ControllerPanel: React.FC<ControllerPanelProps> = ({
           data-testid="prompt-input"
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
-          placeholder="Describe your application idea, features, target users, hardware or business logic..."
+          placeholder="Describe your application idea, system architecture, or business logic (e.g. Real-time food delivery platform with live GPS driver tracking, Stripe checkout, and Redis geospatial indexing)... As you type, the engine synthesizes solutions in real time!"
           rows={5}
           className="w-full p-3 rounded-xl border border-slate-200 bg-white text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 leading-relaxed resize-y font-sans transition-all shadow-xs"
         />
@@ -319,33 +331,43 @@ export const ControllerPanel: React.FC<ControllerPanelProps> = ({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5 font-bold text-emerald-900 text-[11px]">
               <Sparkles className="h-3 w-3 text-emerald-600 animate-pulse" />
-              <span>Prompt Intelligence</span>
+              <span>Real-Time Background Engine</span>
             </div>
             <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
-              {domain.category}
+              {prompt.trim() ? domain.category : "Ready / Waiting"}
             </span>
           </div>
 
           <div className="text-[11px] text-slate-600 line-clamp-2 leading-relaxed">
-            <span className="font-semibold text-slate-800">{domain.title}: </span>
-            {domain.executiveSummary}
+            {prompt.trim() ? (
+              <>
+                <span className="font-semibold text-slate-800">{domain.title}: </span>
+                {domain.executiveSummary}
+              </>
+            ) : (
+              <span className="text-slate-500 italic">
+                Type your requirements above or click a domain starter. The engine will instantly decompose your concept into living specifications, microservices topology, 3NF database schema, and full-stack code.
+              </span>
+            )}
           </div>
 
-          <div className="flex flex-wrap items-center gap-1 pt-1">
-            <span className="text-[10px] text-slate-500 font-semibold">Identified Entities:</span>
-            {domain.primaryEntities.slice(0, 5).map((ent) => (
-              <span
-                key={ent}
-                className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-white text-slate-800 border border-slate-200 shadow-2xs"
-              >
-                {ent}
-              </span>
-            ))}
-          </div>
+          {prompt.trim() && domain.primaryEntities && domain.primaryEntities.length > 0 && (
+            <div className="flex flex-wrap items-center gap-1 pt-1">
+              <span className="text-[10px] text-slate-500 font-semibold">Identified Entities:</span>
+              {domain.primaryEntities.slice(0, 5).map((ent) => (
+                <span
+                  key={ent}
+                  className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-white text-slate-800 border border-slate-200 shadow-2xs"
+                >
+                  {ent}
+                </span>
+              ))}
+            </div>
+          )}
 
           <div className="flex items-center justify-between text-[10px] pt-1.5 border-t border-emerald-100/80 text-emerald-950 font-medium">
             <span>Standard: <strong>{domain.complianceFramework.split(",")[0]}</strong></span>
-            <span>Target SLA: <strong>99.99% Uptime</strong></span>
+            <span>Real-Time Engine: <strong className="text-emerald-700">Active (Live Debounced)</strong></span>
           </div>
         </div>
       </div>

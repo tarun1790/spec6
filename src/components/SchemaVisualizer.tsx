@@ -12,15 +12,18 @@ export const SchemaVisualizer: React.FC<SchemaVisualizerProps> = ({ domain }) =>
   const [filterQuery, setFilterQuery] = useState("");
   const [selectedEntity, setSelectedEntity] = useState<string | null>(null);
 
-  const filteredEntities = domain.erdEntities.filter((e) =>
-    e.name.toLowerCase().includes(filterQuery.toLowerCase()) ||
-    e.description.toLowerCase().includes(filterQuery.toLowerCase()) ||
-    e.fields.some((f) => f.name.toLowerCase().includes(filterQuery.toLowerCase()))
+  const entities = domain?.erdEntities || [];
+  const relations = domain?.erdRelations || [];
+
+  const filteredEntities = entities.filter((e) =>
+    (e?.name || "").toLowerCase().includes(filterQuery.toLowerCase()) ||
+    (e?.description || "").toLowerCase().includes(filterQuery.toLowerCase()) ||
+    (e?.fields || []).some((f) => (f?.name || "").toLowerCase().includes(filterQuery.toLowerCase()))
   );
 
-  const totalFields = domain.erdEntities.reduce((acc, e) => acc + e.fields.length, 0);
-  const totalPKs = domain.erdEntities.reduce((acc, e) => acc + e.fields.filter((f) => f.key === "PK").length, 0);
-  const totalFKs = domain.erdEntities.reduce((acc, e) => acc + e.fields.filter((f) => f.key === "FK").length, 0);
+  const totalFields = entities.reduce((acc, e) => acc + (e?.fields?.length || 0), 0);
+  const totalPKs = entities.reduce((acc, e) => acc + (e?.fields || []).filter((f) => f?.key === "PK").length, 0);
+  const totalFKs = entities.reduce((acc, e) => acc + (e?.fields || []).filter((f) => f?.key === "FK").length, 0);
 
   return (
     <div className="space-y-6">
@@ -45,7 +48,7 @@ export const SchemaVisualizer: React.FC<SchemaVisualizerProps> = ({ domain }) =>
         {/* Database Quick Stats */}
         <div className="flex items-center gap-2">
           <div className="px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-center min-w-[70px]">
-            <div className="text-base font-bold text-emerald-400">{domain.erdEntities.length}</div>
+            <div className="text-base font-bold text-emerald-400">{entities.length}</div>
             <div className="text-[10px] text-slate-400 uppercase font-semibold">Entities</div>
           </div>
           <div className="px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-center min-w-[70px]">
@@ -53,7 +56,7 @@ export const SchemaVisualizer: React.FC<SchemaVisualizerProps> = ({ domain }) =>
             <div className="text-[10px] text-slate-400 uppercase font-semibold">Columns</div>
           </div>
           <div className="px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-center min-w-[70px]">
-            <div className="text-base font-bold text-purple-400">{domain.erdRelations.length}</div>
+            <div className="text-base font-bold text-purple-400">{relations.length}</div>
             <div className="text-[10px] text-slate-400 uppercase font-semibold">Relations</div>
           </div>
           <div className="px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-center min-w-[70px]">
@@ -86,9 +89,9 @@ export const SchemaVisualizer: React.FC<SchemaVisualizerProps> = ({ domain }) =>
                 : "bg-slate-100 text-slate-600 hover:bg-slate-200"
             }`}
           >
-            All Tables ({domain.erdEntities.length})
+            All Tables ({entities.length})
           </button>
-          {domain.erdEntities.map((e) => (
+          {entities.map((e) => (
             <button
               key={e.name}
               onClick={() => setSelectedEntity(selectedEntity === e.name ? null : e.name)}

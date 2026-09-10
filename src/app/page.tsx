@@ -10,8 +10,6 @@ import { DiffViewerModal } from "@/components/DiffViewerModal";
 import { CopilotDrawer } from "@/components/CopilotDrawer";
 import { SddDecisionModal } from "@/components/SddDecisionModal";
 import { AiwarePaperModal } from "@/components/AiwarePaperModal";
-import { ChatGptAstraStudio } from "@/components/ChatGptAstraStudio";
-import { Astra6NexusStudio } from "@/components/Astra6NexusStudio";
 import { STAGES, StageState, TechStackPreferences, LLMConfig, SSEEvent, SpecificationRigor } from "@/lib/types";
 import { TEMPLATES } from "@/lib/templates";
 import { exportSpecificationZip } from "@/lib/zip-exporter";
@@ -21,23 +19,20 @@ import { X } from "lucide-react";
 
 import { detectOptimalTechStack } from "@/lib/stack-detector";
 
-const initialPrompt = "A HIPAA-compliant doctor appointment booking platform with encrypted WebRTC video visits, patient EHR medical history (HL7 FHIR R4), electronic prescription management with digital signing, and automated EDI 270/271 insurance eligibility verification.";
+const initialPrompt = "";
 
 const initialTechStack: TechStackPreferences = detectOptimalTechStack(initialPrompt);
 
-const initialStages: StageState[] = STAGES.map((s) => {
-  const content = generateMockStageContent(s.index, initialPrompt, initialTechStack, {});
-  return {
-    index: s.index,
-    fileName: s.fileName,
-    status: "completed" as const,
-    content,
-    tokensGenerated: Math.round(content.length / 4),
-    durationMs: 40
-  };
-});
+const initialStages: StageState[] = STAGES.map((s) => ({
+  index: s.index,
+  fileName: s.fileName,
+  status: "idle" as const,
+  content: "",
+  tokensGenerated: 0,
+  durationMs: 0
+}));
 
-const initialTotalTokens = initialStages.reduce((acc, s) => acc + s.tokensGenerated, 0);
+const initialTotalTokens = 0;
 
 export default function DashboardPage() {
   const [prompt, setPrompt] = useState<string>(initialPrompt);
@@ -67,11 +62,26 @@ export default function DashboardPage() {
   const [isExportOpen, setIsExportOpen] = useState<boolean>(false);
   const [isCopilotOpen, setIsCopilotOpen] = useState<boolean>(false);
 
-  // Real-time reactive synchronization: as the user edits or types the description,
-  // all 6 specification stages automatically update in real-time!
+  // Real-time reactive background synthesis engine: as the user edits or types any description,
+  // all 6 specification stages automatically synthesize and update in real-time!
   useEffect(() => {
     if (!liveSync || isGenerating || llmConfig.provider !== "mock") return;
-    if (!prompt || prompt.trim().length < 5) return;
+    if (!prompt || prompt.trim().length < 5) {
+      if (!prompt || prompt.trim().length === 0) {
+        setStages(
+          STAGES.map((s) => ({
+            index: s.index,
+            fileName: s.fileName,
+            status: "idle" as const,
+            content: "",
+            tokensGenerated: 0,
+            durationMs: 0
+          }))
+        );
+        setTotalTokens(0);
+      }
+      return;
+    }
 
     const timer = setTimeout(() => {
       const updated = STAGES.map((s) => {
@@ -92,6 +102,7 @@ export default function DashboardPage() {
 
     return () => clearTimeout(timer);
   }, [prompt, techStack, liveSync, isGenerating, llmConfig.provider]);
+
   const [diffModal, setDiffModal] = useState<{
     isOpen: boolean;
     fileName: string;
@@ -101,7 +112,6 @@ export default function DashboardPage() {
   const [rigor, setRigor] = useState<SpecificationRigor>("spec-anchored");
   const [isRigorAdvisorOpen, setIsRigorAdvisorOpen] = useState<boolean>(false);
   const [isPaperModalOpen, setIsPaperModalOpen] = useState<boolean>(false);
-  const [isAstraModalOpen, setIsAstraModalOpen] = useState<boolean>(false);
 
   const handleApplyRefactor = (stageIndex: number, addition: string) => {
     setStages((prev) =>
@@ -396,7 +406,6 @@ export default function DashboardPage() {
         onOpenSettings={() => setIsSettingsOpen(true)}
         onOpenExport={() => setIsExportOpen(true)}
         onOpenCopilot={() => setIsCopilotOpen(true)}
-        onOpenAstra={() => setIsAstraModalOpen(true)}
         onOpenRigorAdvisor={() => setIsRigorAdvisorOpen(true)}
         onOpenPaperModal={() => setIsPaperModalOpen(true)}
         rigor={rigor}
@@ -452,6 +461,7 @@ export default function DashboardPage() {
             techStack={techStack}
             rigor={rigor}
             userPrompt={prompt}
+            onSetPrompt={handlePromptChange}
           />
         </div>
       </div>
@@ -501,28 +511,6 @@ export default function DashboardPage() {
         onSelectRigor={setRigor}
         onOpenAdvisor={() => setIsRigorAdvisorOpen(true)}
       />
-
-      {/* Fullscreen Astra-6 Nexus OS (4.00 GB Virtual Space) Modal */}
-      {isAstraModalOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-2 sm:p-6 select-none animate-in fade-in duration-200">
-          <div className="relative w-full max-w-7xl h-[92vh] rounded-2xl overflow-hidden shadow-2xl border border-slate-700 flex flex-col bg-slate-950">
-            <button
-              onClick={() => setIsAstraModalOpen(false)}
-              className="absolute top-3 right-4 z-50 p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-colors"
-              title="Close Astra-6 Studio"
-            >
-              <X className="h-4 w-4" />
-            </button>
-            <Astra6NexusStudio
-              domain={extractDomainContext(prompt || "Enterprise Cloud Platform")}
-              techStack={techStack}
-              stages={stages}
-              onApplyRefactor={handleApplyRefactor}
-              onAtomicMultiStageUpdate={handleAtomicMultiStageUpdate}
-            />
-          </div>
-        </div>
-      )}
     </div>
   );
 }
