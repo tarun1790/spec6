@@ -20,7 +20,8 @@ import {
   FolderTree,
   ShieldAlert,
   Bot,
-  Zap
+  Zap,
+  Rocket
 } from "lucide-react";
 import { StageState, STAGES, TechStackPreferences, SpecificationRigor } from "@/lib/types";
 import { MarkdownRenderer } from "./MarkdownRenderer";
@@ -34,6 +35,7 @@ import { InteractiveTerminal } from "./InteractiveTerminal";
 import { TopologyCanvas } from "./TopologyCanvas";
 import { StrideThreatModel } from "./StrideThreatModel";
 import { AiChatWorkspace } from "./AiChatWorkspace";
+import { IdeaImplementationStudio } from "./IdeaImplementationStudio";
 import { extractDomainContext } from "@/lib/mock-generator";
 import { saveAs } from "file-saver";
 import { exportSpecificationZip } from "@/lib/zip-exporter";
@@ -54,7 +56,7 @@ interface WorkspaceViewerProps {
   [key: string]: any;
 }
 
-type ViewMode = "preview" | "split" | "editor" | "schema" | "monorepo" | "terminal" | "topology" | "threat" | "chat" | "verify" | "gherkin" | "playground" | "radar";
+type ViewMode = "preview" | "split" | "editor" | "implementation" | "schema" | "monorepo" | "terminal" | "topology" | "threat" | "chat" | "verify" | "gherkin" | "playground" | "radar";
 
 export const WorkspaceViewer: React.FC<WorkspaceViewerProps> = ({
   stages,
@@ -207,6 +209,23 @@ export const WorkspaceViewer: React.FC<WorkspaceViewerProps> = ({
 
         {/* Tier 2: Categorized Studio View Selector Bar */}
         <div className="flex items-center gap-3 px-3 py-1.5 overflow-x-auto bg-white text-xs">
+          {/* Flagship Group 0: Live Idea Implementation */}
+          <div className="flex items-center gap-1 bg-gradient-to-r from-emerald-100 to-teal-100 p-0.5 rounded-lg border border-emerald-300 flex-shrink-0 shadow-2xs">
+            <button
+              type="button"
+              onClick={() => setViewMode("implementation")}
+              className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-bold transition-all ${
+                viewMode === "implementation"
+                  ? "bg-emerald-600 text-white shadow-xs"
+                  : "text-emerald-950 hover:bg-emerald-200/80"
+              }`}
+              title="Live Working Idea Implementation & Interactive App Simulator"
+            >
+              <Rocket className="h-3.5 w-3.5 text-emerald-600 animate-pulse" />
+              <span>🚀 Idea Implementation</span>
+            </button>
+          </div>
+
           {/* Group 1: Core Document Views */}
           <div className="flex items-center gap-1 bg-slate-100 p-0.5 rounded-lg border border-slate-200 flex-shrink-0">
             <button
@@ -416,6 +435,16 @@ export const WorkspaceViewer: React.FC<WorkspaceViewerProps> = ({
                     <p className="text-sm text-slate-600 max-w-xl mx-auto leading-relaxed">
                       Type your product requirements or idea in the project description box on the left. The background synthesis engine will automatically generate full-stack specifications, database schemas, topology diagrams, and monorepo code in real time.
                     </p>
+                    <div className="pt-2 flex items-center justify-center gap-3">
+                      <button
+                        type="button"
+                        onClick={() => setViewMode("implementation")}
+                        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-bold shadow-md transition-all active:scale-95"
+                      >
+                        <Rocket className="h-4 w-4 text-emerald-200 animate-pulse" />
+                        <span>🚀 Launch Live Idea Implementation Studio</span>
+                      </button>
+                    </div>
                   </div>
 
                   {/* One-Click Quick Starters */}
@@ -528,6 +557,20 @@ export const WorkspaceViewer: React.FC<WorkspaceViewerProps> = ({
               value={currentContent}
               onChange={(newVal) => onUpdateStageContent(selectedStageIndex, newVal)}
               readOnly={isGenerating}
+            />
+          </div>
+        )}
+
+        {/* Mode: Live Idea Implementation Studio */}
+        {viewMode === "implementation" && (
+          <div className="h-full min-h-[750px]">
+            <IdeaImplementationStudio
+              domain={domain}
+              techStack={techStack}
+              userPrompt={userPrompt}
+              rigor={rigor}
+              onOpenCopilot={onOpenCopilot}
+              onApplyRefactor={onUpdateStageContent}
             />
           </div>
         )}

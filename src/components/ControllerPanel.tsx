@@ -5,6 +5,7 @@ import { Play, Square, RotateCcw, CheckCircle2, Download, Layers, ChevronDown, C
 import { StageState, STAGES, TechStackPreferences, LLMConfig, SpecificationRigor } from "@/lib/types";
 import { STACK_PRESETS } from "@/lib/stack-detector";
 import { extractDomainContext } from "@/lib/mock-generator";
+import { enhanceIdeaWithAstra6 } from "@/lib/astra6-engine";
 
 interface ControllerPanelProps {
   prompt: string;
@@ -134,14 +135,9 @@ export const ControllerPanel: React.FC<ControllerPanelProps> = ({
   };
   const hasCompletedAny = stages.some((s) => s.status === "completed" || (s.content && s.content.trim().length > 0));
 
-  const handleSuperPromptEnhance = () => {
-    const current = prompt.trim();
-    if (!current) {
-      setPrompt("An enterprise-grade, high-throughput cloud platform featuring sub-100ms API response SLAs, event-driven pub/sub message brokering, 3NF-normalized PostgreSQL persistence, zero-trust token authentication, and full compliance auditing.");
-      return;
-    }
-    const enhanced = `${current} The architecture mandates strictly typed OpenAPI 3.1 contracts, sub-80ms p95 read latency, idempotent mutations, horizontal autoscaling on Kubernetes, zero-trust cryptographic token verification, and automated continuous verification gates.`;
-    setPrompt(enhanced);
+  const handleAstra6EnhanceIdea = () => {
+    const res = enhanceIdeaWithAstra6(prompt, techStack);
+    setPrompt(res.enhancedPrompt);
   };
 
   const handleApplyPreset = (presetStack: TechStackPreferences) => {
@@ -293,12 +289,12 @@ export const ControllerPanel: React.FC<ControllerPanelProps> = ({
           </div>
           <button
             type="button"
-            onClick={handleSuperPromptEnhance}
-            className="text-[10px] font-bold text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200 px-2 py-0.5 rounded-lg flex items-center gap-1 shadow-2xs transition-all active:scale-95"
-            title="Automatically expand your prompt with enterprise constraints, SLAs, and security requirements"
+            onClick={handleAstra6EnhanceIdea}
+            className="text-[10px] font-bold text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200 hover:border-purple-300 px-2.5 py-1 rounded-lg flex items-center gap-1.5 shadow-2xs transition-all active:scale-95"
+            title="Astra 6 AI analyzes and expands your concept into a complete enterprise architecture specification"
           >
-            <Sparkles className="h-3 w-3 text-purple-600 animate-pulse" />
-            <span>⚡ Enhance with Rigor</span>
+            <Sparkles className="h-3.5 w-3.5 text-purple-600 animate-pulse" />
+            <span>⚡ Astra 6 AI Enhance</span>
           </button>
         </div>
 
@@ -326,12 +322,49 @@ export const ControllerPanel: React.FC<ControllerPanelProps> = ({
           className="w-full p-3 rounded-xl border border-slate-200 bg-white text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 leading-relaxed resize-y font-sans transition-all shadow-xs"
         />
 
-        {/* Live Prompt Intelligence Inspector */}
+        {/* Astra 6 Dynamic Feature Expansion Pills */}
+        <div className="space-y-1 pt-1">
+          <div className="flex items-center justify-between text-[10px] font-bold text-slate-500 uppercase tracking-wide">
+            <span className="flex items-center gap-1">
+              <Sparkles className="h-3 w-3 text-purple-600" />
+              <span>Astra 6 Feature Expansions (Click to Inject)</span>
+            </span>
+          </div>
+          <div className="flex flex-wrap gap-1">
+            {[
+              { label: "+ Sub-Second WebSockets", snippet: "with sub-second bi-directional WebSocket status feeds and presence broadcasting" },
+              { label: "+ Stripe Idempotent Pay", snippet: "featuring idempotent payment authorization with automated webhook signature verification and ledger receipts" },
+              { label: "+ Redis Geospatial Index", snippet: "utilizing Redis Cluster for sub-5ms caching, geospatial geo-indexing, and distributed Redlock mutexes" },
+              { label: "+ Zero-Trust RS256 Auth", snippet: "enforcing zero-trust RS256 JWT asymmetric token signing, multi-tenant row-level security, and audit trails" },
+              { label: "+ AI Predictive Intelligence", snippet: "equipped with an in-database vector embeddings index for semantic search and autonomous anomaly detection" },
+              { label: "+ Kafka Event Mesh", snippet: "orchestrated over Apache Kafka distributed event topics with exactly-once delivery guarantees" }
+            ].map((pill, i) => (
+              <button
+                key={i}
+                type="button"
+                onClick={() => {
+                  const current = prompt.trim();
+                  if (!current) {
+                    setPrompt(pill.snippet);
+                  } else if (!current.includes(pill.snippet)) {
+                    setPrompt(`${current}, ${pill.snippet}`);
+                  }
+                }}
+                className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-purple-50 hover:bg-purple-100 text-purple-800 border border-purple-200 transition-all active:scale-95 shadow-2xs"
+                title={`Inject "${pill.snippet}" into description`}
+              >
+                {pill.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Live Prompt Intelligence & Astra 6 Comprehension Inspector */}
         <div className="rounded-xl border border-emerald-200/80 bg-gradient-to-br from-emerald-50/70 to-teal-50/40 p-2.5 space-y-2 text-xs shadow-2xs">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5 font-bold text-emerald-900 text-[11px]">
               <Sparkles className="h-3 w-3 text-emerald-600 animate-pulse" />
-              <span>Real-Time Background Engine</span>
+              <span>Astra 6 Idea Comprehension</span>
             </div>
             <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
               {prompt.trim() ? domain.category : "Ready / Waiting"}
@@ -346,7 +379,7 @@ export const ControllerPanel: React.FC<ControllerPanelProps> = ({
               </>
             ) : (
               <span className="text-slate-500 italic">
-                Type your requirements above or click a domain starter. The engine will instantly decompose your concept into living specifications, microservices topology, 3NF database schema, and full-stack code.
+                Type your requirements above or click a domain starter. Astra 6 will instantly comprehend your concept, enhance the scope, and generate specifications, microservices topology, 3NF database schema, and working implementation.
               </span>
             )}
           </div>
@@ -367,7 +400,7 @@ export const ControllerPanel: React.FC<ControllerPanelProps> = ({
 
           <div className="flex items-center justify-between text-[10px] pt-1.5 border-t border-emerald-100/80 text-emerald-950 font-medium">
             <span>Standard: <strong>{domain.complianceFramework.split(",")[0]}</strong></span>
-            <span>Real-Time Engine: <strong className="text-emerald-700">Active (Live Debounced)</strong></span>
+            <span>Astra 6 Synthesis: <strong className="text-emerald-700">Sub-80ms Reactive</strong></span>
           </div>
         </div>
       </div>
